@@ -1,0 +1,50 @@
+/* Centering container */
+.center-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full height of the viewport */
+  text-align: center;
+  background-color: #f4f4f4;
+}
+
+/* Styling for heading */
+.page-heading {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+/* Styling for dropdown */
+/* .dropdown {
+    width: 300px;
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    background-color: #fff;
+    color: #333;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  } */
+
+.dropdown:hover {
+  border-color: #0056b3;
+}
+
+.dropdown:focus {
+  border-color: #0056b3;
+  box-shadow: 0 0 10px rgba(0, 91, 187, 0.5);
+}
+.content {
+  margin-top: 30px;
+}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dropdown {
+    width: 80%;
+  }
+}

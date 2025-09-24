@@ -1,0 +1,17 @@
+.black-text {
+    color: black;
+    font-weight: bold;
+  }
+
+.narrow-sidebar {
+    width: 20px;
+    /* Additional styling if needed */
+  }
+
+
+.custom-navbar {
+    width: 110%; /* Adjust the width as needed */
+    margin: 0 auto; /* Center the Navbar */
+  }
+  
+  

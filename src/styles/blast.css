@@ -1,0 +1,81 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #8bc34a; /* Matching the green color in your image */
+  padding: 10px;
+  color: rgb(24, 81, 12);
+  text-align: center;
+  max-height: 223px;
+}
+.header-blast {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* background-color: #fafcf8; Matching the green color in your image */
+  padding: 10px;
+  color: rgb(24, 81, 12);
+  text-align: center;
+  max-height: 187px;
+}
+.header-logo img {
+  width: 80px; /* Adjust based on the logo size */
+  height: auto;
+}
+
+.header-title {
+  flex: 1;
+  margin: 0 20px;
+}
+
+.header-title h1 {
+  margin: 0;
+  font-size: 1.8em;
+}
+
+.header-title h2 {
+  margin: 5px 0;
+  font-size: 1.2em;
+}
+
+.header-title h3 {
+  margin: 5px 0;
+  font-size: 1em;
+  font-style: italic;
+}
+
+.upload-section {
+  margin-left: 31%;
+  margin-top: 3%;
+}
+.table-blast {
+  margin-left: -40%;
+  max-width: 150%;
+}
+@media (max-width: 768px) {
+  .header-title h1 {
+    font-size: 1.2em;
+  }
+
+  .header-title h2,
+  .header-title h3 {
+    font-size: 0.9em;
+  }
+
+  .header-logo img {
+    width: 60px;
+  }
+}
+.table-blast {
+  max-width: 1000px;
+  max-height: 250px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}

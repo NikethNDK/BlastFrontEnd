@@ -1,0 +1,43 @@
+body,
+html {
+  /* overflow-y: hidden; */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* background-color: #f8f9fa; Matching the green color in your image */
+  padding: 10px;
+  color:  #f8f9fa;
+  text-align: center;
+  max-height: 100px;
+}
+
+.header-logo img {
+  width: 80px; /* Adjust based on the logo size */
+  height: auto;
+  margin-top: 10px;
+  background-color:"#e1dede"
+}
+
+.header-title {
+  flex: 1;
+  margin: 0 20px;
+}
+
+.header-title h1 {
+  margin: 0;
+  font-size: 1.8em;
+}
+
+.header-title h2 {
+  margin: 5px 0;
+  font-size: 1.2em;
+}
+
+.header-title h3 {
+  margin: 5px 0;
+  font-size: 1em;
+  font-style: italic;
+}

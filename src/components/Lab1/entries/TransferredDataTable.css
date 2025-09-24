@@ -1,0 +1,309 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.table-container {
+  padding: 20px;
+  margin: auto;
+  max-width: 100%;
+  overflow-x: auto; /* Enables horizontal scroll for smaller screens */
+}
+
+.table-container h2 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.total-summary {
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Table wrapper */
+.table-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Styled table */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 12px;
+  border: 1px solid #ccc;
+}
+
+.styled-table th {
+  background-color: #c5ea31;
+  color: #000;
+  font-weight: bold;
+}
+
+.styled-table td {
+  background-color: #fff;
+}
+
+/* Highlighted rows */
+.highlight-row {
+  background-color: #f9f9f9;
+}
+
+/* Filters */
+.styled-table input[type="text"],
+.styled-table input[type="date"] {
+  width: calc(100% - 0px);
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+/* Download button */
+button {
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  background-color: #198754;
+  color: #fff;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #145f3b;
+}
+
+/* Responsive design */
+@media screen and (max-width: 768px) {
+  .table-container {
+    padding: 10px;
+  }
+
+  .styled-table th,
+  .styled-table td {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+.table-container {
+  width: 75%; /* Ensure it spans the entire available width */
+  max-width: 100%; /* Allow it to expand fully */
+  margin: 0 auto;
+  padding: 20px 50px; /* Adding 50px padding on both left and right */
+  background-color: #f4f4f9;
+  border-radius: 8px;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.download-btn {
+  display: block;
+  width: 200px;
+  margin: 10px auto;
+  padding: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.download-btn:hover {
+  background-color: #45a049;
+}
+
+/* Table styling */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.styled-table {
+  width: 100%; /* Set table width to 100% to fit container */
+  max-width: 100%; /* Ensure it can fit within the container */
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 400px; /* Minimum height increase */
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 1px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.styled-table th {
+  background-color: #4caf50;
+  color: white;
+}
+
+.styled-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.styled-table td {
+  word-wrap: break-word;
+}
+
+
+
+
+/* Table container styling */
+
+.table-container {
+  width: 75%; /* Ensure it spans the entire available width */
+  max-width: 100%; /* Allow it to expand fully */
+  margin: 0 auto;
+  padding: 20px 50px; /* Adding 50px padding on both left and right */
+  background-color: #f4f4f9;
+  border-radius: 8px;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.download-btn {
+  display: block;
+  width: 200px;
+  margin: 10px auto;
+  padding: 10px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.download-btn:hover {
+  background-color: #45a049;
+}
+
+/* Table styling */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.styled-table {
+  width: 100%; /* Set table width to 100% to fit container */
+  max-width: 100%; /* Ensure it can fit within the container */
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 400px; /* Minimum height increase */
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 1px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-size: 18px;
+  font-family: Arial, sans-serif;
+}
+
+.styled-table th {
+  background-color: #4caf50;
+  color: white;
+}
+
+.styled-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.styled-table td {
+  word-wrap: break-word;
+}
+
+/* Responsive styling */
+@media screen and (max-width: 768px) {
+  .styled-table th,
+  .styled-table td {
+    padding: 10px;
+    font-size: 12px;
+  }
+
+  .download-btn {
+    width: 150px;
+  }
+
+  .styled-table {
+    width: 100%; /* Ensure table fits within smaller screens */
+  }
+}
+
+/* Ensure table wrapper has a fixed height with vertical scrolling */
+.table-wrapper {
+  max-height: 370px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #ddd;
+}
+
+/* Remove conflicting max-width */
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 100px; /* Ensure some minimum height */
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+}
+
+.styled-table th {
+  background-color: #4caf50;
+  color: white;
+}
+
+.styled-table tr:hover {
+  background-color: #f1f1f1;
+}

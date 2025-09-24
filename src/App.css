@@ -1,0 +1,39 @@
+body,
+html {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  /* overflow-y: hidden; */
+}
+
+.app-logo {
+  padding-left: 50px;
+}
+
+.sidebar {
+  display: flex;
+  float: left;
+}
+
+.side-container {
+  padding-top: 30px;
+}
+
+.side-row {
+  padding: 30px;
+}
+
+.react-bootstrap-table thead {
+  /* position: sticky; */
+  top: 0;
+  background-color: #333;
+  z-index: 1021;
+  color: white;
+}
+
+tr.highlight-new-row td {
+  /* background-color: #ff4d4d !important; */
+  color: red !important;
+  font-weight: bold !important;
+}

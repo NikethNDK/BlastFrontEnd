@@ -1,0 +1,9 @@
+.active-link {
+    color: blue; /* Change color to blue when active */
+    text-decoration: underline; /* Add underline when active */
+  }
+  
+  .active-link:hover {
+    color: green; /* Change color to green on hover */
+  }
+  

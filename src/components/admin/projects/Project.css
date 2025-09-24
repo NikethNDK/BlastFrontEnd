@@ -1,0 +1,10 @@
+/* In your CSS file or component */
+.table-heading {
+    background-color: #007bff; /* Example color */
+    color: #fff; /* Text color */
+}
+
+.table-data {
+    background-color: #f8f9fa; /* Example color */
+    /* You can adjust other styles like text color, padding, etc. */
+}
