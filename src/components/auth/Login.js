@@ -108,7 +108,7 @@ function Login() {
           console.log("User Labs:", userLabs);
 
           switch (userRole) {
-            case "1":
+            case "Admin":
               return <AdminApp userDetails={userDetails}/>;
 
             case "Manager":
@@ -121,7 +121,7 @@ function Login() {
                 return <ManagerAccessApp userId={userId} userDetails={userDetails}/>;
               }
 
-            case "2":
+            case "Lab Assistant":
               if (
                 Array.isArray(userLabs) &&
                 userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab))

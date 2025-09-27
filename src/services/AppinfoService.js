@@ -398,7 +398,7 @@ export function addIssueApi(researcher) {
 
 export function getLoginApi() {
   return axios
-    .get("http://127.0.0.1:8000/view_login/")
+    .get("http://127.0.0.1:8000/view_login")
     .then((response) => response.data);
 }
 
@@ -943,16 +943,16 @@ export const updateDesignationApi = async (designationId, designationName) => {
   }
 };
 
-const fetchRole = async (roleId) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/roles/${roleId}/`);
-    console.log(response.data); // Handle the role data
-  } catch (error) {
-    console.error(error.response?.data || "An error occurred");
-  }
-};
+// const fetchRole = async (roleId) => {
+//   try {
+//     const response = await axios.get(`${BASE_URL}/roles/${roleId}/`);
+//     console.log(response.data); // Handle the role data
+//   } catch (error) {
+//     console.error(error.response?.data || "An error occurred");
+//   }
+// };
 
-fetchRole(1);
+// fetchRole(1);
 
 export const API_ENDPOINTS = {
   REGISTRATION_LIST: `${BASE_URL}/registrations/`,

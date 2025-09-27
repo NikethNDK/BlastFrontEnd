@@ -101,9 +101,9 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
       // await addEmpRegApi(empData);
       // console.log("Employee Details Added");
 
-      addEmpRegApi(empData)
-        .then(() => console.log("Employee Details Added"))
-        .catch((error) => console.log("Failed to Add Employee", error));
+      // addEmpRegApi(empData)
+      //   .then(() => console.log("Employee Details Added"))
+      //   .catch((error) => console.log("Failed to Add Employee", error));
 
       await addLoginApi(requestData);
       alert("Registered Successfully");
