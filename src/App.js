@@ -20,23 +20,13 @@ import AddDNA from "./repository/dna/addDna/AddDna";
 import MainPage from "./repository/landing";
 import Comparision from "../src/blast/comparision";
 function App() {
-  useEffect(() => {
-    setInterval(() => {
-      const before = new Date().getTime();
-      debugger; // This triggers DevTools
-      const after = new Date().getTime();
-      if (after - before > 100) {
-        alert("DevTools detected! Please close it.");
-        window.location.reload(); // Optional: Refresh the page
-      }
-    }, 1000);
-  }, []);
+  // Removed debugger code for production
   return (
     <BrowserRouter>
       <Navigation />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route exact path="/home" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/appinfo" element={<Appinfo />} />
         <Route path="/appinfo_manage" element={<Manage />} />
 
@@ -50,7 +40,7 @@ function App() {
         <Route path="/inventory_manage" element={<InventoryManage />} />
 
         {/* <Route path="/register" element={<Register />} /> */}
-        <Route path="/" element={<MainPage />} />
+        <Route path="/main" element={<MainPage />} />
         <Route path="/dna" element={<DnaManage />} />
         <Route path="/common_name" element={<CommonNameDna />} />
         <Route path="/scientific_name" element={<ScientificNameDna />} />
