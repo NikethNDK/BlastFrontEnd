@@ -1,3 +1,21 @@
 .custom-border {
     border: 1px solid black;
 }
+
+.modal-xl {
+    width: 90vh;
+}
+
+.modal-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--color-background-light);
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    z-index: 10001;
+    border-radius: 12px;
+    /* width: 400px;  */
+    max-width: 90%;
+}

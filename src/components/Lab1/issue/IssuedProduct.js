@@ -69,6 +69,30 @@ const IssuedProduct = ({
 
   // State to hold temporary items
   const [tempItems, setTempItems] = useState([]);
+  
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+
+  // --- Modal Handlers ---
+  const handleShow = () => setShowModal(true);
+  const handleClose = () => {
+    // Reset form state when closing the modal
+    setSelectedItemCode(null);
+    setSelectedItemName(null);
+    setSelectedNames(null);
+    setSelectedLocations(null);
+    setSelectedCodes(null);
+    setSelectedProject("");
+    setMasterType("");
+    setExpiryDate("");
+    setQuantityIssued("");
+    setSelectedItemDetails(null);
+    setErrorMessages({});
+    if (formRef.current) {
+      formRef.current.reset();
+    }
+    setShowModal(false);
+  };
 
   useEffect(() => {
     getManufacturersApi().then((data) => {
@@ -97,16 +121,6 @@ const IssuedProduct = ({
     };
     fetchMasterTypes();
   }, []);
-
-  // const handleProjectChange = (selectedOption) => {
-  //   setSelectedProject(selectedOption);
-  //   const project = projects.find(
-  //     (proj) => proj.value === selectedOption.value
-  //   );
-  //   if (project) {
-  //     setSelectedCodes({ value: project.code, label: project.code });
-  //   }
-  // };
 
   const handleProjectChange = (event) => {
     const selectedValue = event.target.value;
@@ -259,58 +273,9 @@ const IssuedProduct = ({
     setSelectedItemDetails(selectedItem.details);
   };
 
-  // const handleAdd = () => {
-  //   const formData = new FormData(formRef.current);
-  //   const newErrorMessages = { ...errorMessages };
-
-  //   // Check if any required field is empty
-  //   const emptyFields = ["quantityIssued", "remarks"].filter((field) => {
-  //     if (!formData.get(field)) {
-  //       newErrorMessages[field] = `Please fill ${field}`;
-  //       return true;
-  //     }
-  //     return false;
-  //   });
-
-  //   if (emptyFields.length > 0) {
-  //     setErrorMessages(newErrorMessages);
-  //     return; // Exit the function if any field is empty
-  //   }
-
-  //   const issueData = {
-  //     c_id: selectedItemCode.value,
-  //     quantity_issued: formData.get("quantityIssued"),
-  //     issued_to: selectedNames?.value || "",
-  //     project_code: selectedCodes.value,
-  //     researcher_name: selectedNames.value,
-  //     remarks: formData.get("remarks"),
-  //     instruction_specification: formData.get("issuedTo"),
-  //     location: selectedLocations ? selectedLocations.label : "",
-  //     master_type: masterType ? masterType : "",
-  //     item_name: selectedItemName ? selectedItemName.label : "",
-  //     item_code: selectedItemCode ? selectedItemCode.label : "",
-  //   };
-
-  //   addTempItemIssueApi(issueData)
-  //     .then((result) => {
-  //       window.alert("Issue added successfully");
-  //       setSelectedItem(null); // Clear selected item
-  //       setSelectedItemCode(null);
-  //       setSelectedItemName(null);
-  //       setSelectedNames(null);
-  //       setSelectedLocations(null);
-  //       setSelectedCodes(null);
-  //       setMasterType("");
-  //       setSelectedProject(null);
-  //       // ✅ Reset form fields
-  //       formRef.current.reset();
-  //     })
-  //     .catch((error) => {
-  //       console.error("Failed to Add Inventory Data", error); // Log the error to the console
-  //       alert("Failed to Add Inventory. Check console for details.");
-  //     });
-  // };
-  const handleAdd = () => {
+  const handleAdd = (e) => {
+    e.preventDefault();
+    
     const formData = new FormData(formRef.current);
     const newErrors = {};
     let hasError = false;
@@ -338,12 +303,17 @@ const IssuedProduct = ({
     }
 
     if (!selectedNames) {
-      newErrors.issuedTo = "Please fill this field ";
+      newErrors.issuedTo = "Please fill this field";
       hasError = true;
     }
 
     if (!selectedCodes) {
       newErrors.projectCode = "Please fill this field";
+      hasError = true;
+    }
+
+    if (!masterType) {
+      newErrors.masterType = "Please select a master type";
       hasError = true;
     }
 
@@ -370,22 +340,14 @@ const IssuedProduct = ({
     addTempItemIssueApi(issueData)
       .then(() => {
         window.alert("Issue added successfully");
-        formRef.current.reset();
-        setSelectedItem(null);
-        setSelectedItemCode(null);
-        setSelectedItemName(null);
-        setSelectedNames(null);
-        setSelectedLocations(null);
-        setSelectedCodes(null);
-        setMasterType("");
-        setSelectedProject(null);
-        setErrorMessages({}); // Clear errors
+        handleClose(); // Close modal and reset form
       })
       .catch((error) => {
         console.error("Failed to Add Inventory Data", error);
         alert("Failed to Add Inventory. Check console for details.");
       });
   };
+
   const handleTransferData = async () => {
     try {
       const response = await fetch("http://localhost:8000/transfer/issue/", {
@@ -405,402 +367,386 @@ const IssuedProduct = ({
   return (
     <div style={{ marginTop: "1px", width: "100%" }}>
       <div>
-        <h2 style={{ textAlign: "center", color: "black" }}>Add Issue</h2>
-        <Button
-          variant="primary"
-          onClick={handleAdd}
-          style={{
-            width: "88px",
-            marginLeft: "71%",
-            marginTop: "-5%",
-          }}
-        >
-          Add
-        </Button>
-        <Button
-          onClick={handleTransferData}
-          style={{ marginTop: "-9%", marginLeft: "62%" }}
-        >
-          Submit
-        </Button>
+        <h1 style={{
+    fontSize: "var(--lab-text-3xl, 1.8rem)",
+    fontWeight: 700,
+    color: "var(--lab-neutral-800, #1e293b)",
+    margin: 0,
+    textAlign: "left",
+  }}>
+          ADD ISSUE
+          <Button
+            variant="primary"
+            onClick={handleShow}
+            style={{
+              width: "70px",
+              float: "right",
+              marginLeft: "8px",
+            }}
+          >
+            Add
+          </Button>
+          <Button
+            onClick={handleTransferData}
+            style={{ float: "right" }}
+          >
+            Submit
+          </Button>
+        </h1>
       </div>
       <p></p>
 
-      <div>
-        <Row>
-          <Col sm={12}>
-            <Form onSubmit={handleAdd} ref={formRef}>
-              <Row>
-                <Col>
-                  <Form.Group controlId="masterType">
-                    <Form.Label style={{ marginRight: "8px" }}>
-                      Master Type
-                    </Form.Label>
-                    <select
-                      value={masterType}
-                      className="form-control"
-                      style={{
-                        borderColor: errorMessages.masterType ? "red" : "black",
-                      }}
-                      onChange={(e) => {
-                        setMasterType(e.target.value);
-                        if (errorMessages.masterType && e.target.value) {
-                          setErrorMessages((prev) => ({
-                            ...prev,
-                            masterType: "",
-                          }));
-                        }
-                      }}
-                    >
-                      <option value="">Select Master Type</option>
-                      {masterTypes.map((type) => (
-                        <option key={type.id} value={type.name}>
-                          {type.name}
-                        </option>
-                      ))}
-                    </select>
-                    {errorMessages.masterType && (
-                      <small style={{ color: "red" }}>
-                        {errorMessages.masterType}
-                      </small>
-                    )}
-                  </Form.Group>
-                </Col>
-
-                <Col>
-                  <Form.Group controlId="itemCode">
-                    <Form.Label>Item Code</Form.Label>
-                    <Select
-                      options={itemsCodes.map((item) => ({
-                        value: item.value,
-                        label: item.label,
-                      }))}
-                      value={selectedItemCode}
-                      onChange={(selected) => {
-                        handleItemCodeChange(selected);
-                        if (errorMessages.itemCode && selected) {
-                          setErrorMessages((prev) => ({
-                            ...prev,
-                            itemCode: "",
-                          }));
-                        }
-                      }}
-                      placeholder="Select Item Code"
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          borderColor: errorMessages.itemCode ? "red" : "black",
-                        }),
-                      }}
-                    />
-                    {errorMessages.itemCode && (
-                      <small style={{ color: "red" }}>
-                        {errorMessages.itemCode}
-                      </small>
-                    )}
-                  </Form.Group>
-                </Col>
-
-                <Col>
-                  <Form.Group controlId="itemName">
-                    <Form.Label>Item Name</Form.Label>
-                    <Select
-                      options={itemsNames.map((item) => ({
-                        value: item.value,
-                        label: item.label,
-                      }))}
-                      value={selectedItemName}
-                      onChange={(selected) => {
-                        setSelectedItemName(selected);
-                        if (errorMessages.itemName && selected) {
-                          setErrorMessages((prev) => ({
-                            ...prev,
-                            itemName: "",
-                          }));
-                        }
-                      }}
-                      placeholder="Select Item Name"
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          borderColor: errorMessages.itemName ? "red" : "black",
-                        }),
-                      }}
-                    />
-                    {errorMessages.itemName && (
-                      <small style={{ color: "red" }}>
-                        {errorMessages.itemName}
-                      </small>
-                    )}
-                  </Form.Group>
-                </Col>
-              </Row>
-
-              <p></p>
-
-              {/* <Row>
-                <Form.Group controlId="quantityIssued">
-                  <Form.Label>Quantity Issued</Form.Label>
-                  <Form.Control
-                    type="number"
-                    name="quantityIssued"
-                    value={quantityIssued}
-                    onChange={(e) => {
-                      const enteredValue = e.target.value
-                        ? parseInt(e.target.value, 10)
-                        : "";
-                      const maxQuantity =
-                        selectedItemDetails?.quantityIssued || 0;
-
-                      if (enteredValue > maxQuantity) {
-                        setQuantityIssued(maxQuantity);
-                      } else if (enteredValue < 0) {
-                        setQuantityIssued(0);
-                      } else {
-                        setQuantityIssued(enteredValue);
-                      }
-                    }}
-                    min="0"
-                    max={selectedItemDetails?.quantityIssued || 0}
-                    className="custom-border"
-                    style={{ borderColor: "black" }}
-                  />
-                </Form.Group>
-              </Row> */}
-              <p></p>
-
-              <Row>
-                <Col>
-                  <Form.Group controlId="project">
-                    <Form.Label>Project Name</Form.Label>
-                    <Form.Control
-                      as="select"
-                      name="project"
-                      required
-                      style={{ border: "1px solid black" }}
-                      value={selectedProject}
-                      onChange={handleProjectChange}
-                    >
-                      <option value="">Select Project</option>
-                      {projects.map((proj) => (
-                        <option key={proj.value} value={proj.value}>
-                          {proj.label}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                  {/* <Form.Group controlId="project">
-                    <Form.Label>Project Name</Form.Label>
-                    <Form.Control
-                      as="select"
-                      name="project"
-                      required
-                      value={selectedProject?.value || ""}
-                      onChange={(e) => {
-                        const newValue = {
-                          value: e.target.value,
-                          label: e.target.options[e.target.selectedIndex].text,
-                        };
-
-                        handleProjectChange(newValue);
-
-                        // ✅ Clear error if user selects a valid project
-                        if (errorMessages.project && newValue.value) {
-                          setErrorMessages((prev) => ({
-                            ...prev,
-                            project: "",
-                          }));
-                        }
-                      }}
-                      style={{
-                        border: `1px solid ${
-                          errorMessages.project ? "red" : "black"
-                        }`,
-                      }}
-                    >
-                      <option value="">Select Project</option>
-                      {projects.map((proj) => (
-                        <option key={proj.value} value={proj.value}>
-                          {proj.label}
-                        </option>
-                      ))}
-                    </Form.Control>
-                    {errorMessages.project && (
-                      <small style={{ color: "red" }}>
-                        {errorMessages.project}
-                      </small>
-                    )}
-                  </Form.Group> */}
-                </Col>
-                <Col>
-                  <Form.Group controlId="projectCode">
-                    <Form.Label>Project Code</Form.Label>
-                    <Select
-                      value={selectedCodes}
-                      placeholder="Select Project Code"
-                      onChange={handleProjectCodeChange}
-                      options={projects.map((proj) => ({
-                        value: proj.code,
-                        label: proj.code,
-                      }))}
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          borderColor: "black",
-                        }),
-                      }}
-                    />
-                  </Form.Group>
-                </Col>
-
-                <Col>
-                  <Form.Group controlId="researcherName">
-                    <Form.Label>Issued to</Form.Label>
-                    <Select
-                      options={resNames}
-                      value={selectedNames}
-                      onChange={(selectedOption) => {
-                        setSelectedNames(selectedOption);
-
-                        // ✅ Clear error if user selects a valid option
-                        if (errorMessages.researcherName && selectedOption) {
-                          setErrorMessages((prev) => ({
-                            ...prev,
-                            researcherName: "",
-                          }));
-                        }
-                      }}
-                      placeholder="Select Researcher Name"
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          borderColor: errorMessages.researcherName
-                            ? "red"
-                            : "black", // Highlight red if error
-                        }),
-                      }}
-                    />
-                  </Form.Group>
-                  {errorMessages.researcherName && (
-                    <small style={{ color: "red" }}>
-                      {errorMessages.researcherName}
-                    </small> // Show error message below the field
-                  )}
-                </Col>
-              </Row>
-              <p></p>
-              <Row>
-                <Col>
-                  <Form.Group controlId="expiryDate">
-                    <Form.Label>Expiry Date</Form.Label>
-                    <Form.Control
-                      type="date"
-                      name="expiryDate"
-                      required
-                      value={expiryDate}
-                      className="custom-border"
-                      min={new Date().toISOString().split("T")[0]} // ✅ Set today's date as minimum
-                      onChange={(e) => {
-                        setExpiryDate(e.target.value);
-
-                        // ✅ Clear error message on valid input
-                        if (errorMessages.expiryDate && e.target.value) {
-                          setErrorMessages((prev) => ({
-                            ...prev,
-                            expiryDate: "",
-                          }));
-                        }
-                      }}
-                      style={{
-                        border: `1px solid ${
-                          errorMessages.expiryDate ? "red" : "black"
-                        }`,
-                      }}
-                    />
-                  </Form.Group>
-                  {errorMessages.expiryDate && (
-                    <small style={{ color: "red" }}>
-                      {errorMessages.expiryDate}
-                    </small>
-                  )}
-                </Col>
-
-                <Col>
-                  {" "}
-                  <Form.Group controlId="quantityIssued">
-                    <Form.Label>Quantity Issued</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="quantityIssued"
-                      value={quantityIssued}
-                      onChange={(e) => {
-                        const enteredValue = e.target.value
-                          ? parseInt(e.target.value, 10)
-                          : "";
-                        const maxQuantity =
-                          selectedItemDetails?.quantityIssued || 0;
-
-                        if (enteredValue > maxQuantity) {
-                          setQuantityIssued(maxQuantity);
-                        } else if (enteredValue < 0) {
-                          setQuantityIssued(0);
-                        } else {
-                          setQuantityIssued(enteredValue);
-                        }
-                        if (
-                          errorMessages.quantityIssued &&
-                          enteredValue !== ""
-                        ) {
-                          setErrorMessages((prev) => ({
-                            ...prev,
-                            quantityIssued: "",
-                          }));
-                        }
-                      }}
-                      min="0"
-                      max={selectedItemDetails?.quantityIssued || 0}
-                      className="custom-border"
-                      style={{ borderColor: "black" }}
-                    />
-                    {errorMessages.quantityIssued && (
-                      <small style={{ color: "red" }}>
-                        {errorMessages.quantityIssued}
-                      </small>
-                    )}
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="issuedTo">
-                    <Form.Label>Instruction and Specification</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="issuedTo"
-                      required
-                      placeholder=""
-                      className="custom-border"
-                    />
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="remarks">
-                    <Form.Label>Remarks</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="remarks"
-                      required
-                      placeholder=""
-                      className="custom-border"
-                    />
-                  </Form.Group>
-                </Col>
-              </Row>
-            </Form>
-          </Col>
-        </Row>
-      </div>
       <div style={{ paddingTop: "10px" }}>
         <TempIssueTable tempItems={tempItems} />
       </div>
+
+      {/* --- Modal Component for Add Issue Form --- */}
+      <Modal show={showModal} onHide={handleClose} size="xl" scrollable className="modal-xl">
+        <Modal.Header closeButton>
+          <Modal.Title>Add Issue Item</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
+            <Col sm={12}>
+              <Form ref={formRef}>
+                <Row>
+                  <Col>
+                    <Form.Group controlId="masterType">
+                      <Form.Label style={{ marginRight: "8px" }}>
+                        Master Type
+                      </Form.Label>
+                      <select
+                        value={masterType}
+                        className="form-control"
+                        style={{
+                          borderColor: errorMessages.masterType ? "red" : "black",
+                        }}
+                        onChange={(e) => {
+                          setMasterType(e.target.value);
+                          if (errorMessages.masterType && e.target.value) {
+                            setErrorMessages((prev) => ({
+                              ...prev,
+                              masterType: "",
+                            }));
+                          }
+                        }}
+                      >
+                        <option value="">Select Master Type</option>
+                        {masterTypes.map((type) => (
+                          <option key={type.id} value={type.name}>
+                            {type.name}
+                          </option>
+                        ))}
+                      </select>
+                      {errorMessages.masterType && (
+                        <span style={{ color: "red", fontSize: "0.85rem" }}>
+                          {errorMessages.masterType}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+
+                  <Col>
+                    <Form.Group controlId="itemCode">
+                      <Form.Label>Item Code</Form.Label>
+                      <Select
+                        options={itemsCodes.map((item) => ({
+                          value: item.value,
+                          label: item.label,
+                        }))}
+                        value={selectedItemCode}
+                        onChange={(selected) => {
+                          handleItemCodeChange(selected);
+                          if (errorMessages.itemCode && selected) {
+                            setErrorMessages((prev) => ({
+                              ...prev,
+                              itemCode: "",
+                            }));
+                          }
+                        }}
+                        placeholder="Select Item Code"
+                        styles={{
+                          control: (provided) => ({
+                            ...provided,
+                            borderColor: errorMessages.itemCode ? "red" : "black",
+                          }),
+                        }}
+                      />
+                      {errorMessages.itemCode && (
+                        <span style={{ color: "red", fontSize: "0.85rem" }}>
+                          {errorMessages.itemCode}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+
+                  <Col>
+                    <Form.Group controlId="itemName">
+                      <Form.Label>Item Name</Form.Label>
+                      <Select
+                        options={itemsNames.map((item) => ({
+                          value: item.value,
+                          label: item.label,
+                        }))}
+                        value={selectedItemName}
+                        onChange={(selected) => {
+                          setSelectedItemName(selected);
+                          if (errorMessages.itemName && selected) {
+                            setErrorMessages((prev) => ({
+                              ...prev,
+                              itemName: "",
+                            }));
+                          }
+                        }}
+                        placeholder="Select Item Name"
+                        styles={{
+                          control: (provided) => ({
+                            ...provided,
+                            borderColor: errorMessages.itemName ? "red" : "black",
+                          }),
+                        }}
+                      />
+                      {errorMessages.itemName && (
+                        <span style={{ color: "red", fontSize: "0.85rem" }}>
+                          {errorMessages.itemName}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <p></p>
+
+                <Row>
+                  <Col>
+                    <Form.Group controlId="project">
+                      <Form.Label>Project Name</Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="project"
+                        required
+                        style={{ border: "1px solid black" }}
+                        value={selectedProject}
+                        onChange={handleProjectChange}
+                      >
+                        <option value="">Select Project</option>
+                        {projects.map((proj) => (
+                          <option key={proj.value} value={proj.value}>
+                            {proj.label}
+                          </option>
+                        ))}
+                      </Form.Control>
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group controlId="projectCode">
+                      <Form.Label>Project Code</Form.Label>
+                      <Select
+                        value={selectedCodes}
+                        placeholder="Select Project Code"
+                        onChange={(option) => {
+                          handleProjectCodeChange(option);
+                          if (errorMessages.projectCode && option) {
+                            setErrorMessages((prev) => ({
+                              ...prev,
+                              projectCode: "",
+                            }));
+                          }
+                        }}
+                        options={projects.map((proj) => ({
+                          value: proj.code,
+                          label: proj.code,
+                        }))}
+                        styles={{
+                          control: (provided) => ({
+                            ...provided,
+                            borderColor: errorMessages.projectCode ? "red" : "black",
+                          }),
+                        }}
+                      />
+                      {errorMessages.projectCode && (
+                        <span style={{ color: "red", fontSize: "0.85rem" }}>
+                          {errorMessages.projectCode}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+
+                  <Col>
+                    <Form.Group controlId="researcherName">
+                      <Form.Label>Issued to</Form.Label>
+                      <Select
+                        options={resNames}
+                        value={selectedNames}
+                        onChange={(selectedOption) => {
+                          setSelectedNames(selectedOption);
+
+                          if (errorMessages.researcherName && selectedOption) {
+                            setErrorMessages((prev) => ({
+                              ...prev,
+                              researcherName: "",
+                            }));
+                          }
+                        }}
+                        placeholder="Select Researcher Name"
+                        styles={{
+                          control: (provided) => ({
+                            ...provided,
+                            borderColor: errorMessages.researcherName
+                              ? "red"
+                              : "black",
+                          }),
+                        }}
+                      />
+                      {errorMessages.researcherName && (
+                        <span style={{ color: "red", fontSize: "0.85rem" }}>
+                          {errorMessages.researcherName}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <p></p>
+
+                <Row>
+                  <Col>
+                    <Form.Group controlId="expiryDate">
+                      <Form.Label>Expiry Date</Form.Label>
+                      <Form.Control
+                        type="date"
+                        name="expiryDate"
+                        required
+                        value={expiryDate}
+                        className="custom-border"
+                        min={new Date().toISOString().split("T")[0]}
+                        onChange={(e) => {
+                          setExpiryDate(e.target.value);
+
+                          if (errorMessages.expiryDate && e.target.value) {
+                            setErrorMessages((prev) => ({
+                              ...prev,
+                              expiryDate: "",
+                            }));
+                          }
+                        }}
+                        style={{
+                          border: `1px solid ${
+                            errorMessages.expiryDate ? "red" : "black"
+                          }`,
+                        }}
+                      />
+                      {errorMessages.expiryDate && (
+                        <span style={{ color: "red", fontSize: "0.85rem" }}>
+                          {errorMessages.expiryDate}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+
+                  <Col>
+                    <Form.Group controlId="quantityIssued">
+                      <Form.Label>Quantity Issued</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="quantityIssued"
+                        value={quantityIssued}
+                        onChange={(e) => {
+                          const enteredValue = e.target.value
+                            ? parseInt(e.target.value, 10)
+                            : "";
+                          const maxQuantity =
+                            selectedItemDetails?.quantityIssued || 0;
+
+                          if (enteredValue > maxQuantity) {
+                            setQuantityIssued(maxQuantity);
+                          } else if (enteredValue < 0) {
+                            setQuantityIssued(0);
+                          } else {
+                            setQuantityIssued(enteredValue);
+                          }
+                          if (
+                            errorMessages.quantityIssued &&
+                            enteredValue !== ""
+                          ) {
+                            setErrorMessages((prev) => ({
+                              ...prev,
+                              quantityIssued: "",
+                            }));
+                          }
+                        }}
+                        min="0"
+                        max={selectedItemDetails?.quantityIssued || 0}
+                        className="custom-border"
+                        style={{ 
+                          borderColor: errorMessages.quantityIssued ? "red" : "black" 
+                        }}
+                      />
+                      {errorMessages.quantityIssued && (
+                        <span style={{ color: "red", fontSize: "0.85rem" }}>
+                          {errorMessages.quantityIssued}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+
+                  <Col>
+                    <Form.Group controlId="issuedTo">
+                      <Form.Label>Instruction and Specification</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        name="issuedTo"
+                        required
+                        placeholder=""
+                        className="custom-border"
+                        style={{
+                          borderColor: errorMessages.issuedTo ? "red" : "black",
+                        }}
+                        onChange={() => setErrorMessages(prev => ({...prev, issuedTo: ""}))}
+                      />
+                      {errorMessages.issuedTo && (
+                        <span style={{ color: "red", fontSize: "0.85rem" }}>
+                          {errorMessages.issuedTo}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+
+                  <Col>
+                    <Form.Group controlId="remarks">
+                      <Form.Label>Remarks</Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        name="remarks"
+                        required
+                        placeholder=""
+                        className="custom-border"
+                        style={{
+                          borderColor: errorMessages.remarks ? "red" : "black",
+                        }}
+                        onChange={() => setErrorMessages(prev => ({...prev, remarks: ""}))}
+                      />
+                      {errorMessages.remarks && (
+                        <span style={{ color: "red", fontSize: "0.85rem" }}>
+                          {errorMessages.remarks}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </Form>
+            </Col>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" onClick={handleAdd}>
+            Add Item
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

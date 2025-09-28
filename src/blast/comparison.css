@@ -1,7 +1,27 @@
+:root {
+    --color-primary-green: #10b981; /* A friendly, confident green for actions (Success/Go) */
+    --color-primary-dark: #1f2937; /* Dark text/background for contrast */
+    --color-background-light: #f9fafb; /* Light background for the card */
+    --color-border-subtle: #d1d5db; /* Soft border color */
+    --color-focus-blue: #3b82f6; /* Standard focus/highlight color */
+    --color-error-red: #ef4444;
+    --color-header-warm: #d9e0e7; /* Soft, warm gray/blue for the header background */
+    --color-text-dark: #2c3e50; /* Deep charcoal for high contrast */
+    --color-border-strong: #bdbdbd; /* Stronger border for better definition */
+    --color-accent-green: #2ecc71; /* A pleasant, vibrant green for success/actions */
+    --color-hover-bright: #ecf0f1; /* Very light gray for clean hover */
+    --font-size-base: 0.9rem;
+}
+
 /* Header Component Styles */
 .header-blast {
   background: #e1dede;
-  height: 200px;
+  height: 160px;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
 }
 
 .header-title {
@@ -61,118 +81,382 @@
   margin-top: -17px;
 }
 
-.upload-section-wrapper {
-  background-color: rgb(197, 234, 49);
-}
-
-.upload-section {
+/* Main Container Layout */
+.blast-container {
   display: flex;
-  gap: 15px;
+  margin-top: 220px; /* Account for fixed header */
+  min-height: calc(100vh - 220px);
+  background-color: #f5f5f5;
 }
 
-.upload-section p {
-  margin-top: 14px;
+/* Sidebar will be styled in BlastSidebar component */
+.blast-sidebar {
+  width: 250px;
+  min-width: 250px;
+  background-color: #ffffff;
+  border-right: 1px solid #ddd;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 160px;
+  height: calc(100vh - 160px);
+  overflow-y: auto;
 }
 
-.upload-form {
-  margin-bottom: 20px;
-  display: flex;
-  margin-top: 14px;
+/* Main Content Area */
+.blast-main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-x: auto;
 }
 
-.upload-form .MuiButton-root {
-  margin-left: 10px;
+/* Upload Section */
+.blast-upload-card {
+    background-color: var(--color-background-light);
+    padding: 25px;
+    margin-bottom: 30px;
+    border-radius: 12px; /* Smoother corners */
+    border: 1px solid var(--color-border-subtle); /* A clean border */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* More subtle shadow */
+    transition: box-shadow 0.3s ease;
 }
 
+.blast-upload-card:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Header/Prompt (Replacing .upload-section) --- */
+.blast-header {
+    margin-bottom: 20px;
+}
+
+.blast-prompt {
+    margin: 0;
+    font-weight: 600; /* Bold the prompt slightly */
+    font-size: 1.1rem;
+    color: var(--color-primary-dark);
+}
+
+.format-highlight {
+    color: var(--color-focus-blue); /* Highlight the FASTA format */
+    font-weight: 700;
+}
+
+/* --- Form Controls (Replacing .upload-form) --- */
+.blast-form-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Increase gap for spacing */
+    flex-wrap: wrap;
+}
+
+/* --- File Input Styling --- */
+.file-input-style {
+    /* Hide the default file input text */
+    flex-grow: 1; /* Allow file input to take available space */
+    min-width: 250px;
+    
+    /* Custom styling to make the button visible and aligned */
+    padding: 10px;
+    border: 2px solid var(--color-border-subtle);
+    border-radius: 6px;
+    background-color: white;
+    font-size: 1rem;
+    color: var(--color-primary-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.file-input-style:hover {
+    border-color: var(--color-focus-blue);
+}
+
+/* Style the file input button portion for better visibility */
+.file-input-style::file-selector-button {
+    background-color: #e5e7eb;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-right: 15px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-primary-dark);
+    transition: background-color 0.2s ease;
+}
+
+.file-input-style:hover::file-selector-button {
+    background-color: #d1d5db;
+}
+
+/* --- Button Styling (MuiButton Override) --- */
+.run-blast-button.MuiButton-root {
+    background-color: var(--color-primary-green);
+    color: white;
+    text-transform: uppercase;
+    font-weight: 700;
+    padding: 10px 20px;
+    height: 40px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.4);
+    transition: all 0.2s ease;
+}
+
+.run-blast-button.MuiButton-root:hover {
+    background-color: #059669; /* Darker green on hover */
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.6);
+}
+
+.run-blast-button.Mui-disabled {
+    background-color: #9ca3af; /* Gray out when running */
+    color: #e5e7eb;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* --- Error Message --- */
+.error-message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    background-color: #fef2f2; /* Light red background for errors */
+    border: 1px solid var(--color-error-red);
+    color: var(--color-error-red);
+    font-weight: 500;
+}
+
+/* Results Header */
 .blast-results-header {
   display: flex;
-  margin-left: 44%;
-  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 10px;
 }
 
 .blast-results-header h4 {
-  text-align: center;
+  margin: 0;
+  color: #333;
+  font-family: 'Poppins', sans-serif;
 }
 
 .download-icon {
   cursor: pointer;
-  margin: 0 5px;
-  background-color: #1976d2;
-  height: 30px;
   color: white;
-  width: 30px;
   border-radius: 5px;
-  margin-left: 58%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
 }
 
+/* Loading Container */
 .loading-container {
   text-align: center;
-  margin-top: 20px;
+  margin: 40px 0;
+  padding: 20px;
 }
 
-.results-table-container {
-  margin: auto;
-  width: 73%;
-  border: 3px solid #ddd;
-  display: flex;
-  justify-content: center;
+.loading-container p {
+  margin-top: 10px;
+  color: #666;
 }
 
-.results-table-container.scrollable {
-  max-height: 195px;
-  overflow-y: auto;
-}
-
+/* User Details */
 .user-details {
   position: absolute;
-  left: 1350px;
-  top: 100px;
-  height: 100px;
+  right: 20px;
+  top: 180px;
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+  min-width: 200px;
+  z-index: 100;
 }
 
 .user-details p {
-  margin: 0;
-  margin-right: 100px;
-}
-
-.results-table {
+  margin: 5px 0;
   font-size: 14px;
-  width: 100%;
-  text-align: center;
+  color: #333;
 }
 
-.results-table thead {
-  background-color: rgb(197, 234, 49);
+.user-details p:first-child {
+  font-weight: bold;
+  color: #1976d2;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+  margin-bottom: 10px;
 }
 
-.results-table th {
-  font-size: 12px;
+/* Table Container */
+.results-table-container {
+    width: 100%;
+    margin-top: 25px;
+    border: 2px solid var(--color-border-strong); /* Stronger outer border */
+    border-radius: 10px; /* Slightly more rounded corners */
+    overflow: hidden;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* More pronounced shadow for depth */
+    background-color: white;
 }
 
-.results-table td {
-  font-size: 12px;
-  text-align: center;
+.results-table-container.scrollable {
+    max-height: 550px; /* Slightly taller scroll area */
+    overflow-y: auto;
 }
 
-.results-table tbody tr:nth-child(even) {
-  background-color: #f0f0f0;
+/* --- Table Style --- */
+.results-table.blast-results-style {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-base);
+    table-layout: auto;
+    min-width: 1200px;
 }
 
-.results-table tbody tr:nth-child(odd) {
-  background-color: white;
+/* --- Table Header (More Attractive & Readable) --- */
+.results-table.blast-results-style thead {
+    /* Warmer, more appealing header color */
+    background-color: var(--color-header-warm); 
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
+.table-header {
+    color: var(--color-text-dark);
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px; /* More padding for airiness */
+    font-size: 0.95rem; /* Largest font in the table */
+    font-weight: 700; 
+    border: 1px solid var(--color-border-strong); /* Stronger inner borders */
+    border-top: none; 
+    border-bottom: 3px solid var(--color-border-strong); /* Separator for header */
+    line-height: 1.3; /* Ensure header text doesn't look cramped */
+}
+
+.action-header {
+    width: 110px; /* Slightly wider actions column */
+}
+
+/* --- Table Cells --- */
+.table-cell {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px 8px;
+    border: 1px solid #e9e9e9; /* Light inner borders for less distraction */
+    font-size: var(--font-size-base);
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+    height: 45px; /* Increase row height for comfort */
+    color: var(--color-text-dark); /* Ensure text is dark and highly readable */
+}
+
+/* Specific styling for long text columns (Taxonomy) */
+.taxonomy-cell {
+    max-width: 220px;
+    white-space: normal;
+    text-align: left;
+    padding-left: 15px; /* Extra padding for titles */
+}
+
+/* Align numeric data to the right with bolding for importance */
+.number-cell {
+    text-align: right;
+    font-family: 'Georgia', serif; /* Use a classic serif font for numbers */
+    font-weight: 600;
+    max-width: 100px;
+    color: #34495e; /* Slightly different color for numeric data */
+}
+
+.e-value-cell {
+    font-size: 0.85rem; 
+}
+
+/* Row Striping and Hover (High Contrast) */
+.results-table.blast-results-style tbody tr:nth-child(even) {
+    background-color: #f7f7f7; /* High contrast stripe */
+}
+
+.results-table.blast-results-style tbody tr:nth-child(odd) {
+    background-color: white;
+}
+
+.results-table.blast-results-style tbody tr:hover {
+    background-color: var(--color-hover-bright); /* Very subtle, clean hover effect */
+    cursor: default;
+    box-shadow: inset 0 0 0 1px var(--color-accent-green); /* Thin green border on hover */
+}
+
+/* --- Action Icons --- */
 .action-icons {
-  text-align: center;
+  display: flex;
+    text-align: center;
+    justify-content: center ;
+    padding: 8px;
+    max-width: 110px;
 }
 
 .action-icons .icon {
-  cursor: pointer;
-  margin: 0 5px;
-  color: grey;
+    cursor: pointer;
+    height: 20px;
+    width: 20px;
+    margin: 0 10px; /* Increased margin for easier clicking */
+    color: #7f8c8d; /* Muted starting color */
+    transition: color 0.2s ease, transform 0.2s ease;
 }
 
-/* Column width classes */
-.col-width-5 { width: 5%; }
-.col-width-8 { width: 8%; }
-.col-width-10 { width: 10%; }
+.action-icons .icon:hover {
+    color: var(--color-accent-green); /* Action-oriented green on hover */
+    transform: scale(1.2); /* More noticeable hover effect */
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .user-details {
+    position: relative;
+    right: auto;
+    top: auto;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+  
+  .blast-container {
+    flex-direction: column;
+  }
+  
+  .blast-sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    top: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .blast-main-content {
+    padding: 10px;
+  }
+  
+  .upload-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .blast-results-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .results-table-container {
+    overflow-x: auto;
+  }
+  
+  .results-table th,
+  .results-table td {
+    min-width: 80px;
+    font-size: 11px;
+  }
+}

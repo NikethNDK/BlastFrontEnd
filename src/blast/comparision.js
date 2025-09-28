@@ -166,142 +166,142 @@ const Blast = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
 
   return (
     <>
+      {/* Fixed Header */}
       <header className="header-blast">
-        <Header/>
-        {/* <div className="header-logo">
-          <img src={TN_Transparent_Logo} alt="left Logo" />
-          <img src={leftLogo} alt="left Logo" />
-          <div>
-            <img src={AWIC_INTRANET} alt="Left Logo" />
-          </div>
-        </div>
-        <div className="header-title">
-          <h1>Advanced Institute for Wildlife Conservation</h1>
-          <div className="header-subtitle">
-            <h6>(RESEARCH, TRAINING AND EDUCATION)</h6>
-            <h4>Tamil Nadu Forest Department</h4>
-            <h5>Vandalur, Chennai - 600048.</h5>
-            <h5 className="header-navigation">
-              LABORATORY INFORMATION MANAGEMENT SYSTEM
-              <button
-                onClick={() => navigate("/")}
-                className="btn btn-primary"
-              >
-                Back
-              </button>
-              <button
-                onClick={() => navigate("/dna")}
-                className="btn btn-primary"
-              >
-                Repository
-              </button>
-            </h5>
-          </div>
-        </div>
-        <div className="header-logo header-logo-right">
-          <img src={AIWC_LIMS} alt="Right Logo" />
-          <img src={AIWC_DNA_sequencing} alt="AIWC_DNA_sequencing" />
-        </div> */}
+        <Header />
       </header>
-      
-      <div className="upload-section-wrapper">
-        <div className="upload-section">
-          <p>Upload query file (FASTA Format):</p>
-          <form onSubmit={handleSubmit} className="upload-form">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept=".txt,.fasta,.csv"
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              disabled={loading}
-            >
-              {loading ? "Running..." : "Run Blast"}
-            </Button>
-          </form>
-          {error && <Typography color="error">{error}</Typography>}
-        </div>
-      </div>
-      <BlastSidebar/>
-      
-      {/* Blast Results Section */}
-      <div className="blast-results-header">
-        <h4>Blast Results</h4>
-        <FiDownload
-          size={10}
-          className="download-icon"
-          onClick={handleDownloadSequences}
-          title="Download"
-        />
-      </div>
 
-      {loading && (
-        <div className="loading-container">
-          <CircularProgress />
-          <p>Processing...</p>
-        </div>
-      )}
-      
-      <p></p>
-      
-      <div className={`results-table-container ${results.length > 5 ? 'scrollable' : ''}`}>
-        <div className="user-details">
-          <p>User: {userDetails.name}</p>
-          <p>Lab: {userDetails.lab}</p>
-          <p>designation: {userDetails.designation}</p>
-        </div>
-        <Table
-          striped
-          bordered
-          hover
-          className="results-table"
-        >
-          <thead>
-            <tr>
-              <th className="col-width-5">Query ID</th>
-              <th className="col-width-10">AIWC reference ID</th>
-              <th className="col-width-10">Identity (%)</th>
-              <th className="col-width-10">Query Coverage (%)</th>
-              <th className="col-width-8">Length</th>
-              <th className="col-width-8">Query Length</th>
-              <th className="col-width-8">Subject Length</th>
-              <th className="col-width-8">Mismatches</th>
-              <th className="col-width-8">Gap Opens</th>
-              <th className="col-width-8">E-Value</th>
-              <th className="col-width-10">Class Name</th>
-              <th className="col-width-10">Common Name</th>
-              <th className="col-width-10">Scientific Name</th>
-              <th className="col-width-10">Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((row, index) => (
-              <tr key={index}>
-                {Object.values(row).map((cell, i) => (
-                  <td key={i}>{cell}</td>
+      {/* Main Container with Sidebar and Content */}
+      <div className="blast-container">
+        {/* Sidebar */}
+        <BlastSidebar userDetails={userDetails}/>
+
+        {/* Main Content Area */}
+        <div className="blast-main-content">
+          {/* Upload Section */}
+          <div className="blast-upload-card">
+              <div className="blast-header">
+                  <p className="blast-prompt">
+                      Upload your query sequence file (<span className="format-highlight">FASTA Format</span>):
+                  </p>
+              </div>
+              
+              <form onSubmit={handleSubmit} className="blast-form-controls">
+                  <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept=".txt,.fasta,.csv"
+                      className="file-input-style"
+                  />
+                  
+                  <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      disabled={loading}
+                      className="run-blast-button"
+                  >
+                      {loading ? "Running Sequence Search..." : "Run BLAST Search"}
+                  </Button>
+              </form>
+              
+              {error && <Typography color="error" className="error-message">{error}</Typography>}
+          </div>
+
+          {/* Results Header */}
+          <div className="blast-results-header">
+            <h4>Blast Results</h4>
+            <FiDownload
+              size={20}
+              className="download-icon"
+              onClick={handleDownloadSequences}
+              title="Download All Sequences"
+            />
+          </div>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="loading-container">
+              <CircularProgress />
+              <p>Processing...</p>
+            </div>
+          )}
+
+          {/* Results Table */}
+          {results.length > 0 && (
+    <div className={`results-table-container ${results.length > 10 ? 'scrollable' : ''}`}>
+        <table className="results-table blast-results-style">
+            <thead>
+                <tr>
+                    {/* Headers are static and don't require inline filters */}
+                    <th className="table-header">Query ID</th>
+                    <th className="table-header">AIWC Reference ID</th>
+                    <th className="table-header">Identity (%)</th>
+                    <th className="table-header">Query Coverage (%)</th>
+                    <th className="table-header">Length</th>
+                    <th className="table-header">Query Length</th>
+                    <th className="table-header">Subject Length</th>
+                    <th className="table-header">Mismatches</th>
+                    <th className="table-header">Gap Opens</th>
+                    <th className="table-header">E-Value</th>
+                    <th className="table-header">Class Name</th>
+                    <th className="table-header">Common Name</th>
+                    <th className="table-header">Scientific Name</th>
+                    <th className="table-header action-header">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {results.map((row, index) => (
+                    <tr key={index} className="data-row">
+                        {/* Assuming the results array is structured to match the headers */}
+                        {/* Note: You might need to adjust the Object.values(row) logic if 'row' is a plain array 
+                           and not an object that excludes the final 'Actions' column data. */}
+                        
+                        {/* Example structure assuming 'row' is an array [queryId, refId, identity, ...] */}
+                        <td className="table-cell">{row[0]}</td> 
+                        <td className="table-cell">{row[1]}</td> 
+                        <td className="table-cell number-cell">{row[2]}</td>
+                        <td className="table-cell number-cell">{row[3]}</td>
+                        <td className="table-cell number-cell">{row[4]}</td>
+                        <td className="table-cell number-cell">{row[5]}</td>
+                        <td className="table-cell number-cell">{row[6]}</td>
+                        <td className="table-cell number-cell">{row[7]}</td>
+                        <td className="table-cell number-cell">{row[8]}</td>
+                        <td className="table-cell number-cell e-value-cell">{row[9]}</td>
+                        <td className="table-cell taxonomy-cell">{row[10]}</td>
+                        <td className="table-cell taxonomy-cell">{row[11]}</td>
+                        <td className="table-cell taxonomy-cell">{row[12]}</td>
+                        
+                        {/* Action Cell */}
+                        <td className="table-cell action-icons">
+                            <FiCopy
+                                size={16}
+                                className="icon copy-icon"
+                                onClick={() => handleCopySequence(row[1])}
+                                title="Copy Sequence"
+                            />
+                            <FiDownload
+                                size={16}
+                                className="icon download-icon"
+                                onClick={() => handleDownload(row[1])}
+                                title="Download Sequence"
+                            />
+                        </td>
+                    </tr>
                 ))}
-                <td className="action-icons">
-                  <FiCopy
-                    size={20}
-                    className="icon"
-                    onClick={() => handleCopySequence(row[1])}
-                    title="Copy"
-                  />
-                  <FiDownload
-                    size={20}
-                    className="icon"
-                    onClick={() => handleDownload(row[1])}
-                    title="Download"
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+            </tbody>
+        </table>
+    </div>
+)}
+
+          {/* No Results Message */}
+          {!loading && results.length === 0 && file === null && (
+            <div style={{ textAlign: 'center', marginTop: '40px', color: '#666' }}>
+              <p>Upload a FASTA file to see BLAST results here.</p>
+            </div>
+          )}
+        </div>
       </div>
     </>
   );

@@ -48,6 +48,7 @@ const HomeLab = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
       setSelectedMasterType(inventoryTypes[0]);
     }
   }, []);
+  console.log('stock level', stockLevel)
 
   const handleMasterTypeSelection = (type) => {
     setSelectedMasterType(type);

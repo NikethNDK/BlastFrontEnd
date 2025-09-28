@@ -327,7 +327,7 @@
   /* position: fixed; */
   top: 200px;
   padding: var(--lab-space-6);
-  max-width: 1400px;
+  /* max-width: 1400px; */
   margin: 200px auto 0 auto;
   width: 100%;
 }

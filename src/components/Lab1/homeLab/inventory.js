@@ -412,7 +412,7 @@ const MasterListTable = ({
       {/* --- Equipment Update Modal --- */}
       {showModal && selectedItem && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div className="modal-contents">
             <button
               className="modal-close-btn"
               onClick={() => setShowModal(false)}

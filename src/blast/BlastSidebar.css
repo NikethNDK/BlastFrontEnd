@@ -69,15 +69,7 @@
 
 .blast-sidebar-logo {
   font-size: 1.5rem;
-  background: none;
-  border: none;
-  color: var(--blast-color-accent);
-  cursor: pointer;
-  transition: color var(--blast-transition-speed) ease;
-}
 
-.blast-sidebar-logo:hover {
-  color: var(--blast-color-accent-hover);
 }
 
 .blast-sidebar-toggle {

@@ -1,0 +1,454 @@
+/* TempIssueTable.css */
+/* --- Variables (Matching the Light Theme) --- */
+:root {
+    --color-background-light: #ffffff;
+    --color-background-gray: #f7f9fc;
+    --color-text-dark: #334155;
+    --color-text-secondary: #64748b;
+    --color-accent: #2563eb; /* Blue Accent */
+    --color-accent-hover: #1e40af;
+    --color-success: #10b981; /* Green */
+    --color-danger: #ef4444; /* Red */
+    --color-warning: #f59e0b; /* Amber */
+    --color-border-light: #e2e8f0;
+    --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --transition-speed: 0.2s;
+}
+
+/* --- Main Container --- */
+.temp-issue-container {
+    width: 100%;
+    padding: 1rem;
+    background: var(--color-background-light);
+    border-radius: 8px;
+    box-shadow: var(--shadow-subtle);
+}
+
+/* --- Table Wrapper --- */
+.temp-issue-table-wrapper {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 350px; /* Matching TempReceiveTable height */
+    border: 1px solid var(--color-border-light);
+    border-radius: 8px;
+    background: var(--color-background-light);
+    box-shadow: var(--shadow-subtle);
+}
+
+/* --- Table Styles --- */
+.temp-issue-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1200px; /* Ensure wide enough for all columns */
+    table-layout: fixed;
+}
+
+.temp-issue-table .table-header {
+    background-color: var(--color-background-gray);
+    color: var(--color-text-dark);
+    text-align: center;
+    vertical-align: middle;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem; /* Slightly smaller font */
+    font-weight: 600;
+    border: 1px solid var(--color-border-light);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: normal; /* Allow text wrapping */
+    word-wrap: break-word;
+    line-height: 1.2; /* Tighter line height for wrapped text */
+    min-width: 80px; /* Minimum width for headers */
+    max-width: 150px; /* Maximum width before wrapping */
+}
+
+.temp-issue-table .table-cell {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px 8px;
+    border: 1px solid var(--color-border-light);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+
+/* Specific column widths for better layout */
+.temp-issue-table .table-header:nth-child(1), /* Issued ID */
+.temp-issue-table .table-cell:nth-child(1) {
+    min-width: 90px;
+    max-width: 90px;
+}
+
+.temp-issue-table .table-header:nth-child(2), /* Item Code */
+.temp-issue-table .table-cell:nth-child(2) {
+    min-width: 100px;
+    max-width: 100px;
+}
+
+.temp-issue-table .table-header:nth-child(3), /* Item Name */
+.temp-issue-table .table-cell:nth-child(3) {
+    min-width: 150px;
+    max-width: 200px;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.temp-issue-table .table-header:nth-child(4), /* Quantity Issued */
+.temp-issue-table .table-cell:nth-child(4) {
+    min-width: 80px;
+    max-width: 100px;
+}
+
+.temp-issue-table .table-header:nth-child(5), /* Project Code */
+.temp-issue-table .table-cell:nth-child(5) {
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.temp-issue-table .table-header:nth-child(6), /* Project Name */
+.temp-issue-table .table-cell:nth-child(6) {
+    min-width: 120px;
+    max-width: 150px;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.temp-issue-table .table-header:nth-child(7), /* Issued To */
+.temp-issue-table .table-cell:nth-child(7) {
+    min-width: 120px;
+    max-width: 140px;
+}
+
+.temp-issue-table .table-header:nth-child(8), /* Instruction and Specification */
+.temp-issue-table .table-cell:nth-child(8) {
+    min-width: 180px;
+    max-width: 220px;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.temp-issue-table .table-header:nth-child(9), /* Remarks */
+.temp-issue-table .table-cell:nth-child(9) {
+    min-width: 120px;
+    max-width: 150px;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.temp-issue-table .table-header:nth-child(10), /* Action */
+.temp-issue-table .table-cell:nth-child(10) {
+    min-width: 100px;
+    max-width: 100px;
+}
+
+/* --- Data Row Hover Effect --- */
+.temp-issue-table tbody tr:hover {
+    background-color: #fcfcfc;
+    transition: background-color var(--transition-speed);
+}
+
+/* --- Action Buttons --- */
+.temp-issue-action-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all var(--transition-speed);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 2px;
+}
+
+.temp-issue-action-btn:hover {
+    background-color: var(--color-background-gray);
+    transform: scale(1.05);
+}
+
+.temp-issue-action-btn:active {
+    transform: scale(0.95);
+}
+
+/* --- Modal Styles --- */
+.temp-issue-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.temp-issue-modal {
+    background: var(--color-background-light);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 700px; /* Slightly wider for more form fields */
+    max-height: 85vh; /* Taller for more content */
+    overflow-y: auto;
+    z-index: 10001;
+}
+
+.temp-issue-modal-header {
+    background-color: var(--color-background-gray);
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-border-light);
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.temp-issue-modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-dark);
+}
+
+.temp-issue-modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all var(--transition-speed);
+}
+
+.temp-issue-modal-close-btn:hover {
+    background-color: var(--color-border-light);
+    color: var(--color-text-dark);
+}
+
+.temp-issue-modal-body {
+    padding: 1.5rem;
+}
+
+.temp-issue-modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--color-border-light);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    background-color: var(--color-background-gray);
+    border-radius: 0 0 12px 12px;
+}
+
+/* --- Form Styles --- */
+.temp-issue-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.temp-issue-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-text-dark);
+}
+
+.temp-issue-form-control,
+.temp-issue-form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border-light);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+    box-sizing: border-box;
+}
+
+.temp-issue-form-control:focus,
+.temp-issue-form-select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.temp-issue-form-select {
+    background-color: var(--color-background-light);
+    cursor: pointer;
+}
+
+.temp-issue-form-textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+/* --- Modal Action Buttons --- */
+.temp-issue-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.temp-issue-btn-secondary {
+    background-color: var(--color-background-light);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border-light);
+}
+
+.temp-issue-btn-secondary:hover {
+    background-color: var(--color-background-gray);
+    color: var(--color-text-dark);
+}
+
+.temp-issue-btn-primary {
+    background-color: var(--color-accent);
+    color: white;
+}
+
+.temp-issue-btn-primary:hover {
+    background-color: var(--color-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+/* --- Loading and Error States --- */
+.temp-issue-loading,
+.temp-issue-error {
+    padding: 2rem;
+    text-align: center;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    background-color: var(--color-background-light);
+    margin: 2rem 0;
+    box-shadow: var(--shadow-subtle);
+}
+
+.temp-issue-error {
+    color: var(--color-danger);
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+/* --- No Data State --- */
+.temp-issue-no-data {
+    text-align: center;
+    padding: 2rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    background-color: var(--color-background-gray);
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+/* --- Form Layout for Two Column Design --- */
+@media (min-width: 768px) {
+    .temp-issue-modal-body {
+        padding: 2rem;
+    }
+    
+    /* Two column layout for smaller fields */
+    .temp-issue-form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .temp-issue-container {
+        padding: 0.5rem;
+    }
+    
+    .temp-issue-table-wrapper {
+        max-height: 300px;
+    }
+    
+    .temp-issue-modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .temp-issue-modal-header,
+    .temp-issue-modal-body,
+    .temp-issue-modal-footer {
+        padding: 1rem;
+    }
+    
+    .temp-issue-modal-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .temp-issue-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Stack form fields on mobile */
+    .temp-issue-form-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+}
+
+/* --- Scrollbar Styling --- */
+.temp-issue-table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.temp-issue-table-wrapper::-webkit-scrollbar-track {
+    background: var(--color-background-gray);
+    border-radius: 4px;
+}
+
+.temp-issue-table-wrapper::-webkit-scrollbar-thumb {
+    background: var(--color-border-light);
+    border-radius: 4px;
+}
+
+.temp-issue-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+}
+
+/* --- Utility Classes --- */
+.temp-issue-text-center {
+    text-align: center;
+}
+
+.temp-issue-text-left {
+    text-align: left;
+}
+
+.temp-issue-text-right {
+    text-align: right;
+}
+
+.temp-issue-mb-0 {
+    margin-bottom: 0;
+}
+
+.temp-issue-mb-1 {
+    margin-bottom: 0.5rem;
+}
+
+.temp-issue-mb-2 {
+    margin-bottom: 1rem;
+}

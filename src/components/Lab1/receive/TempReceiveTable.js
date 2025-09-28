@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, Form } from "react-bootstrap";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import {
   getTempReceiveApi,
@@ -12,7 +11,7 @@ import {
   getLocationsApi,
   getMasterApi,
 } from "../../../services/AppinfoService";
-import "../../../App.css";
+import "./TempReceiveTable.css"; // Import the new CSS file
 
 const TempReceiveTable = () => {
   const [receive, setReceive] = useState([]);
@@ -27,16 +26,26 @@ const TempReceiveTable = () => {
   const [projectCodes, setProjectCodes] = useState([]);
   const [itemsCodes, setItemsCodes] = useState([]);
   const [itemsNames, setItemsNames] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchData();
     fetchDropdownData();
   }, []);
 
-  const fetchData = () => {
-    getTempReceiveApi()
-      .then((data) => setReceive(data))
-      .catch((error) => console.error("Error fetching data:", error));
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const data = await getTempReceiveApi();
+      setReceive(data);
+      setError(null);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError("Failed to load data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchDropdownData = async () => {
@@ -109,6 +118,7 @@ const TempReceiveTable = () => {
       setReceive(receive.filter((item) => item.bill_no !== billNo));
     } catch (error) {
       console.error("Error deleting item:", error);
+      alert("Delete Failed!");
     }
   };
 
@@ -116,269 +126,310 @@ const TempReceiveTable = () => {
     setSelectedItem((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleModalClose = () => {
+    setShowModal(false);
+    setSelectedItem(null);
+  };
+
+  if (loading) {
+    return <div className="temp-receive-loading">Loading data...</div>;
+  }
+
+  if (error) {
+    return <div className="temp-receive-error">{error}</div>;
+  }
+
   return (
-    <div>
-      <div style={{ overflowY: "auto", maxHeight: "280px" }}>
-        <Table striped bordered hover className="react-bootstrap-table">
+    <div className="temp-receive-container">
+      <div className="temp-receive-table-wrapper">
+        <table className="temp-receive-table">
           <thead>
             <tr>
-              <th style={headerStyle}>Catalogue No</th>
-              <th style={headerStyle}>PO Number</th>
-              <th style={headerStyle}>Item Code</th>
-              <th style={headerStyle}>Item Name</th>
-              <th style={headerStyle}>Project Name</th>
-              <th style={headerStyle}>Project Code</th>
-              <th style={headerStyle}>Quantity Received</th>
-              <th style={headerStyle}>Price</th>
-              <th style={headerStyle}>Expiry Date</th>
-              <th style={headerStyle}>Manufacturer</th>
-              <th style={headerStyle}>Supplier</th>
-              <th style={headerStyle}>Invoice No</th>
-              <th style={headerStyle}>Location</th>
-              <th style={headerStyle}>Action</th>
+              <th className="table-header">Catalogue No</th>
+              <th className="table-header">PO Number</th>
+              <th className="table-header">Item Code</th>
+              <th className="table-header">Item Name</th>
+              <th className="table-header">Project Name</th>
+              <th className="table-header">Project Code</th>
+              <th className="table-header">Quantity Received</th>
+              <th className="table-header">Price</th>
+              <th className="table-header">Expiry Date</th>
+              <th className="table-header">Manufacturer</th>
+              <th className="table-header">Supplier</th>
+              <th className="table-header">Invoice No</th>
+              <th className="table-header">Location</th>
+              <th className="table-header">Action</th>
             </tr>
           </thead>
           <tbody>
-            {receive.map((item) => (
-              <tr key={item.bill_no}>
-                <td style={cellStyle}>{item.bill_no}</td>
-                <td style={cellStyle}>{item.po_number}</td>
-                <td style={cellStyle}>{item.item_code}</td>
-                <td style={cellStyle}>{item.item_name}</td>
-                <td style={cellStyle}>{item.project_name}</td>
-                <td style={cellStyle}>{item.project_code}</td>
-                <td style={cellStyle}>{item.quantity_received}</td>
-                <td style={cellStyle}>{item.price_unit}</td>
-                <td style={cellStyle}>{item.expiry_date}</td>
-                <td style={cellStyle}>{item.manufacturer}</td>
-                <td style={cellStyle}>{item.supplier}</td>
-                <td style={cellStyle}>{item.invoice_number}</td>
-                <td style={cellStyle}>{item.location}</td>
-                <td style={cellStyle}>
-                  <Button
-                    variant="light"
-                    size="sm"
-                    onClick={() => handleEdit(item)}
-                    style={{ marginRight: "5px", padding: "5px" }}
-                  >
-                    <FaEdit color="black" />
-                  </Button>
-                  <Button
-                    variant="light"
-                    size="sm"
-                    onClick={() => handleDelete(item.bill_no)}
-                    style={{ padding: "5px" }}
-                  >
-                    <FaTrash color="black" />
-                  </Button>
+            {receive.length > 0 ? (
+              receive.map((item) => (
+                <tr key={item.bill_no}>
+                  <td className="table-cell">{item.bill_no || "-"}</td>
+                  <td className="table-cell">{item.po_number || "-"}</td>
+                  <td className="table-cell">{item.item_code || "-"}</td>
+                  <td className="table-cell">{item.item_name || "-"}</td>
+                  <td className="table-cell">{item.project_name || "-"}</td>
+                  <td className="table-cell">{item.project_code || "-"}</td>
+                  <td className="table-cell">{item.quantity_received || "-"}</td>
+                  <td className="table-cell">{item.price_unit || "-"}</td>
+                  <td className="table-cell">{item.expiry_date || "-"}</td>
+                  <td className="table-cell">{item.manufacturer || "-"}</td>
+                  <td className="table-cell">{item.supplier || "-"}</td>
+                  <td className="table-cell">{item.invoice_number || "-"}</td>
+                  <td className="table-cell">{item.location || "-"}</td>
+                  <td className="table-cell">
+                    <button
+                      className="temp-receive-action-btn"
+                      onClick={() => handleEdit(item)}
+                      title="Edit"
+                    >
+                      <FaEdit color="#2563eb" size={16} />
+                    </button>
+                    <button
+                      className="temp-receive-action-btn"
+                      onClick={() => handleDelete(item.bill_no)}
+                      title="Delete"
+                    >
+                      <FaTrash color="#ef4444" size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="14" className="temp-receive-no-data">
+                  No records found
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
-        </Table>
+        </table>
       </div>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Edit Item</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {selectedItem && (
-            <Form>
-              {/* PO Number */}
-              <Form.Group>
-                <Form.Label>PO Number</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="po_number"
-                  value={selectedItem.po_number}
-                  onChange={handleChange}
-                />
-              </Form.Group>
+      {/* Modal */}
+      {showModal && (
+        <div className="temp-receive-modal-overlay" onClick={handleModalClose}>
+          <div className="temp-receive-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="temp-receive-modal-header">
+              <h5 className="temp-receive-modal-title">Edit Item</h5>
+              <button
+                className="temp-receive-modal-close-btn"
+                onClick={handleModalClose}
+              >
+                ×
+              </button>
+            </div>
+            <div className="temp-receive-modal-body">
+              {selectedItem && (
+                <form>
+                  {/* PO Number */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">PO Number</label>
+                    <input
+                      type="text"
+                      name="po_number"
+                      value={selectedItem.po_number || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-control"
+                    />
+                  </div>
 
-              {/* Item Code */}
-              <Form.Group>
-                <Form.Label>Item Code</Form.Label>
-                <Form.Select
-                  name="item_code"
-                  value={selectedItem.item_code}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Item Code</option>
-                  {itemsCodes.map((item) => (
-                    <option key={item.value} value={item.label}>
-                      {item.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
+                  {/* Item Code */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Item Code</label>
+                    <select
+                      name="item_code"
+                      value={selectedItem.item_code || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-select"
+                    >
+                      <option value="">Select Item Code</option>
+                      {itemsCodes.map((item) => (
+                        <option key={item.value} value={item.label}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              {/* Item Name */}
-              <Form.Group>
-                <Form.Label>Item Name</Form.Label>
-                <Form.Select
-                  name="item_name"
-                  value={selectedItem.item_name}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Item Name</option>
-                  {itemsNames.map((item) => (
-                    <option key={item.value} value={item.label}>
-                      {item.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
+                  {/* Item Name */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Item Name</label>
+                    <select
+                      name="item_name"
+                      value={selectedItem.item_name || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-select"
+                    >
+                      <option value="">Select Item Name</option>
+                      {itemsNames.map((item) => (
+                        <option key={item.value} value={item.label}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              {/* Quantity Received */}
-              <Form.Group>
-                <Form.Label>Quantity Received</Form.Label>
-                <Form.Control
-                  type="number"
-                  name="quantity_received"
-                  value={selectedItem.quantity_received}
-                  onChange={handleChange}
-                />
-              </Form.Group>
+                  {/* Quantity Received */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Quantity Received</label>
+                    <input
+                      type="number"
+                      name="quantity_received"
+                      value={selectedItem.quantity_received || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-control"
+                    />
+                  </div>
 
-              {/* Unit Price */}
-              <Form.Group>
-                <Form.Label>Price</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="price_unit"
-                  value={selectedItem.price_unit}
-                  onChange={handleChange}
-                />
-              </Form.Group>
+                  {/* Unit Price */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Price</label>
+                    <input
+                      type="text"
+                      name="price_unit"
+                      value={selectedItem.price_unit || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-control"
+                    />
+                  </div>
 
-              {/* Expiry Date */}
-              <Form.Group>
-                <Form.Label>Expiry Date</Form.Label>
-                <Form.Control
-                  type="date"
-                  name="expiry_date"
-                  value={selectedItem.expiry_date}
-                  onChange={handleChange}
-                />
-              </Form.Group>
+                  {/* Expiry Date */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Expiry Date</label>
+                    <input
+                      type="date"
+                      name="expiry_date"
+                      value={selectedItem.expiry_date || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-control"
+                    />
+                  </div>
 
-              {/* Invoice No */}
-              <Form.Group>
-                <Form.Label>Invoice No</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="invoice_number"
-                  value={selectedItem.invoice_number}
-                  onChange={handleChange}
-                />
-              </Form.Group>
+                  {/* Invoice No */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Invoice No</label>
+                    <input
+                      type="text"
+                      name="invoice_number"
+                      value={selectedItem.invoice_number || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-control"
+                    />
+                  </div>
 
-              {/* Location */}
-              <Form.Group>
-                <Form.Label>Location</Form.Label>
-                <Form.Select
-                  name="location"
-                  value={selectedItem.location || ""}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Location</option>
-                  {locations.map((loc) => (
-                    <option key={loc.value} value={loc.label}>
-                      {loc.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
+                  {/* Location */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Location</label>
+                    <select
+                      name="location"
+                      value={selectedItem.location || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-select"
+                    >
+                      <option value="">Select Location</option>
+                      {locations.map((loc) => (
+                        <option key={loc.value} value={loc.label}>
+                          {loc.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              {/* Project Name */}
-              <Form.Group>
-                <Form.Label>Project Name</Form.Label>
-                <Form.Select
-                  name="project_name"
-                  value={selectedItem?.project_name || ""}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Project Name</option>
-                  {projectNames.map((proj) => (
-                    <option key={proj.value} value={proj.value}>
-                      {proj.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
+                  {/* Project Name */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Project Name</label>
+                    <select
+                      name="project_name"
+                      value={selectedItem.project_name || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-select"
+                    >
+                      <option value="">Select Project Name</option>
+                      {projectNames.map((proj) => (
+                        <option key={proj.value} value={proj.value}>
+                          {proj.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              {/* Project Code */}
-              <Form.Group>
-                <Form.Label>Project Code</Form.Label>
-                <Form.Select
-                  name="project_code"
-                  value={selectedItem?.project_code || ""}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Project Code</option>
-                  {projectCodes.map((proj) => (
-                    <option key={proj.value} value={proj.value}>
-                      {proj.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
+                  {/* Project Code */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Project Code</label>
+                    <select
+                      name="project_code"
+                      value={selectedItem.project_code || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-select"
+                    >
+                      <option value="">Select Project Code</option>
+                      {projectCodes.map((proj) => (
+                        <option key={proj.value} value={proj.value}>
+                          {proj.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              {/* Manufacturer */}
-              <Form.Group>
-                <Form.Label>Manufacturer</Form.Label>
-                <Form.Select
-                  name="manufacturer"
-                  value={selectedItem.manufacturer}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Manufacturer</option>
-                  {manufacturers.map((man) => (
-                    <option key={man.value} value={man.value}>
-                      {man.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
+                  {/* Manufacturer */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Manufacturer</label>
+                    <select
+                      name="manufacturer"
+                      value={selectedItem.manufacturer || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-select"
+                    >
+                      <option value="">Select Manufacturer</option>
+                      {manufacturers.map((man, index) => (
+                        <option key={index} value={man.label}>
+                          {man.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              {/* Supplier */}
-              <Form.Group>
-                <Form.Label>Supplier</Form.Label>
-                <Form.Select
-                  name="supplier"
-                  value={selectedItem.supplier}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Supplier</option>
-                  {suppliers.map((sup) => (
-                    <option key={sup.value} value={sup.value}>
-                      {sup.label}
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-            </Form>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleSave}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
+                  {/* Supplier */}
+                  <div className="temp-receive-form-group">
+                    <label className="temp-receive-form-label">Supplier</label>
+                    <select
+                      name="supplier"
+                      value={selectedItem.supplier || ""}
+                      onChange={handleChange}
+                      className="temp-receive-form-select"
+                    >
+                      <option value="">Select Supplier</option>
+                      {suppliers.map((sup, index) => (
+                        <option key={index} value={sup.label}>
+                          {sup.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </form>
+              )}
+            </div>
+            <div className="temp-receive-modal-footer">
+              <button
+                className="temp-receive-btn temp-receive-btn-secondary"
+                onClick={handleModalClose}
+              >
+                Close
+              </button>
+              <button
+                className="temp-receive-btn temp-receive-btn-primary"
+                onClick={handleSave}
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
-const headerStyle = {
-  backgroundColor: "#C5EA31",
-  color: "black",
-  textAlign: "center",
-};
-const cellStyle = { textAlign: "center" };
 
 export default TempReceiveTable;

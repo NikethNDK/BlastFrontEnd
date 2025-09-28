@@ -14,8 +14,8 @@ const UserAvatarIcon = FaUserCircle;
 
 const BlastSidebar = ({ 
   userDetails = { name: 'User Name', lab: 'Lab Assistant', designation: 'Researcher' },
-  onLogout,
-  repositoryPath = '/repository' // Allow customization of repository path
+  onLogout = '/',
+  repositoryPath = '/dna' // Allow customization of repository path
 }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
@@ -48,12 +48,12 @@ const BlastSidebar = ({
                 <span>DNA Blast</span>
               </div>
             )}
-            <button 
+            {/* <button 
               className="blast-sidebar-toggle"
               onClick={toggleSidebar}
             >
               {collapsed ? <FaBars /> : <FaTimes />}
-            </button>
+            </button> */}
           </div>
         </div>
 

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import * as XLSX from "xlsx";
 import LabNavigation1 from "./LabNavigation1";
 import "../entries/TransferredDataTable.css";
+import { AiOutlineDownload } from "react-icons/ai";
 
 const EquipmentList = () => {
   const [equipmentData, setEquipmentData] = useState([]);
@@ -53,295 +55,162 @@ const EquipmentList = () => {
     setFilteredData(filtered);
   }, [filters, equipmentData]);
 
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
+  const handleFilterChange = (e, key) => {
+    setFilters({ ...filters, [key]: e.target.value });
   };
 
+  const handleDownload = () => {
+    if (filteredData.length === 0) {
+      alert("No data to download!");
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(
+      filteredData.map((item) => ({
+        "ID": item.id,
+        "Item Name": item.item_name,
+        "Item Code": item.item_code,
+        "Last Service Date": item.last_service_date,
+        "Calibration Dates": item.calibration_dates,
+        "Expiry Date": item.expiry_date,
+        "Min Stock": item.min_req_stock,
+        "Price/Unit": item.price_unit,
+        "Project Code": item.project_code,
+        "Location": item.location,
+        "Quantity Received": item.quantity_received,
+      }))
+    );
+
+    // Protecting the sheet from edits
+    worksheet["!protect"] = {
+      password: "readonly",
+      edit: false,
+      selectLockedCells: true,
+      selectUnlockedCells: false,
+    };
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Equipment Data");
+    XLSX.writeFile(workbook, "EquipmentData.xlsx");
+  };
+
+  // Calculate totals
+  const totalQuantityReceived = filteredData.reduce(
+    (sum, item) => sum + (parseInt(item.quantity_received) || 0),
+    0
+  );
+
+  const totalEquipmentItems = filteredData.length;
+
+  const tableHeadings = [
+    { label: "ID", key: "id", className: "entry-no-column" },
+    { label: "Item Name", key: "item_name", className: "item-name-column" },
+    { label: "Item Code", key: "item_code", className: "item-code-column" },
+    { label: "Last Service Date", key: "last_service_date", className: "date-column" },
+    { label: "Calibration Dates", key: "calibration_dates", className: "date-column" },
+    { label: "Expiry Date", key: "expiry_date", className: "date-column" },
+    { label: "Min Stock", key: "min_req_stock", className: "quantity-column" },
+    { label: "Price/Unit", key: "price_unit", className: "price-column" },
+    { label: "Project Code", key: "project_code", className: "project-column" },
+    { label: "Location", key: "location", className: "location-column" },
+    { label: "Quantity Received", key: "quantity_received", className: "quantity-column" },
+  ];
+
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="loading-state">
+        Loading equipment data...
+      </div>
+    );
   }
 
   return (
     <div>
-      <h2 style={{ backgroundColor: "#C5EA31", padding: "8px" }}>
-        Equipment Details
-      </h2>
-      <table
-        style={{
-          width: "77%",
-          marginLeft: "22%",
-          borderCollapse: "collapse",
-          marginTop: "20px",
-          textAlign: "center",
-        }}
-      >
-        <thead>
-          <tr>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              ID
-              <br />
-              <input
-                placeholder="Filter"
-                type="text"
-                value={filters.id}
-                onChange={(e) => handleFilterChange("id", e.target.value)}
-                style={{ width: "80%" }}
-              />
-            </th>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              Item Name
-              <br />
-              <input
-                type="text"
-                placeholder="Filter"
-                value={filters.item_name}
-                onChange={(e) =>
-                  handleFilterChange("item_name", e.target.value)
-                }
-                style={{ width: "80%" }}
-              />
-            </th>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              Item Code
-              <br />
-              <input
-                type="text"
-                placeholder="Filter"
-                value={filters.item_code}
-                onChange={(e) =>
-                  handleFilterChange("item_code", e.target.value)
-                }
-                style={{ width: "80%" }}
-              />
-            </th>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              Last Service Date
-              <br />
-              <input
-                type="text"
-                placeholder="Filter"
-                value={filters.last_service_date}
-                onChange={(e) =>
-                  handleFilterChange("last_service_date", e.target.value)
-                }
-                style={{ width: "80%" }}
-              />
-            </th>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              Calibration dates
-              <br />
-              <input
-                type="text"
-                placeholder="Filter"
-                value={filters.calibration_dates}
-                onChange={(e) =>
-                  handleFilterChange("calibration_dates", e.target.value)
-                }
-                style={{ width: "80%" }}
-              />
-            </th>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              Expiry Date
-              <br />
-              <input
-                type="text"
-                placeholder="Filter"
-                value={filters.expiry_date}
-                onChange={(e) =>
-                  handleFilterChange("expiry_date", e.target.value)
-                }
-                style={{ width: "80%" }}
-              />
-            </th>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              Min Stock
-              <br />
-              <input
-                type="text"
-                placeholder="Filter"
-                value={filters.min_req_stock}
-                onChange={(e) =>
-                  handleFilterChange("min_req_stock", e.target.value)
-                }
-                style={{ width: "80%" }}
-              />
-            </th>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              Price/Unit
-              <br />
-              <input
-                type="text"
-                placeholder="Filter"
-                value={filters.price_unit}
-                onChange={(e) =>
-                  handleFilterChange("price_unit", e.target.value)
-                }
-                style={{ width: "80%" }}
-              />
-            </th>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              Project Code
-              <br />
-              <input
-                type="text"
-                placeholder="Filter"
-                value={filters.project_code}
-                onChange={(e) =>
-                  handleFilterChange("project_code", e.target.value)
-                }
-                style={{ width: "80%" }}
-              />
-            </th>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              Location
-              <br />
-              <input
-                type="text"
-                placeholder="Filter"
-                value={filters.location}
-                onChange={(e) => handleFilterChange("location", e.target.value)}
-                style={{ width: "80%" }}
-              />
-            </th>
-            <th
-              style={{
-                border: "1px solid #ddd",
-                padding: "8px",
-                backgroundColor: "#C5EA31",
-              }}
-            >
-              Quantity Received
-              <br />
-              <input
-                placeholder="Filter"
-                type="text"
-                value={filters.quantity_received}
-                onChange={(e) =>
-                  handleFilterChange("quantity_received", e.target.value)
-                }
-                style={{ width: "80%" }}
-              />
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.length > 0 ? (
-            filteredData.map((item) => (
-              <tr key={item.id}>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.id}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.item_name}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.item_code}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.last_service_date}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.calibration_dates}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.expiry_date}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.min_req_stock}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.price_unit}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.project_code}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.location}
-                </td>
-                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                  {item.quantity_received}
-                </td>
+      <div className="table-container">
+        <h2>Equipment Details</h2>
+        
+        {/* Total Summary */}
+        <div className="total-summary" style={{ 
+          marginBottom: "1rem", 
+          padding: "1rem", 
+          backgroundColor: "#f7f9fc", 
+          borderRadius: "6px", 
+          display: "flex", 
+          justifyContent: "space-around",
+          fontWeight: "600"
+        }}>
+          <p>
+            <strong>Total Equipment Items:</strong> {totalEquipmentItems}
+          </p>
+          <p>
+            <strong>Total Quantity Received:</strong> {totalQuantityReceived}
+          </p>
+        </div>
+
+        {/* Header Controls */}
+        <div className="table-header-controls">
+          <div></div> {/* Empty div for spacing */}
+          
+          <button
+            className="download-button"
+            onClick={handleDownload}
+            title="Download Excel"
+          >
+            <AiOutlineDownload size={20} />
+          </button>
+        </div>
+
+        {/* Table Wrapper */}
+        <div className="table-wrapper">
+          <table className="data-table">
+            <thead>
+              <tr>
+                {tableHeadings.map(({ label, key, className }, index) => (
+                  <th
+                    key={index}
+                    className={`table-header ${className}`}
+                  >
+                    {label}
+                    <br />
+                    <input
+                      type="text"
+                      placeholder="Filter"
+                      className="filter-input"
+                      value={filters[key] || ""}
+                      onChange={(e) => handleFilterChange(e, key)}
+                    />
+                  </th>
+                ))}
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td
-                colSpan="11"
-                style={{
-                  border: "1px solid #ddd",
-                  padding: "8px",
-                  textAlign: "center",
-                }}
-              >
-                No matching records found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {filteredData.length > 0 ? (
+                filteredData.map((item) => (
+                  <tr key={item.id}>
+                    <td className="table-cell entry-no-column">{item.id}</td>
+                    <td className="table-cell item-name-column">{item.item_name}</td>
+                    <td className="table-cell item-code-column">{item.item_code}</td>
+                    <td className="table-cell date-column">{item.last_service_date}</td>
+                    <td className="table-cell date-column">{item.calibration_dates}</td>
+                    <td className="table-cell date-column">{item.expiry_date}</td>
+                    <td className="table-cell quantity-column">{item.min_req_stock}</td>
+                    <td className="table-cell price-column">{item.price_unit}</td>
+                    <td className="table-cell project-column">{item.project_code}</td>
+                    <td className="table-cell location-column">{item.location}</td>
+                    <td className="table-cell quantity-column">{item.quantity_received}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="11" className="no-data-state">
+                    No matching records found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
