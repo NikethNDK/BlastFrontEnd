@@ -1,6 +1,8 @@
 import React from "react";
 import { useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./styles/modern-design.css";
+import "./styles/lab-design-system.css";
 import Navigation from "./components/Navigation";
 import Home from "./components/Home";
 import Appinfo from "./components/appinfo/Appinfo";

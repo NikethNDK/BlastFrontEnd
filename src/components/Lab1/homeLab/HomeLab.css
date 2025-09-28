@@ -1,0 +1,158 @@
+/* --- Global Layout Configuration (Adjusts for a fixed sidebar) --- */
+.homelab-page-container {
+  padding: var(--lab-space-6, 1.5rem) var(--lab-space-8, 2rem); /* Use lab design system spacing */
+  /* min-height: calc(100vh - 230px); */
+  background-color: var(--lab-neutral-50, #f7f9fc);
+  width: 100%; /* Take full width of parent */
+}
+
+/* --- Content Header (Title and Stock Indicator) --- */
+.content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* min-height: calc(100vh - 230px); */
+  /* padding: var(--lab-space-4, 1rem) 0; */
+  margin-bottom: var(--lab-space-6, 1.5rem);
+  border-bottom: 1px solid var(--lab-neutral-200, #e0e7ef);
+}
+
+.page-title {
+  font-size: var(--lab-text-3xl, 1.8rem);
+  font-weight: 700;
+  color: var(--lab-neutral-800, #1e293b); /* Dark text for prominence */
+  margin: 0;
+}
+
+/* --- Stock Indicator Card --- */
+.stock-indicator-card {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 250px;
+  transition: all 0.3s ease;
+}
+
+.stock-indicator-card.stock-sufficient {
+  background-color: var(--lab-secondary-500, #10b981); /* Green */
+}
+
+.stock-indicator-card.stock-reorder {
+  background-color: var(--lab-error-500, #ef4444); /* Red */
+}
+
+.stock-indicator-card.stock-unknown {
+  background-color: var(--lab-neutral-400, #94a3b8); /* Gray/Neutral */
+}
+
+.stock-label {
+    margin: 0; /* Remove default label margin */
+}
+
+/* --- Inventory Type Selector Bar --- */
+.inventory-selector-bar {
+  display: flex;
+  justify-content: flex-start; /* Aligns buttons to the left */
+  margin-bottom: 2rem;
+}
+
+.inventory-type-group {
+    /* Ensures buttons are grouped neatly */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.inventory-type-button {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569; /* Neutral dark gray text */
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  z-index: 1; /* Keep buttons stacked correctly */
+}
+
+/* Remove default Bootstrap border radius for button group ends */
+.inventory-type-group .btn:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+.inventory-type-group .btn:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.inventory-type-button:hover:not(.active) {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+.inventory-type-button.active {
+  /* Use the sidebar's main accent color for the active state */
+  background-color: var(--lab-primary-600, #2563eb);
+  color: white;
+  border-color: var(--lab-primary-600, #2563eb);
+  /* Add a slight elevation */
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); 
+  position: relative;
+}
+
+/* Remove the hover effect on the active button */
+.inventory-type-button.active:hover {
+    background-color: var(--lab-primary-600, #2563eb);
+    color: white;
+}
+
+
+/* --- Main Data Table Container --- */
+.data-table-container {
+  background-color: var(--lab-neutral-50, #ffffff);
+  padding: var(--lab-space-6, 1.5rem);
+  border-radius: var(--lab-radius-xl, 12px);
+  box-shadow: var(--lab-shadow-lg, 0 8px 16px rgba(0, 0, 0, 0.08)); /* More prominent shadow for the main data area */
+}
+
+/* CDBContainer styling if necessary to control max width inside the container */
+.data-table-container .cdb-container {
+  padding: 0; /* Remove default padding if CDBContainer adds any */
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 1024px) {
+  .homelab-page-container {
+    /* Adjust padding when the sidebar collapses/is not visible */
+    padding: 1rem;
+    padding-top: 5rem; /* Space for a top mobile header if needed */
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stock-indicator-card {
+    margin-top: 0.5rem;
+    min-width: 100%; /* Full width on mobile */
+  }
+
+  .inventory-selector-bar {
+    justify-content: center;
+  }
+  
+  .inventory-type-group {
+    width: 100%;
+    display: flex;
+  }
+  
+  .inventory-type-button {
+    flex: 1; /* Make buttons equally sized */
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+}

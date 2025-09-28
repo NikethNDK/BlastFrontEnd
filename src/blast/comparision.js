@@ -6,7 +6,7 @@ import leftLogo from "../assets/elephant.png";
 import rightLogo from "../assets/logo.jpg";
 import AIWC_DNA_sequencing from "../assets/AIWC_DNA_sequencing.png";
 import AIWC_LIMS from "../assets/AIWC_LIMS.png";
-
+import "./comparison.css"
 import TN_Transparent_Logo from "../assets/TN_Transparent_Logo.png";
 import { FileDownload } from "@mui/icons-material";
 import {
@@ -32,8 +32,10 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
+import Header from "../components/Lab1/homeLab/Header";
+import BlastSidebar from "./BlastSidebar";
 
-const Header = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
+const Blast = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   const [file, setFile] = useState(null);
   const [results, setResults] = useState([]);
   const [error, setError] = useState("");
@@ -42,11 +44,7 @@ const Header = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   const [sequenceData, setSequenceData] = useState("");
   const [referenceId, setReferenceId] = useState("");
   const fileInputRef = useRef(null);
-  // const handleFileChange = (event) => {
-  //   setFile(event.target.files[0]);
-  //   setError("");
-  //   setResults([]);
-  // };
+
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     if (!selectedFile) return;
@@ -57,6 +55,7 @@ const Header = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   };
 
   const navigate = useNavigate();
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
@@ -99,20 +98,6 @@ const Header = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
     navigator.clipboard.writeText(text);
     alert("Copied to clipboard!");
   };
-
-  // const handleDownload = (row) => {
-  //   const content =
-  //     `>${row["Query Seq ID"]}\n${row["Query Sequence"]}\n\n` +
-  //     `>${row["Reference Seq ID"]}\n${row["Reference Sequence"]}\n`;
-
-  //   const blob = new Blob([content], { type: "text/plain" });
-  //   const link = document.createElement("a");
-  //   link.href = URL.createObjectURL(blob);
-  //   link.download = `Sequence_${row["Query Seq ID"]}.fasta`;
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // };
 
   const handleSeqDownload = () => {
     if (!results.length) {
@@ -181,111 +166,48 @@ const Header = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
 
   return (
     <>
-      <header
-        style={{ background: "#e1dede", height: "187px" }}
-        className="header-blast"
-      >
-        <div className="header-logo">
+      <header className="header-blast">
+        <Header/>
+        {/* <div className="header-logo">
           <img src={TN_Transparent_Logo} alt="left Logo" />
-          <img src={leftLogo} alt="left Logo" />{" "}
+          <img src={leftLogo} alt="left Logo" />
           <div>
-            <img
-              style={{ margintop: "-17px" }}
-              src={AWIC_INTRANET}
-              alt="Left Logo"
-            />
+            <img src={AWIC_INTRANET} alt="Left Logo" />
           </div>
         </div>
-        <div
-          className="header-title"
-          style={{ background: "#e1dede", height: "190px" }}
-        >
-          <h1
-            style={{
-              color: "rgb(25, 25, 25)",
-              fontFamily: "Poppins, sans-serif",
-              marginTop: "2px",
-            }}
-          >
-            Advanced Institute for Wildlife Conservation
-          </h1>
-          <div style={{ textAlign: "center", lineHeight: "1.5" }}>
-            <h6
-              style={{
-                color: "rgb(16, 16, 16)",
-                margin: "5px 0",
-                fontSize: "15px",
-              }}
-            >
-              (RESEARCH, TRAINING AND EDUCATION)
-            </h6>
-            <h4
-              style={{
-                color: "rgb(16, 16, 16)",
-                margin: "5px 0",
-                fontSize: "20px",
-              }}
-            >
-              Tamil Nadu Forest Department
-            </h4>
-            <h5
-              style={{
-                color: "rgb(16, 16, 16)",
-                margin: "5px 0",
-                fontSize: "20px",
-              }}
-            >
-              Vandalur, Chennai - 600048.
-            </h5>
-            <h5
-              style={{
-                fontFamily: "Poppins, sans-serif",
-                fontWeight: "bold",
-                display: "flex",
-                marginLeft: "20%",
-                height: "38px",
-                gap: "17px",
-                color: "rgb(16, 16, 16)",
-              }}
-            >
+        <div className="header-title">
+          <h1>Advanced Institute for Wildlife Conservation</h1>
+          <div className="header-subtitle">
+            <h6>(RESEARCH, TRAINING AND EDUCATION)</h6>
+            <h4>Tamil Nadu Forest Department</h4>
+            <h5>Vandalur, Chennai - 600048.</h5>
+            <h5 className="header-navigation">
               LABORATORY INFORMATION MANAGEMENT SYSTEM
               <button
                 onClick={() => navigate("/")}
                 className="btn btn-primary"
-                style={{ marginRight: "10px" }}
               >
                 Back
               </button>
               <button
                 onClick={() => navigate("/dna")}
                 className="btn btn-primary"
-                style={{ marginRight: "10px" }}
               >
                 Repository
               </button>
             </h5>
           </div>
         </div>
-        <div
-          className="header-logo"
-          style={{ marginTop: "-40px", height: "130px" }}
-        >
+        <div className="header-logo header-logo-right">
           <img src={AIWC_LIMS} alt="Right Logo" />
           <img src={AIWC_DNA_sequencing} alt="AIWC_DNA_sequencing" />
-        </div>
+        </div> */}
       </header>
-      <div style={{ backgroundColor: "rgb(197, 234, 49)", marginTop: "-3%" }}>
-        <div
-          className="upload-section"
-          style={{ display: "flex", gap: "15px" }}
-        >
-          <p style={{ marginTop: "14px" }}>
-            Upload query file (FASTA Format):{"   "}
-          </p>
-          <form
-            onSubmit={handleSubmit}
-            style={{ marginBottom: "20px", display: "flex", marginTop: "14px" }}
-          >
+      
+      <div className="upload-section-wrapper">
+        <div className="upload-section">
+          <p>Upload query file (FASTA Format):</p>
+          <form onSubmit={handleSubmit} className="upload-form">
             <input
               type="file"
               ref={fileInputRef}
@@ -296,233 +218,82 @@ const Header = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
               type="submit"
               variant="contained"
               color="primary"
-              style={{ marginLeft: "10px" }}
               disabled={loading}
             >
               {loading ? "Running..." : "Run Blast"}
             </Button>
           </form>
-
           {error && <Typography color="error">{error}</Typography>}
         </div>
       </div>
-      <p></p>
+      <BlastSidebar/>
+      
       {/* Blast Results Section */}
-      <div style={{ display: "flex", marginLeft: "44%", gap: "20px" }}>
-        <h4 style={{ textAlign: "center" }}>Blast Results</h4>
-
+      <div className="blast-results-header">
+        <h4>Blast Results</h4>
         <FiDownload
           size={10}
-          style={{
-            cursor: "pointer",
-            margin: "0 5px",
-            backgroundColor: "#1976d2",
-            height: "30px",
-            color: "white",
-            width: "30px",
-            borderRadius: "5px",
-            marginLeft: "58%",
-          }}
+          className="download-icon"
           onClick={handleDownloadSequences}
           title="Download"
         />
-
-        {/* <Button
-          variant="contained"
-          // color="secondary"
-          onClick={handleDownloadSequences}
-          style={{
-            height: "40px",
-            alignSelf: "center",
-            marginLeft: "58%",
-            width: "30%",
-          }}
-        >
-          <FileDownload />
-        </Button> */}
       </div>
 
       {loading && (
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <div className="loading-container">
           <CircularProgress />
           <p>Processing...</p>
         </div>
       )}
+      
       <p></p>
-      {/* <div
-        style={{
-          margin: "auto",
-          width: "73%",
-          maxHeight: results.length > 5 ? "195px" : "auto",
-          overflowY: results.length > 5 ? "auto" : "visible",
-          border: "3px solid #ddd",
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
+      
+      <div className={`results-table-container ${results.length > 5 ? 'scrollable' : ''}`}>
+        <div className="user-details">
+          <p>User: {userDetails.name}</p>
+          <p>Lab: {userDetails.lab}</p>
+          <p>designation: {userDetails.designation}</p>
+        </div>
         <Table
           striped
           bordered
           hover
-          style={{
-            fontSize: "14px",
-            width: "100%",
-            textAlign: "center",
-            // borderCollapse: "collapse",
-            // borderSpacing: "0 5px",
-          }}
+          className="results-table"
         >
           <thead>
             <tr>
-              <th style={{ fontSize: "12px", width: "5%" }}>Query ID</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>Reference ID</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>Identity (%)</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>
-                Query Coverage (%)
-              </th>
-              <th style={{ fontSize: "12px", width: "8%" }}>Length</th>
-              <th style={{ fontSize: "12px", width: "8%" }}>Query Length</th>
-              <th style={{ fontSize: "12px", width: "8%" }}>Subject Length</th>
-              <th style={{ fontSize: "12px", width: "8%" }}>Mismatches</th>
-              <th style={{ fontSize: "12px", width: "8%" }}>Gap Opens</th>
-              <th style={{ fontSize: "12px", width: "8%" }}>E-Value</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>Class Name</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>Common Name</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>
-                Scientific Name
-              </th>
-              <th style={{ fontSize: "12px", width: "10%" }}>Details</th>
+              <th className="col-width-5">Query ID</th>
+              <th className="col-width-10">AIWC reference ID</th>
+              <th className="col-width-10">Identity (%)</th>
+              <th className="col-width-10">Query Coverage (%)</th>
+              <th className="col-width-8">Length</th>
+              <th className="col-width-8">Query Length</th>
+              <th className="col-width-8">Subject Length</th>
+              <th className="col-width-8">Mismatches</th>
+              <th className="col-width-8">Gap Opens</th>
+              <th className="col-width-8">E-Value</th>
+              <th className="col-width-10">Class Name</th>
+              <th className="col-width-10">Common Name</th>
+              <th className="col-width-10">Scientific Name</th>
+              <th className="col-width-10">Details</th>
             </tr>
           </thead>
           <tbody>
             {results.map((row, index) => (
               <tr key={index}>
                 {Object.values(row).map((cell, i) => (
-                  <td key={i} style={{ fontSize: "12px", textAlign: "center" }}>
-                    {cell}
-                  </td>
+                  <td key={i}>{cell}</td>
                 ))}
-                <td style={{ textAlign: "center" }}>
+                <td className="action-icons">
                   <FiCopy
                     size={20}
-                    style={{
-                      cursor: "pointer",
-                      margin: "0 5px",
-                      color: "grey",
-                    }}
+                    className="icon"
                     onClick={() => handleCopySequence(row[1])}
                     title="Copy"
                   />
                   <FiDownload
                     size={20}
-                    style={{
-                      cursor: "pointer",
-                      margin: "0 5px",
-                      color: "grey",
-                    }}
-                    onClick={() => handleDownload(row[1])}
-                    title="Download"
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div> */}
-      <div
-        style={{
-          margin: "auto",
-          width: "73%",
-          maxHeight: results.length > 5 ? "195px" : "auto",
-          overflowY: results.length > 5 ? "auto" : "visible",
-          border: "3px solid #ddd",
-          display: "flex",
-          justifyContent: "center",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            left: "1350px",
-            top: "100px",
-            height: "100px",
-          }}
-        >
-          <p style={{ margin: 0, marginright: "100px" }}>
-            User: {userDetails.name}
-          </p>
-          <p style={{ margin: 0, marginright: "100px" }}>
-            Lab: {userDetails.lab}
-          </p>
-          <p style={{ margin: 0, marginright: "100px" }}>
-            designation: {userDetails.designation}
-          </p>
-        </div>
-        <Table
-          striped
-          bordered
-          hover
-          style={{
-            fontSize: "14px",
-            width: "100%",
-            textAlign: "center",
-          }}
-        >
-          <thead style={{ backgroundColor: "rgb(197, 234, 49)" }}>
-            <tr>
-              <th style={{ fontSize: "12px", width: "5%" }}>Query ID</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>
-                AIWC reference ID
-              </th>
-              <th style={{ fontSize: "12px", width: "10%" }}>Identity (%)</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>
-                Query Coverage (%)
-              </th>
-              <th style={{ fontSize: "12px", width: "8%" }}>Length</th>
-              <th style={{ fontSize: "12px", width: "8%" }}>Query Length</th>
-              <th style={{ fontSize: "12px", width: "8%" }}>Subject Length</th>
-              <th style={{ fontSize: "12px", width: "8%" }}>Mismatches</th>
-              <th style={{ fontSize: "12px", width: "8%" }}>Gap Opens</th>
-              <th style={{ fontSize: "12px", width: "8%" }}>E-Value</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>Class Name</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>Common Name</th>
-              <th style={{ fontSize: "12px", width: "10%" }}>
-                Scientific Name
-              </th>
-              <th style={{ fontSize: "12px", width: "10%" }}>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((row, index) => (
-              <tr
-                key={index}
-                style={{
-                  backgroundColor: index % 2 === 0 ? "white" : "#f0f0f0", // Alternates row color
-                }}
-              >
-                {Object.values(row).map((cell, i) => (
-                  <td key={i} style={{ fontSize: "12px", textAlign: "center" }}>
-                    {cell}
-                  </td>
-                ))}
-                <td style={{ textAlign: "center" }}>
-                  <FiCopy
-                    size={20}
-                    style={{
-                      cursor: "pointer",
-                      margin: "0 5px",
-                      color: "grey",
-                    }}
-                    onClick={() => handleCopySequence(row[1])}
-                    title="Copy"
-                  />
-                  <FiDownload
-                    size={20}
-                    style={{
-                      cursor: "pointer",
-                      margin: "0 5px",
-                      color: "grey",
-                    }}
+                    className="icon"
                     onClick={() => handleDownload(row[1])}
                     title="Download"
                   />
@@ -536,4 +307,4 @@ const Header = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   );
 };
 
-export default Header;
+export default Blast;

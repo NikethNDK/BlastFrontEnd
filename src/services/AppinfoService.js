@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_ENDPOINTS, API_API_BASE_URL } from "../config/api";
+import { API_ENDPOINTS, API_BASE_URL } from "../config/api";
 
 export function getAppinfo() {
   return axios
@@ -300,7 +300,7 @@ export async function updateInventoryApi(enNo, inventory) {
 
 export async function loginUserApi(credentials) {
   try {
-    const response = await axios.post(`${API_API_BASE_URL}/login-view/`, credentials);
+    const response = await axios.post(`${API_BASE_URL}/login-view/`, credentials);
     return response.data;
   } catch (error) {
     console.error("Error logging in:", error);
@@ -310,7 +310,7 @@ export async function loginUserApi(credentials) {
 
 export async function registerUserApi(userInfo) {
   try {
-    const response = await axios.post(`${API_API_BASE_URL}/register/`, userInfo);
+    const response = await axios.post(`${API_BASE_URL}/register/`, userInfo);
     return response.data;
   } catch (error) {
     console.error("Error registering user:", error);
@@ -726,7 +726,7 @@ export function getTempIssueApi() {
   return (
     axios
       // .get("http://127.0.0.1:8000/get-issue-items/")
-      .get(`${API_API_BASE_URL}/get-issue-items?status=LAB-OPEN`)
+      .get(`${API_BASE_URL}/get-issue-items?status=LAB-OPEN`)
       .then((response) => response.data)
   );
 }
@@ -893,7 +893,7 @@ export const getDesignationsApi = () => {
 export const deleteLabApi = async (labId) => {
   try {
     const response = await axios.delete(
-      `${API_API_BASE_URL}/labs/${labId}/delete/`
+      `${API_BASE_URL}/labs/${labId}/delete/`
     );
     return response.data;
   } catch (error) {
@@ -906,7 +906,7 @@ export const deleteLabApi = async (labId) => {
 export const deleteDesignationApi = async (designationId) => {
   try {
     const response = await axios.delete(
-      `${API_API_BASE_URL}/designations/${designationId}/delete/`
+      `${API_BASE_URL}/designations/${designationId}/delete/`
     );
     return response.data;
   } catch (error) {
@@ -1342,17 +1342,17 @@ export const createEquipmentDetails = async (equipmentData) => {
 
 // DNA & Repository
 
-// API_API_BASE_URL is now imported from config/api.js
+// API_BASE_URL is now imported from config/api.js
 
 export function getDnaApi() {
-  return axios.get(`${API_API_BASE_URL}/dna`).then((response) => response.data);
+  return axios.get(`${API_BASE_URL}/dna`).then((response) => response.data);
 }
 
 export function addDnaApi(dna) {
   const currentDate = new Date().toISOString().split("T")[0];
 
   return axios
-    .post(`${API_API_BASE_URL}/add_dna`, {
+    .post(`${API_BASE_URL}/add_dna`, {
       s_no: null,
       ncbi_id: dna.ncbi_id,
       class_name: dna.class_name,
@@ -1372,7 +1372,7 @@ export function addDnaApi(dna) {
 
 export const getPartialApi = async () => {
   try {
-    const response = await axios.get(`${API_API_BASE_URL}/partials/`);
+    const response = await axios.get(`${API_BASE_URL}/partials/`);
     return response.data; // This should return the array of partial names
   } catch (error) {
     console.error("Error fetching partial names:", error);
@@ -1382,7 +1382,7 @@ export const getPartialApi = async () => {
 
 export function addPartialApi(partial) {
   return axios
-    .post(`${API_API_BASE_URL}/partial/`, {
+    .post(`${API_BASE_URL}/partial/`, {
       code: null,
       partial_name: partial.partial_name,
     })
@@ -1395,7 +1395,7 @@ export function addPartialApi(partial) {
 
 //   try {
 //     const response = await axios.post(
-//       `${API_API_BASE_URL}/upload_and_compare`,
+//       `${API_BASE_URL}/upload_and_compare`,
 //       formData,
 //       {
 //         headers: {
@@ -1425,7 +1425,7 @@ export const uploadAndCompareFile = async (file) => {
 
   try {
     const response = await axios.post(
-      `${API_API_BASE_URL}/upload_and_compare`,
+      `${API_BASE_URL}/upload_and_compare`,
       formData,
       {
         headers: {
@@ -1455,7 +1455,7 @@ export const uploadAndCompareFile = async (file) => {
 
 export const fetchDnaData = async () => {
   try {
-    const response = await axios.get(`${API_API_BASE_URL}/dna`);
+    const response = await axios.get(`${API_BASE_URL}/dna`);
     return response.data;
   } catch (error) {
     console.error("Error fetching DNA data:", error);
@@ -1466,7 +1466,7 @@ export const fetchDnaData = async () => {
 export const deleteDnaRecord = async (reference_id) => {
   try {
     const response = await axios.delete(
-      `${API_API_BASE_URL}/delete-dna/${reference_id}/`
+      `${API_BASE_URL}/delete-dna/${reference_id}/`
     );
     return response.data;
   } catch (error) {
@@ -1479,7 +1479,7 @@ export const runBlast = async (file) => {
   formData.append("queryFile", file);
 
   try {
-    const response = await fetch(`${API_API_BASE_URL}/run_blast/`, {
+    const response = await fetch(`${API_BASE_URL}/run_blast/`, {
       // Update to correct backend URL
       method: "POST",
       body: formData,
@@ -1502,7 +1502,7 @@ export const runBlast = async (file) => {
 export const downloadSequences = async () => {
   try {
     const response = await axios({
-      url: `${API_API_BASE_URL}/download-sequences/`,
+      url: `${API_BASE_URL}/download-sequences/`,
       method: "GET",
       responseType: "blob",
     });
@@ -1524,7 +1524,7 @@ export const downloadSequences = async () => {
 export const copySequence = async (reference_id) => {
   try {
     const response = await axios.get(
-      `${API_API_BASE_URL}/copy-sequence/${reference_id}/`
+      `${API_BASE_URL}/copy-sequence/${reference_id}/`
     );
     return response.data;
   } catch (error) {
@@ -1561,7 +1561,7 @@ export const downloadSequenceByReference = async (reference_id) => {
 
 export const updateItemStatus = async (entry_no, status) => {
   try {
-    const response = await axios.post(`${API_API_BASE_URL}/update-item-status/`, {
+    const response = await axios.post(`${API_BASE_URL}/update-item-status/`, {
       entry_no: entry_no,
       status: status,
     });
@@ -1575,7 +1575,7 @@ export const updateItemStatus = async (entry_no, status) => {
 
 // export const getUpdatedIssueApi = async () => {
 //   try {
-//     const response = await axios.get(`${API_API_BASE_URL}/pending-issues/`);
+//     const response = await axios.get(`${API_BASE_URL}/pending-issues/`);
 //     return response.data;
 //   } catch (error) {
 //     console.error("Error fetching pending issues:", error);
@@ -1586,8 +1586,8 @@ export const updateItemStatus = async (entry_no, status) => {
 export const getIssueItems = async () => {
   try {
     const response = await axios.get(
-      `${API_API_BASE_URL}/get-issue-items?status=RCH-OPEN`
-      // `${API_API_BASE_URL}/get-issue-items`
+      `${API_BASE_URL}/get-issue-items?status=RCH-OPEN`
+      // `${API_BASE_URL}/get-issue-items`
     );
     return response.data; // Returning response data
   } catch (error) {
@@ -1600,7 +1600,7 @@ export const revertStock = async (entry_no) => {
   try {
     console.log("Sending request to revertStock with:", { entry_no });
 
-    const response = await axios.post(`${API_API_BASE_URL}/revert-stock/`, {
+    const response = await axios.post(`${API_BASE_URL}/revert-stock/`, {
       entry_no: entry_no,
     });
 

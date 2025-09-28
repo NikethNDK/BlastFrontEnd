@@ -1,0 +1,223 @@
+/* Stats Dashboard Styles */
+
+.lab-stats-dashboard {
+  margin-bottom: 2rem;
+}
+
+.lab-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.lab-stat-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--lab-neutral-200);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.lab-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--lab-primary-500), var(--lab-secondary-500));
+}
+
+.lab-stat-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+}
+
+.lab-stat-card-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lab-stat-card-skeleton-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.lab-stat-card-skeleton-content {
+  flex: 1;
+}
+
+.lab-stat-card-skeleton-value {
+  width: 60px;
+  height: 24px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.lab-stat-card-skeleton-label {
+  width: 100px;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.lab-stat-card-skeleton-trend {
+  width: 50px;
+  height: 14px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.25rem;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.lab-stat-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+
+.lab-stat-card-icon-primary {
+  background: var(--lab-primary-100);
+  color: var(--lab-primary-600);
+}
+
+.lab-stat-card-icon-secondary {
+  background: var(--lab-secondary-100);
+  color: var(--lab-secondary-600);
+}
+
+.lab-stat-card-icon-accent {
+  background: var(--lab-accent-100);
+  color: var(--lab-accent-600);
+}
+
+.lab-stat-card-icon-info {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.lab-stat-card-icon-success {
+  background: var(--lab-secondary-100);
+  color: var(--lab-secondary-600);
+}
+
+.lab-stat-card-icon-warning {
+  background: var(--lab-warning-100);
+  color: var(--lab-warning-600);
+}
+
+.lab-stat-card-icon-error {
+  background: var(--lab-error-100);
+  color: var(--lab-error-600);
+}
+
+.lab-stat-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lab-stat-card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--lab-neutral-800);
+  margin: 0;
+  line-height: 1;
+}
+
+.lab-stat-card-label {
+  font-size: 0.875rem;
+  color: var(--lab-neutral-500);
+  margin: 0;
+  font-weight: 500;
+}
+
+.lab-stat-card-trend {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.lab-stat-card-trend.trend-up {
+  color: var(--lab-secondary-600);
+}
+
+.lab-stat-card-trend.trend-down {
+  color: var(--lab-error-600);
+}
+
+.lab-stat-card-trend-icon {
+  font-size: 0.875rem;
+}
+
+.lab-stat-card-trend-text {
+  font-size: 0.75rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .lab-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .lab-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .lab-stat-card {
+    padding: 1rem;
+  }
+  
+  .lab-stat-card-value {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .lab-stat-card {
+    padding: 0.75rem;
+  }
+  
+  .lab-stat-card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .lab-stat-card-value {
+    font-size: 1.5rem;
+  }
+}

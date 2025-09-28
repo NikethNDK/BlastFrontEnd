@@ -1,0 +1,178 @@
+/* Header Component Styles */
+.header-blast {
+  background: #e1dede;
+  height: 200px;
+}
+
+.header-title {
+  background: #e1dede;
+  height: 190px;
+}
+
+.header-title h1 {
+  color: rgb(25, 25, 25);
+  font-family: 'Poppins', sans-serif;
+  margin-top: 2px;
+}
+
+.header-subtitle {
+  text-align: center;
+  line-height: 1.5;
+}
+
+.header-subtitle h6 {
+  color: rgb(16, 16, 16);
+  margin: 5px 0;
+  font-size: 15px;
+}
+
+.header-subtitle h4 {
+  color: rgb(16, 16, 16);
+  margin: 5px 0;
+  font-size: 20px;
+}
+
+.header-subtitle h5 {
+  color: rgb(16, 16, 16);
+  margin: 5px 0;
+  font-size: 20px;
+}
+
+.header-navigation {
+  font-family: 'Poppins', sans-serif;
+  font-weight: bold;
+  display: flex;
+  margin-left: 20%;
+  height: 38px;
+  gap: 17px;
+  color: rgb(16, 16, 16);
+}
+
+.header-navigation .btn {
+  margin-right: 10px;
+}
+
+.header-logo-right {
+  margin-top: -40px;
+  height: 130px;
+}
+
+.header-logo img {
+  margin-top: -17px;
+}
+
+.upload-section-wrapper {
+  background-color: rgb(197, 234, 49);
+}
+
+.upload-section {
+  display: flex;
+  gap: 15px;
+}
+
+.upload-section p {
+  margin-top: 14px;
+}
+
+.upload-form {
+  margin-bottom: 20px;
+  display: flex;
+  margin-top: 14px;
+}
+
+.upload-form .MuiButton-root {
+  margin-left: 10px;
+}
+
+.blast-results-header {
+  display: flex;
+  margin-left: 44%;
+  gap: 20px;
+}
+
+.blast-results-header h4 {
+  text-align: center;
+}
+
+.download-icon {
+  cursor: pointer;
+  margin: 0 5px;
+  background-color: #1976d2;
+  height: 30px;
+  color: white;
+  width: 30px;
+  border-radius: 5px;
+  margin-left: 58%;
+}
+
+.loading-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.results-table-container {
+  margin: auto;
+  width: 73%;
+  border: 3px solid #ddd;
+  display: flex;
+  justify-content: center;
+}
+
+.results-table-container.scrollable {
+  max-height: 195px;
+  overflow-y: auto;
+}
+
+.user-details {
+  position: absolute;
+  left: 1350px;
+  top: 100px;
+  height: 100px;
+}
+
+.user-details p {
+  margin: 0;
+  margin-right: 100px;
+}
+
+.results-table {
+  font-size: 14px;
+  width: 100%;
+  text-align: center;
+}
+
+.results-table thead {
+  background-color: rgb(197, 234, 49);
+}
+
+.results-table th {
+  font-size: 12px;
+}
+
+.results-table td {
+  font-size: 12px;
+  text-align: center;
+}
+
+.results-table tbody tr:nth-child(even) {
+  background-color: #f0f0f0;
+}
+
+.results-table tbody tr:nth-child(odd) {
+  background-color: white;
+}
+
+.action-icons {
+  text-align: center;
+}
+
+.action-icons .icon {
+  cursor: pointer;
+  margin: 0 5px;
+  color: grey;
+}
+
+/* Column width classes */
+.col-width-5 { width: 5%; }
+.col-width-8 { width: 8%; }
+.col-width-10 { width: 10%; }
