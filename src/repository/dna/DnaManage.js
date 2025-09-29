@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FiEye, FiCopy, FiDownload, FiTrash } from "react-icons/fi";
-import { Table, Button, Modal } from "react-bootstrap";
+import { Table, Button, Modal, Pagination } from "react-bootstrap";
 import { FcSearch } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 
@@ -17,16 +17,35 @@ import { saveAs } from "file-saver";
 import "./DnaManage.css";
 
 const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
-  const [partialNames, setPartialNames] = useState([]); // Initialize as an empty array
+  const [partialNames, setPartialNames] = useState([]);
   const [dnas, setDnas] = useState([]);
   const [filteredDnas, setFilteredDnas] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalShow, setModalShow] = useState(false);
   const [selectedPartialData, setSelectedPartialData] = useState(null);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // You can adjust this number
 
   const uniqueScientificNames = new Set(
     filteredDnas.map((dna) => dna.scientific_name)
   ).size;
+
+  // Calculate pagination values
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredDnas.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredDnas.length / itemsPerPage);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filteredDnas.length]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   const handleExportToExcel = () => {
     if (!filteredDnas || filteredDnas.length === 0) {
@@ -34,7 +53,6 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
       return;
     }
 
-    // Format the table data for Excel
     const worksheet = XLSX.utils.json_to_sheet(
       filteredDnas.map(
         ({
@@ -76,7 +94,7 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
       try {
         const data = await getPartialApi();
         console.log(data);
-        setPartialNames(data); // Ensure it's an array
+        setPartialNames(data);
       } catch (error) {
         console.error("Error fetching partial names:", error);
       }
@@ -103,7 +121,6 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
         const lowerCaseQuery = searchQuery.toLowerCase();
 
         return (
-          // Always check reference_id
           (dna.reference_id &&
             dna.reference_id
               .toString()
@@ -114,7 +131,6 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
           ) &&
             dna.partial_name &&
             dna.partial_name.toLowerCase().includes(lowerCaseQuery)) ||
-          // Default behavior: filter by common_name or scientific_name
           (dna.common_name &&
             dna.common_name.toLowerCase().includes(lowerCaseQuery)) ||
           (dna.scientific_name &&
@@ -124,7 +140,7 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
 
       setFilteredDnas(filteredData);
     } else {
-      setFilteredDnas(dnas); // If no query, show all DNA entries
+      setFilteredDnas(dnas);
     }
   }, [searchQuery, dnas, partialNames]);
 
@@ -155,7 +171,7 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
   const deleteDnaRecord = async (reference_id) => {
     if (window.confirm("Are you sure you want to delete this record?")) {
       try {
-        await deleteDnaRecordAPI(reference_id); // Call the API function
+        await deleteDnaRecordAPI(reference_id);
         const updatedData = dnas.filter(
           (dna) => dna.reference_id !== reference_id
         );
@@ -167,17 +183,20 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
       }
     }
   };
+  
   const navigate = useNavigate();
   
   return (
     <div className="dna-manage-container">
-      <Header />
+      <header>
+        <Header />
+      </header>
       <div className="dna-manage-content">
         <Navigation userDetails={userDetails} />
         <div className="dna-manage-main">
           <div className="dna-manage-header">
             <h2 className="dna-manage-title">
-              Overview
+              OVERVIEW
             </h2>
           </div>
 
@@ -204,13 +223,13 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
                   <button
                     key={index}
                     className="btn btn-outline-primary partial-name-button"
-                    onClick={() => handlePartialNameClick(name.partial_name)} // Filters the data by partial name
+                    onClick={() => handlePartialNameClick(name.partial_name)}
                   >
                     {name.partial_name}
                   </button>
                 ))
               ) : (
-                <span className="no-partial-names-message">No partial names available</span> // Display message when no partial names are found
+                <span className="no-partial-names-message">No partial names available</span>
               )}
             </div>
             <div className="unique-names-counter">
@@ -248,7 +267,7 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredDnas.map((dna) => (
+                  {currentItems.map((dna) => (
                     <tr key={dna.id} className="table-row">
                       <td className="table-cell table-cell-sno">
                         {dna.s_no}
@@ -302,6 +321,60 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
                 </tbody>
               </Table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="pagination-container">
+                <Pagination className="custom-pagination">
+                  <Pagination.First 
+                    onClick={() => handlePageChange(1)} 
+                    disabled={currentPage === 1}
+                  />
+                  <Pagination.Prev 
+                    onClick={() => handlePageChange(currentPage - 1)} 
+                    disabled={currentPage === 1}
+                  />
+                  
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNumber = index + 1;
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      pageNumber === 1 ||
+                      pageNumber === totalPages ||
+                      (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                    ) {
+                      return (
+                        <Pagination.Item
+                          key={pageNumber}
+                          active={pageNumber === currentPage}
+                          onClick={() => handlePageChange(pageNumber)}
+                        >
+                          {pageNumber}
+                        </Pagination.Item>
+                      );
+                    } else if (
+                      pageNumber === currentPage - 2 ||
+                      pageNumber === currentPage + 2
+                    ) {
+                      return <Pagination.Ellipsis key={pageNumber} disabled />;
+                    }
+                    return null;
+                  })}
+                  
+                  <Pagination.Next 
+                    onClick={() => handlePageChange(currentPage + 1)} 
+                    disabled={currentPage === totalPages}
+                  />
+                  <Pagination.Last 
+                    onClick={() => handlePageChange(totalPages)} 
+                    disabled={currentPage === totalPages}
+                  />
+                </Pagination>
+                <div className="pagination-info">
+                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredDnas.length)} of {filteredDnas.length} entries
+                </div>
+              </div>
+            )}
 
             <Modal 
               show={modalShow} 

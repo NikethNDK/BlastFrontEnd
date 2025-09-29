@@ -10,11 +10,11 @@
 }
 
 .header-blast {
-  display: flex;
-  justify-content: space-between;
+  /* display: flex;
+  justify-content: space-between; */
   align-items: center;
   /* background-color: #fafcf8; Matching the green color in your image */
-  padding: 10px;
+  /* padding: 10px; */
   color: rgb(24, 81, 12);
   text-align: center;
   max-height: 187px;

@@ -16,69 +16,11 @@
 /* Header Component Styles */
 .header-blast {
   background: #e1dede;
-  height: 160px;
   width: 100%;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
-}
-
-.header-title {
-  background: #e1dede;
-  height: 190px;
-}
-
-.header-title h1 {
-  color: rgb(25, 25, 25);
-  font-family: 'Poppins', sans-serif;
-  margin-top: 2px;
-}
-
-.header-subtitle {
-  text-align: center;
-  line-height: 1.5;
-}
-
-.header-subtitle h6 {
-  color: rgb(16, 16, 16);
-  margin: 5px 0;
-  font-size: 15px;
-}
-
-.header-subtitle h4 {
-  color: rgb(16, 16, 16);
-  margin: 5px 0;
-  font-size: 20px;
-}
-
-.header-subtitle h5 {
-  color: rgb(16, 16, 16);
-  margin: 5px 0;
-  font-size: 20px;
-}
-
-.header-navigation {
-  font-family: 'Poppins', sans-serif;
-  font-weight: bold;
-  display: flex;
-  margin-left: 20%;
-  height: 38px;
-  gap: 17px;
-  color: rgb(16, 16, 16);
-}
-
-.header-navigation .btn {
-  margin-right: 10px;
-}
-
-.header-logo-right {
-  margin-top: -40px;
-  height: 130px;
-}
-
-.header-logo img {
-  margin-top: -17px;
 }
 
 /* Main Container Layout */

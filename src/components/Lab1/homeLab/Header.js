@@ -24,7 +24,7 @@ const Header = () => {
 
 
     return (
-        <header className={`modern-header ${isScrolled ? 'scrolled' : ''}`}>
+        <header className={`modern-header ${isScrolled ? 'scrolled' : ''}`} >
             {/* --- Left Logo Group --- */}
             <div className="header-column logo-column">
                 <img 

@@ -34,11 +34,12 @@
 
 /* --- Main Header Container --- */
 .modern-header {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
+    margin-bottom: 20px;
     
     /* Modern gradient background */
     background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%);
