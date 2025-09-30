@@ -35,7 +35,7 @@ const AddProductListReq = ({
   const [selectedItem, setSelectedItem] = useState(null);
   const [projectCodes, setProjectCodes] = useState([]);
   const [projectNames, setProjectNames] = useState([]);
-
+  const [masterTypeList, setMasterTypeList]=useState([]);
   const [selectedCodes, setSelectedCodes] = useState(null);
   const [masterType, setMasterType] = useState("");
   const formRef = useRef(null);
@@ -95,9 +95,14 @@ const AddProductListReq = ({
     getMasterApi()
       .then((data) => {
         // Filter data based on masterType
+        console.log("Before selection master type",data)
+        const uniqueMasterType=[...new Set(data.map((item)=>item.master_type))]
+        setMasterTypeList(uniqueMasterType)
+        
         if (masterType) {
           data = data.filter((item) => item.master_type === masterType);
         }
+        console.log("After selecting master type",data)
         // Set items codes and names
         setItemsCodes(
           data.map((item) => ({
@@ -107,11 +112,12 @@ const AddProductListReq = ({
             details: { units: item.units },
           }))
         );
+        console.log("item codes in the addProduct",itemsCodes)
         setItemsNames(
           data.map((item) => ({
             value: item.c_id,
             label: item.item_name,
-            itemCode: item.item_code,
+            itemCode: item.label,
             details: { units: item.units },
           }))
         );
@@ -256,7 +262,7 @@ const AddProductListReq = ({
     <div style={{ marginTop: "5px", width: "100%",height: "100%", backgroundColor: "#f3fbd6" }}>
       <div>
         <h1 style={{ textAlign: "center", color: "black" }}>
-          Request Form{" "}
+          Request Form TestAddProduct{" "}
           {/* <Button onClick={handleTransferData} style={{float: 'right'}}>Submit</Button> */}
         </h1>
       </div>
@@ -291,9 +297,11 @@ const AddProductListReq = ({
                       onChange={(e) => setMasterType(e.target.value)}
                     >
                       <option>Select Master Type</option>
-                      <option value="Chemical">Chemical</option>
-                      <option value="Labware">Labware</option>
-                      <option value="Equipment">Equipment</option>
+                      {masterTypeList.map((masterType)=>{
+                        return (
+                          <option value={masterType}>{masterType}</option>
+                        )
+                      })}
                     </select>
                     {errorMessages.masterType && (
                       <div style={{ color: "red", marginTop: "5px" }}>
