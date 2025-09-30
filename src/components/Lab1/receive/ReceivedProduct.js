@@ -114,6 +114,8 @@ const ReceivedProduct = ({
     fetchData();
   }, [userDetails.name]);
 
+  console.log('all items',allItems)
+
   // --- Project Handlers (remains the same) ---
   const handleProjectChange = (event) => {
     const selectedValue = event.target.value;
@@ -144,7 +146,7 @@ const ReceivedProduct = ({
   useEffect(() => {
     if (masterType) {
       // Filter items based on masterType from the combined 'allItems' state
-      const filteredItems = allItems.filter((item) => item.type === masterType);
+      const filteredItems = allItems.filter((item) => item.master_type === masterType);
 
       // Map for Item Codes (Select component)
       setItemsCodes(

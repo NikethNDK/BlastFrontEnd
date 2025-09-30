@@ -5,8 +5,8 @@
 /* --- CSS Custom Properties --- */
 :root {
     /* Color Palette - Modern & Professional */
-    --header-gradient-start: #1a365d;
-    --header-gradient-end: #2c5282;
+    --header-gradient-start: #c5ea31;
+    --header-gradient-end: #c5ea31;
     --accent-primary: #3182ce;
     --accent-secondary: #63b3ed;
     --text-primary: #ffffff;
@@ -42,7 +42,7 @@
     margin-bottom: 20px;
     
     /* Modern gradient background */
-    background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 100%);
+    background: linear-gradient(135deg, var(--header-gradient-start) 0%,var(--header-gradient-end) 65%, var(--header-gradient-end) 100%);
     backdrop-filter: var(--backdrop-blur);
     -webkit-backdrop-filter: var(--backdrop-blur);
     
@@ -66,11 +66,15 @@
 
 /* --- Logo Columns --- */
 .logo-column {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    padding: 8px;
+  /* display: flex; */
+  flex-direction: column; /* stack children vertically */
+  gap: 8px;
+  padding: 8px;
+}
+
+.logo-row {
+  display: flex; /* two logos side by side */
+  gap: 8px;
 }
 
 .logo {
@@ -90,6 +94,12 @@
     height: 100px;
     width: auto;
     object-fit: contain;
+}
+
+.intranet-logo {
+    margin: 0 auto;
+    height: 60px;
+    display: block;
 }
 
 /* --- Title Column (Center Content) --- */
@@ -414,7 +424,7 @@
 /* --- Dark mode support (if needed in future) --- */
 @media (prefers-color-scheme: dark) {
     :root {
-        --header-gradient-start: #0f172a;
-        --header-gradient-end: #1e293b;
+        --header-gradient-end: #013220 ;
+        --header-gradient-start: #013220 ;
     }
 }

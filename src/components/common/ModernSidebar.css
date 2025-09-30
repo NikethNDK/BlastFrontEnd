@@ -1,22 +1,29 @@
 /* --- Variables for a cleaner look (Light Theme) --- */
 :root {
+  /* Inherit colors from the Login component's style */
+  --color-brand-primary: #1a3d2a; /* Dark Green/Charcoal from login-title */
+  --color-brand-accent: #c5ea31; /* Bright Green from login-submit-btn */
+  --color-brand-accent-dark: #b5da21; /* Darker Green for hover/shadow */
+
   --sidebar-width: 280px;
   --sidebar-collapsed-width: 80px;
-  --color-background-light: var(--lab-neutral-50, #ffffff); /* Use lab design system */
-  --color-background-dark: var(--lab-neutral-100, #f8f8fa); /* Very Light Gray for contrast */
-  --color-text-dark: var(--lab-neutral-800, #334155); /* Slate Gray for main text */
-  --color-text-secondary: var(--lab-neutral-500, #64748b); /* Secondary text/muted */
-  --color-accent: var(--lab-primary-600, #2563eb); /* Blue Accent */
-  --color-accent-hover: var(--lab-primary-700, #1e40af); /* Darker Blue on hover */
-  --color-hover: var(--lab-primary-50, #f1f5f9); /* Light Gray for hover */
-  --color-active-bg: var(--lab-primary-100, #e0f2fe); /* Very Light Blue for active link background */
-  --transition-speed: var(--lab-transition-normal, 0.3s);
-  --shadow-subtle: var(--lab-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.05));
+  --color-background-light: #f3fbd6;
+  --color-background-dark: #f9fafb; /* Light Gray from form-input-modern background */
+  --color-text-dark: var(--color-brand-primary); /* Main Text */
+  --color-text-secondary: #6b7280; /* Muted Gray from login-subtitle */
+  
+  /* Accent/Interactive Colors */
+  --color-accent: var(--color-brand-accent); 
+  --color-accent-hover: var(--color-brand-accent-dark); 
+  --color-hover: #f1f5f9; /* Retained light hover for menu items */
+  --color-active-bg: rgba(197, 234, 49, 0.2); /* Transparent active background based on accent */
+  
+  --transition-speed: 0.3s;
+  --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 /* --- Base Sidebar Styles --- */
 .modern-sidebar {
-
   position: sticky; /* Change from fixed to relative */
   top: 220px;
   left: 0;
@@ -65,7 +72,7 @@
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.5px;
-  color: var(--color-accent);
+  color: var(--color-text-dark); /* Use dark primary color */
 }
 
 .modern-sidebar-logo {
@@ -110,13 +117,13 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--color-accent);
+  background: var(--color-brand-accent); /* Use bright green accent */
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--color-brand-primary); /* Dark text on bright background */
   font-size: 1.5rem;
-  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 2px 4px rgba(197, 234, 49, 0.4); /* Accent shadow */
 }
 
 .modern-sidebar-user-name {
@@ -167,7 +174,7 @@
   position: absolute;
   top: 0px;
   right: 0px;
-  background: #ef4444; /* Red */
+  background: #ef4444; /* Red for alerts/notifications */
   color: white;
   border-radius: 50%;
   padding: 1px 5px;
@@ -241,8 +248,8 @@
 
 .modern-sidebar-item.active {
   background: var(--color-active-bg);
-  color: var(--color-accent);
-  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.1);
+  color: var(--color-brand-primary); /* Dark text on light accent background */
+  box-shadow: 0 2px 5px rgba(197, 234, 49, 0.3); /* Accent shadow */
   font-weight: 600;
 }
 
@@ -253,17 +260,17 @@
 
 /* Active item icon color takes the accent color */
 .modern-sidebar-item.active .modern-sidebar-item-icon {
-  color: var(--color-accent) !important;
+  color: var(--color-brand-accent) !important; /* Bold accent icon color */
 }
 
-/* --- Icon Colors (Accent colors remain for visual separation) --- */
-.modern-sidebar-item-icon.color-primary { color: #4338ca; } /* Indigo */
+/* --- Icon Colors (Re-toned to complement the new primary color) --- */
+.modern-sidebar-item-icon.color-primary { color: #3772ff; } /* Blue for primary actions */
 .modern-sidebar-item-icon.color-success { color: #10b981; } /* Emerald */
 .modern-sidebar-item-icon.color-danger { color: #ef4444; } /* Red */
 .modern-sidebar-item-icon.color-warning { color: #f59e0b; } /* Amber */
 .modern-sidebar-item-icon.color-info { color: #06b6d4; } /* Cyan */
-.modern-sidebar-item-icon.color-secondary { color: #a855f7; } /* Violet */
-.modern-sidebar-item-icon.color-neutral { color: #64748b; } /* Gray */
+.modern-sidebar-item-icon.color-secondary { color: #8b5cf6; } /* Violet */
+.modern-sidebar-item-icon.color-neutral { color: #64748b; } /* Gray - used for settings */
 
 
 /* --- Footer and Logout --- */
@@ -279,10 +286,10 @@
   gap: 0.75rem;
   width: 100%;
   padding: 0.75rem;
-  background: #fee2e2; /* Very light red */
-  border: 1px solid #fecaca;
+  background: #fef9c3; /* Very light yellow for gentle alert/exit */
+  border: 1px solid #fde68a;
   border-radius: 0.5rem;
-  color: #dc2626;
+  color: #ca8a04; /* Darker yellow/gold color */
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
@@ -290,9 +297,9 @@
 }
 
 .modern-sidebar-logout:hover {
-  background: #fecaca; /* Lighter red on hover */
-  border-color: #dc2626;
-  color: #dc2626;
+  background: #fde68a; /* Lighter red on hover */
+  border-color: #ca8a04;
+  color: #ca8a04;
 }
 
 .modern-sidebar.collapsed .modern-sidebar-logout {

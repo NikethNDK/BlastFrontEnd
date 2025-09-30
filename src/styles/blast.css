@@ -1,9 +1,9 @@
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  /* justify-content: space-between; */
+  /* align-items: center; */
   background-color: #8bc34a; /* Matching the green color in your image */
-  padding: 10px;
+  /* padding: 10px; */
   color: rgb(24, 81, 12);
   text-align: center;
   max-height: 223px;

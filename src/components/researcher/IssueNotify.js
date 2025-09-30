@@ -4,12 +4,11 @@ import { Table, Button } from "react-bootstrap";
 import { FaBell } from "react-icons/fa";
 import {
   getItemIssueApi,
-  // getTempIssueApi,
   updateItemStatus,
   revertStock,
 } from "../../services/AppinfoService";
-import "../../App.css";
 import ResearcherNavigation from "./ResearcherNavigation";
+
 const IssueNotify = ({
   masterType,
   onDeclineNotification,
@@ -18,21 +17,6 @@ const IssueNotify = ({
   const [issued, setIssued] = useState([]);
   const [processedItems, setProcessedItems] = useState(new Set());
 
-  // useEffect(() => {
-  //   let mounted = true;
-  //   getItemIssueApi()
-  //     .then((data) => {
-  //       if (mounted) {
-  //         setIssued(data);
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching data:", error);
-  //     });
-  //   return () => (mounted = false);
-  // }, []);
-
-  // Handle the tick button click
   useEffect(() => {
     fetchPendingIssues();
   }, []);
@@ -40,34 +24,15 @@ const IssueNotify = ({
   const fetchPendingIssues = () => {
     getItemIssueApi()
       .then((data) => {
-        // Filter only pending issues
         const pendingIssues = data.filter((item) => item.status === "Pending");
         setIssued(pendingIssues);
       })
       .catch((error) => console.error("Error fetching data:", error));
   };
 
-  // useEffect(() => {
-  //   let mounted = true;
-  //   getItemIssueApi()
-  //     .then((data) => {
-  //       if (mounted) {
-  //         // Filter out already processed (accepted/declined) items
-  //         const pendingIssues = data.filter(
-  //           (item) => !processedItems.has(item.entry_no)
-  //         );
-  //         setIssued(pendingIssues);
-  //       }
-  //     })
-  //     .catch((error) => console.error("Error fetching data:", error));
-
-  //   return () => (mounted = false);
-  // }, []);
-
   const handleActionClick = (entry_no, status) => {
     updateItemStatus(entry_no, status)
       .then(() => {
-        // Remove from UI
         setIssued((prevIssued) =>
           prevIssued.filter((item) => item.entry_no !== entry_no)
         );
@@ -78,49 +43,6 @@ const IssueNotify = ({
         alert(`Failed to update item ${entry_no}. Please try again.`);
       });
   };
-
-  // const handleActionClick = (entry_no, status) => {
-  //   console.log("Sending data to updateItemStatus:", { entry_no, status });
-
-  //   updateItemStatus(entry_no, status)
-  //     .then(() => {
-  //       console.log("Updating status successful. Calling revertStock...");
-
-  //       return revertStock(entry_no);
-  //     })
-  //     .then(() => {
-  //       setIssued((prevIssued) =>
-  //         prevIssued.filter((item) => item.entry_no !== entry_no)
-  //       );
-  //       alert(`Item with Entry No: ${entry_no} has been ${status}!`);
-  //     })
-  //     .catch((error) => {
-  //       console.error(`Error updating item ${entry_no}:`, error);
-  //       alert(`Failed to update item ${entry_no}. Please try again.`);
-  //     });
-  // };
-
-  // // Example API function for reverting stock
-  // // const revertStock = async (entryNo) => {
-  // //   try {
-  // //     const response = await axios.post("/api/revert-stock/", {
-  // //       entry_no: entryNo,
-  // //     });
-  // //     console.log("Revert Stock Response:", response.data);
-  // //   } catch (error) {
-  // //     console.error(
-  // //       "Error reverting stock:",
-  // //       error.response?.data || error.message
-  // //     );
-  // //   }
-  // // };
-
-  // const handleRevert = (entry_no) => {
-  //   revertStock(entry_no);
-  //   setIssued((prevIssued) =>
-  //     prevIssued.filter((item) => item.entry_no !== entry_no)
-  //   );
-  // };
 
   const handleRevert = async (entry_no, item_code, quantity_issued) => {
     try {
@@ -149,249 +71,212 @@ const IssueNotify = ({
   };
 
   return (
-    <div>
-      <div style={{ background: "#C5EA31", height: "70px" }} className="header">
-        <h2
-          style={{ textAlign: "center", paddingTop: "15px", marginLeft: "30%" }}
-        >
-          ISSUE NOTIFICATION
-        </h2>
+    <div style={styles.container}>
+      {/* Header */}
+      <div style={styles.header}>
+        <div style={styles.headerContent}>
+          <FaBell style={styles.bellIcon} />
+          <h1 style={styles.title}>Issue Notifications</h1>
+        </div>
       </div>
 
-      <div
-        style={{ overflowY: "scroll", overflowX: "hidden", maxHeight: "500px" }}
-      >
-        <div className="row side-row" style={{ textAlign: "center" }}>
-          <p id="before-table"></p>
-          <Table
-            striped
-            bordered
-            hover
-            className="react-bootstrap-table"
-            id="dataTable"
-            style={{ margin: "auto", width: "1000px" }}
-          >
-            <thead>
-              <tr>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Entry No
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Item Code
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Item Name
-                </th>
-                {/* <th style={{ backgroundColor: '#C5EA31', width: '250px', color: 'black', textAlign: 'center', border: '1px solid black' }}>Units</th> */}
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "350px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  IssueDate
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Quantity Issued
-                </th>
-                {/* <th style={{ backgroundColor: '#C5EA31', width: '250px', color: 'black', textAlign: 'center', border: '1px solid black' }}>Issued To</th> */}
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Project Code
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Project Name
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Issued To
-                </th>
-                {/* <th style={{ backgroundColor: '#C5EA31', width: '250px', color: 'black', textAlign: 'center', border: '1px solid black' }}>Batch/Lot Number</th> */}
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Remarks
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {issued.map((inven) => (
-                <tr key={inven.id}>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {inven.entry_no}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {inven.item_code}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {inven.item_name}
-                  </td>
-                  {/* <td style={{ textAlign: 'center', border: '1px solid black' }}>{inven.unit_price}</td> */}
-                  <td
-                    style={{
-                      textAlign: "center",
-                      width: "350px",
-                      border: "1px solid black",
-                    }}
-                  >
-                    {inven.issue_date}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {inven.quantity_issued}
-                  </td>
-                  {/* <td style={{ textAlign: 'center', border: '1px solid black' }}>{inven.issued_to}</td> */}
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {inven.project_code}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {inven.project_name}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {inven.researcher_name}
-                  </td>
-                  {/* <td style={{ textAlign: 'center', border: '1px solid black' }}>{inven.batch_number}</td> */}
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {inven.remarks}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {/* <Button
-                      variant=""
-                      onClick={() => handleTickClick(inven.id)}
-                      style={{ borderColor: "#28a745" }}
-                    > */}
-                    <Button
-                      onClick={() =>
-                        handleActionClick(inven.entry_no, "Accepted")
-                      }
-                      style={{
-                        color: "black",
-                        border: "none",
-                        marginRight: "5px",
-                        background: "none",
-                        padding: "5px 18px",
-                      }}
-                    >
-                      ✔
-                    </Button>{" "}
-                    <button
-                      onClick={() =>
-                        handleRevert(
-                          inven.entry_no,
-                          inven.item_code,
-                          inven.quantity_issued
-                        )
-                      }
-                      style={{
-                        color: "black",
-                        border: "none",
-                        background: "none",
-                        marginRight: "5px",
-                        padding: "5px 18px",
-                      }}
-                    >
-                      ❌
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+      {/* Content Area */}
+      <div style={styles.contentWrapper}>
+        <div style={styles.tableContainer}>
+          {issued.length === 0 ? (
+            <div style={styles.emptyState}>
+              <FaBell style={styles.emptyIcon} />
+              <p style={styles.emptyText}>No pending notifications</p>
+            </div>
+          ) : (
+            <div style={styles.tableWrapper}>
+              <Table striped bordered hover style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.tableHeader}>Entry No</th>
+                    <th style={styles.tableHeader}>Item Code</th>
+                    <th style={styles.tableHeader}>Item Name</th>
+                    <th style={styles.tableHeader}>Issue Date</th>
+                    <th style={styles.tableHeader}>Quantity</th>
+                    <th style={styles.tableHeader}>Project Code</th>
+                    <th style={styles.tableHeader}>Project Name</th>
+                    <th style={styles.tableHeader}>Issued To</th>
+                    <th style={styles.tableHeader}>Remarks</th>
+                    <th style={styles.tableHeader}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {issued.map((inven) => (
+                    <tr key={inven.id} style={styles.tableRow}>
+                      <td style={styles.tableCell}>{inven.entry_no}</td>
+                      <td style={styles.tableCell}>{inven.item_code}</td>
+                      <td style={styles.tableCell}>{inven.item_name}</td>
+                      <td style={styles.tableCell}>{inven.issue_date}</td>
+                      <td style={styles.tableCell}>{inven.quantity_issued}</td>
+                      <td style={styles.tableCell}>{inven.project_code}</td>
+                      <td style={styles.tableCell}>{inven.project_name}</td>
+                      <td style={styles.tableCell}>{inven.researcher_name}</td>
+                      <td style={styles.tableCell}>{inven.remarks}</td>
+                      <td style={styles.actionCell}>
+                        <button
+                          onClick={() =>
+                            handleActionClick(inven.entry_no, "Accepted")
+                          }
+                          style={styles.acceptButton}
+                          title="Accept"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleRevert(
+                              inven.entry_no,
+                              inven.item_code,
+                              inven.quantity_issued
+                            )
+                          }
+                          style={styles.declineButton}
+                          title="Decline"
+                        >
+                          ✕
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
+};
+
+const styles = {
+  container: {
+    backgroundColor: "#f3fbd6",
+    overflow: "hidden",
+    display: "flex",
+    height: "69vh",
+    flexDirection: "column",
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+    flexShrink: 0,
+  },
+  headerContent: {
+    display: "flex",
+    alignItems: "start",
+    gap: "20px",
+    padding: "10px"
+  },
+  bellIcon: {
+    fontSize: "1.5rem",
+    color: "#000",
+  },
+  title: {
+    fontSize: "1.5rem",
+    fontWeight: "600",
+    color: "#000",
+    margin: 0,
+    letterSpacing: "1px",
+  },
+  contentWrapper: {
+    flex: 1,
+    padding: "30px",
+    overflow: "auto",
+    display: "flex",
+    justifyContent: "center",
+  },
+  tableContainer: {
+    width: "100%",
+    maxWidth: "1400px",
+    backgroundColor: "#ffffff",
+    borderRadius: "12px",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
+    padding: "24px",
+  },
+  tableWrapper: {
+    overflowX: "auto",
+  },
+  table: {
+    margin: 0,
+    fontSize: "14px",
+    borderCollapse: "separate",
+    borderSpacing: 0,
+  },
+  tableHeader: {
+    backgroundColor: "#3d6b1f",
+    color: "#ffffff",
+    fontWeight: "600",
+    padding: "14px 12px",
+    textAlign: "center",
+    border: "1px solid #2d5016",
+    fontSize: "13px",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    whiteSpace: "nowrap",
+  },
+  tableRow: {
+    transition: "background-color 0.2s ease",
+  },
+  tableCell: {
+    padding: "12px",
+    textAlign: "center",
+    border: "1px solid #e0e0e0",
+    color: "#333333",
+    verticalAlign: "middle",
+  },
+  actionCell: {
+    padding: "12px",
+    textAlign: "center",
+    border: "1px solid #e0e0e0",
+    verticalAlign: "middle",
+    whiteSpace: "nowrap",
+  },
+  acceptButton: {
+    backgroundColor: "#28a745",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "6px",
+    padding: "8px 16px",
+    marginRight: "8px",
+    cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: "600",
+    transition: "all 0.2s ease",
+    boxShadow: "0 2px 4px rgba(40, 167, 69, 0.2)",
+  },
+  declineButton: {
+    backgroundColor: "#dc3545",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: "6px",
+    padding: "8px 16px",
+    cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: "600",
+    transition: "all 0.2s ease",
+    boxShadow: "0 2px 4px rgba(220, 53, 69, 0.2)",
+  },
+  emptyState: {
+    textAlign: "center",
+    padding: "60px 20px",
+    color: "#999999",
+  },
+  emptyIcon: {
+    fontSize: "64px",
+    marginBottom: "20px",
+    opacity: 0.3,
+  },
+  emptyText: {
+    fontSize: "18px",
+    margin: 0,
+  },
 };
 
 export default IssueNotify;

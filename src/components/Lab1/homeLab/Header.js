@@ -27,18 +27,23 @@ const Header = () => {
         <header className={`modern-header ${isScrolled ? 'scrolled' : ''}`} >
             {/* --- Left Logo Group --- */}
             <div className="header-column logo-column">
+                <div className="logo-row">
+                    <img 
+                        src={TN_Transparent_Logo} 
+                        alt="Tamil Nadu Government Logo" 
+                        className="logo tn-logo" 
+                        loading="lazy" />
+                    <img 
+                        src={leftLogo} 
+                        alt="Wildlife Conservation Emblem" 
+                        className="logo emblem-logo" 
+                        loading="lazy" />
+                </div>
                 <img 
-                    src={TN_Transparent_Logo} 
-                    alt="Tamil Nadu Government Logo" 
-                    className="logo tn-logo"
-                    loading="lazy"
-                />
-                <img 
-                    src={leftLogo} 
-                    alt="Wildlife Conservation Emblem" 
-                    className="logo emblem-logo"
-                    loading="lazy"
-                />
+                    src={AWIC_INTRANET} 
+                    alt="AIWC Intranet Logo" 
+                    className="logo intranet-logo" 
+                    loading="lazy" />
             </div>
 
             {/* --- Center Title Group --- */}
