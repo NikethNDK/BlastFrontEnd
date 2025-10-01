@@ -1,37 +1,40 @@
-import React from "react";
-import { FcHome, FcDown, FcRedo, FcExternal } from "react-icons/fc";
-import { useState, useEffect } from "react";
-import {
-  CDBSidebar,
-  CDBSidebarContent,
-  CDBSidebarFooter,
-  CDBSidebarHeader,
-  CDBSidebarMenu,
-  CDBSidebarMenuItem,
-} from "cdbreact";
-import { Redo, Dna, Folder } from "lucide-react";
-import { FaBell, FaSignOutAlt, FaUserAlt } from "react-icons/fa";
-import { FcAddDatabase } from "react-icons/fc";
-import { NavLink, useNavigate } from "react-router-dom";
-import { Button, Navbar } from "react-bootstrap";
-import { FcHighPriority } from "react-icons/fc";
-import {
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { 
+  FaBars,
+  FaTimes,
+  FaBell,
+  FaUserCircle,
+  FaSignOutAlt,
+  FaArrowLeft,
+  FaHome,
+  FaRedo
+} from 'react-icons/fa';
+import { 
   Badge,
   Dropdown,
   DropdownToggle,
   DropdownMenu,
   DropdownItem,
-} from "reactstrap";
-import Header from "../Lab1/homeLab/Header";
+} from 'reactstrap';
+import Header from '../Lab1/homeLab/Header';
+import "../../blast/BlastSidebar.css"
 
-const ResearcherNavigation = ({
-  userDetails = { name: "", lab: "", designation: "" },
+const UserAvatarIcon = FaUserCircle;
+
+const ResearcherNavigation = ({ 
+  userDetails = { name: '', lab: '', designation: '' }, children
 }) => {
-  // const [note, setNote] = useState([]);
-  const [notifications, setNotifications] = useState([]); // Store declined notifications
+  const [collapsed, setCollapsed] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
+  };
+
   const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
-  const navigate = useNavigate()
 
   const fetchDeclinedItems = async () => {
     try {
@@ -55,11 +58,11 @@ const ResearcherNavigation = ({
   }, []);
 
   const cancelNotification = async (entry_no) => {
-    console.log("Sending request with entry_no:", entry_no); // Debugging line
+    console.log("Sending request with entry_no:", entry_no);
 
     try {
       const payload = {
-        id: entry_no, // Dynamically set the id
+        id: entry_no,
         status: "RCH-CLSD",
       };
 
@@ -76,10 +79,6 @@ const ResearcherNavigation = ({
       const result = await response.json();
 
       if (response.ok) {
-        // Remove the accepted item from the UI
-        // setNote((prevNotes) =>
-        //   prevNotes.filter((n) => n.entry_no !== entry_no)
-        // );
         alert("Item has been closed.");
       } else {
         console.error("Failed to close item:", result.error);
@@ -89,257 +88,214 @@ const ResearcherNavigation = ({
     }
     fetchDeclinedItems();
   };
-    const handleLogout = () => {
-    // Add logout logic here
+
+  const handleLogout = () => {
     window.location.href = '/';
   };
 
   return (
-    <div style={{backgroundColor: "#f2f5e6"}}>
+    <div style={{ backgroundColor: "#f2f5e6" }}>
       <header className="headerr">
-        <Header/>
+        <Header />
       </header>
 
-      <div className="sidebar" style={{height: "500px",backgroundColor: "#f5f5f5"}} >
-        <CDBSidebar
-          className="narrow-sidebar"
-          textColor="black"
-          backgroundColor="white"
-          style={{height: "calc(100vh-150px)",marginLeft: "10px",border: "1px solid #ccc",borderRadius: "10px"}}
-        >
-          <CDBSidebarHeader
-            style={{ gap: "x",fontSize:"2rem" }}
-            prefix={<i className="fa fa-bars" />}
-          >
-              <button 
-              onClick={() => navigate('/')} 
-              style={{ 
-                background: "none", 
-                border: "none", 
-                cursor: "pointer", 
-                fontSize: "20px",
-                marginRight: "8px"
-              }}
-            ><i className="fa fa-arrow-left" /></button>
-            Researcher
-      
-          </CDBSidebarHeader>
-          <CDBSidebarContent>
-                        <div className="modern-sidebar-top-meta">
-                <div className="modern-sidebar-user">
-                  <div className="modern-sidebar-user-avatar">
-                    <FaUserAlt />
-                  </div>
-                  <div className="modern-sidebar-user-info">
-                    <div className="modern-sidebar-user-name">
-                      {userDetails.name}
-                    </div>
-                    <div className="modern-sidebar-user-role">
-                      {userDetails.designation}
-                    </div>
-                    <div className="modern-sidebar-user-lab">
-                      {userDetails.lab}
-                    </div>
-                  </div>
+      <div style={{display: "flex"}}>
+        {/* Mobile Overlay */}
+        {!collapsed && (
+          <div 
+            className="blast-sidebar-overlay d-lg-none"
+            onClick={() => setCollapsed(true)}
+          />
+        )}
+
+        {/* Sidebar */}
+        <div className={`blast-sidebar ${collapsed ? 'collapsed' : ''}`}>
+          
+          {/* Header and Toggle */}
+          <div className="blast-sidebar-header">
+            <div className="d-flex align-items-center justify-content-between w-100">
+              {!collapsed && (
+                <div className="blast-sidebar-brand">
+                  <button 
+                    className="blast-sidebar-logo" 
+                    onClick={() => navigate('/')}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    <FaArrowLeft />
+                  </button>
+                  <span>Researcher</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* User Info Section */}
+          <div className="blast-sidebar-top-meta">
+            {!collapsed && (
+              <div className="blast-sidebar-user">
+                <div className="blast-sidebar-user-avatar">
+                  <UserAvatarIcon />
+                </div>
+                <div className="blast-sidebar-user-info">
+                  <div className="blast-sidebar-user-name">{userDetails.name}</div>
+                  <div className="blast-sidebar-user-role">{userDetails.designation}</div>
+                  <div className="blast-sidebar-user-lab">{userDetails.lab}</div>
                 </div>
               </div>
-            <CDBSidebarMenu>
-              <Dropdown
-                style={{ marginLeft: "40%" }}
-                isOpen={dropdownOpen}
-                toggle={toggleDropdown}
-                className="d-inline ml-3"
-              >
-                <DropdownToggle tag="span" className="position-relative">
-                  <FaBell
-                    size={22}
-                    style={{ cursor: "pointer", color: "yellowgreen" }}
-                  />
-                    <i className="fa fa-caret-down" />
-                  {notifications.length > 0 && (
-                    <Badge
-                      color="danger"
-                      pill
-                      className="position-absolute"
-                      style={{ top: "px", right: "-5px" }}
+            )}
+          </div>
+          
+          {/* Menu (Navigation) */}
+          <div className="blast-sidebar-menu-wrapper">
+            <div className="blast-sidebar-section">
+              {!collapsed && <div className="blast-sidebar-section-title">Navigation</div>}
+              
+              {/* Notification Dropdown */}
+              {!collapsed && (
+                <div style={{ padding: '0.5rem 1rem', marginBottom: '0.5rem' }}>
+                  <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+                    <DropdownToggle 
+                      tag="div" 
+                      className="position-relative d-flex align-items-center gap-2"
+                      style={{ cursor: 'pointer' }}
                     >
-                      {notifications.length}
-                    </Badge>
-                  )}
-                </DropdownToggle>
-
-                <DropdownMenu
-                  style={{
-                    width: "250px",
-                    height: "200px",
-                    overflowY: "auto",
-                  }}
-                >
-                  {notifications.length === 0 ? (
-                    <DropdownItem
-                      style={{
-                        fontSize: "20px",
-                        marginTop: "-11px",
-                        color: "black",
-                      }}
-                      disabled
-                    >
-                      No new notifications
-                    </DropdownItem>
-                  ) : (
-                    notifications.map((notif, index) => (
-                      <DropdownItem
-                        key={index}
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          padding: "1px 1px",
-                          width: "290px",
-                        }}
-                      >
-                        <div style={{ flex: 1 }}>
-                          <strong>{notif.item_name}</strong>
-                          <small style={{ display: "block", color: "black" }}>
-                            {/* {notif.status} */}
-                          </small>
-                        </div>
-                        <button
-                          onClick={() => cancelNotification(notif.entry_no)}
-                          style={{
-                            border: "none",
-                            cursor: "pointer",
-
-                            padding: "1px 5px",
-                            fontSize: "20px",
-                            display: "inline-flex",
-                            alignItems: "left",
-                            width: "50px",
-                          }}
+                      <FaBell size={20} style={{ color: 'yellowgreen' }} />
+                      <span style={{ fontSize: '0.9rem', fontWeight: '500' }}>Notifications</span>
+                      <i className="fa fa-caret-down" style={{ marginLeft: 'auto' }} />
+                      {notifications.length > 0 && (
+                        <Badge
+                          color="danger"
+                          pill
+                          className="position-absolute"
+                          style={{ top: '-5px', right: '10px', fontSize: '0.7rem' }}
                         >
-                          <span style={{ marginLeft: "5px", marginTop: "8%" }}>
-                            ❌{" "}
-                          </span>
-                        </button>
-                      </DropdownItem>
-                    ))
-                  )}
-                </DropdownMenu>
-              </Dropdown>
-              <NavLink exact to="/re_notify" activeClassName="activeClicked">
-                {({ isActive }) => (
-                  <CDBSidebarMenuItem
-                    style={{
-                      backgroundColor: isActive ? "#c1e62d" : "transparent",
-                      color: isActive ? "#20442a" : "#20442a",
-                      borderRadius: "5px",
-                      fontSize: "1rem"
-                    }}  
-                  >
-                    <FcHighPriority
-                      style={{ marginRight: "8px", fontSize: "24px" }}
-                    />
-                    Notification
-                  </CDBSidebarMenuItem>
-                )}
-              </NavLink>
+                          {notifications.length}
+                        </Badge>
+                      )}
+                    </DropdownToggle>
 
-              <NavLink
-                exact
-                to="/addProductReq"
-                activeClassName="activeClicked"
-              >
-                {({ isActive }) => (
-                  <CDBSidebarMenuItem
-                    style={{
-                      backgroundColor: isActive ? "#c1e62d" : "transparent",
-                      color: isActive ? "#20442a" : "#20442a",
-                      borderRadius: "5px",
-                      fontSize: "1rem"
-                    }} 
-                  >
-                    <Redo
+                    <DropdownMenu
                       style={{
-                        marginRight: "10px",
-                        fontSize: "24px",
-                        color: "lightblue",
+                        width: "280px",
+                        maxHeight: "300px",
+                        overflowY: "auto",
+                        marginTop: '0.5rem'
                       }}
-                    />
-                    Request
-                  </CDBSidebarMenuItem>
-                )}
-              </NavLink>
-              <NavLink
-                exact
-                to="/change_password"
-                activeClassName="activeClicked"
-              >
-                {({ isActive }) => (
-                  <CDBSidebarMenuItem
-                    style={{
-                      backgroundColor: isActive ? "#c1e62d" : "transparent",
-                      color: isActive ? "#20442a" : "#20442a",
-                      borderRadius: "5px",
-                      fontSize: "1rem"
-                    }} 
-                  >
-                    <FcRedo
-                      style={{
-                        marginRight: "10px",
-                        fontSize: "24px",
-                        color: "blue",
-                      }}
-                    />
-                    Change Password
-                  </CDBSidebarMenuItem>
-                )}
-              </NavLink>
-              <NavLink exact to="/masters" activeClassName="activeClicked">
-                {({ isActive }) => (
-                  <CDBSidebarMenuItem
-                    style={{
-                      backgroundColor: isActive ? "#c1e62d" : "transparent",
-                      color: isActive ? "#20442a" : "#20442a",
-                      borderRadius: "5px",
-                      fontSize: "1rem"
-                    }} 
-                  >
-                    <FcHome style={{ marginRight: "8px", fontSize: "24px" }} />
-                    Inventory View
-                  </CDBSidebarMenuItem>
-                )}
-              </NavLink>
-            
-            </CDBSidebarMenu>
-          <CDBSidebarFooter className="modern-sidebar-footer">
-            <button
-              className="modern-sidebar-logout"
+                    >
+                      {notifications.length === 0 ? (
+                        <DropdownItem disabled>
+                          No new notifications
+                        </DropdownItem>
+                      ) : (
+                        notifications.map((notif, index) => (
+                          <DropdownItem
+                            key={index}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: 'center',
+                              padding: "0.75rem",
+                              borderBottom: index < notifications.length - 1 ? '1px solid #e2e8f0' : 'none'
+                            }}
+                          >
+                            <div style={{ flex: 1 }}>
+                              <strong style={{ fontSize: '0.9rem' }}>{notif.item_name}</strong>
+                            </div>
+                            <button
+                              onClick={() => cancelNotification(notif.entry_no)}
+                              style={{
+                                border: "none",
+                                background: 'transparent',
+                                cursor: "pointer",
+                                fontSize: "1.2rem",
+                                padding: '0.25rem'
+                              }}
+                            >
+                              ❌
+                            </button>
+                          </DropdownItem>
+                        ))
+                      )}
+                    </DropdownMenu>
+                  </Dropdown>
+                </div>
+              )}
+
+              <nav className="blast-sidebar-menu">
+                <NavLink
+                  to="/re_notify"
+                  className={({ isActive }) => 
+                    `blast-sidebar-item ${isActive ? 'active' : ''}`
+                  }
+                  title="Notification"
+                >
+                  <FaBell className="blast-sidebar-item-icon" style={{ color: '#ef4444' }} />
+                  {!collapsed && (
+                    <span className="blast-sidebar-item-text">Notification</span>
+                  )}
+                </NavLink>
+
+                <NavLink
+                  to="/addProductReq"
+                  className={({ isActive }) => 
+                    `blast-sidebar-item ${isActive ? 'active' : ''}`
+                  }
+                  title="Request"
+                >
+                  <FaRedo className="blast-sidebar-item-icon" style={{ color: '#3b82f6' }} />
+                  {!collapsed && (
+                    <span className="blast-sidebar-item-text">Request</span>
+                  )}
+                </NavLink>
+
+                <NavLink
+                  to="/change_password"
+                  className={({ isActive }) => 
+                    `blast-sidebar-item ${isActive ? 'active' : ''}`
+                  }
+                  title="Change Password"
+                >
+                  <FaRedo className="blast-sidebar-item-icon" style={{ color: '#8b5cf6' }} />
+                  {!collapsed && (
+                    <span className="blast-sidebar-item-text">Change Password</span>
+                  )}
+                </NavLink>
+
+                <NavLink
+                  to="/masters"
+                  className={({ isActive }) => 
+                    `blast-sidebar-item ${isActive ? 'active' : ''}`
+                  }
+                  title="Inventory View"
+                >
+                  <FaHome className="blast-sidebar-item-icon" style={{ color: '#10b981' }} />
+                  {!collapsed && (
+                    <span className="blast-sidebar-item-text">Inventory View</span>
+                  )}
+                </NavLink>
+              </nav>
+            </div>
+          </div>
+
+          {/* Footer - Logout Button */}
+          <div className="blast-sidebar-footer">
+            <button 
+              className="blast-sidebar-logout"
               onClick={handleLogout}
               title="Logout"
-              style={{
-                width: "100%",
-                padding: "12px",
-                border: "none",
-                background: "transparent",
-                color: "#20442a",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "flex-start",
-                gap: "10px",
-                cursor: "pointer",
-                fontSize: "1rem",
-              }}
             >
               <FaSignOutAlt />
-              <span>Logout</span>
+              {!collapsed && <span>Logout</span>}
             </button>
-          </CDBSidebarFooter>
-          </CDBSidebarContent>
-        </CDBSidebar>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+            {children}
+        </div>
       </div>
     </div>
   );
 };
-
-
 
 export default ResearcherNavigation;

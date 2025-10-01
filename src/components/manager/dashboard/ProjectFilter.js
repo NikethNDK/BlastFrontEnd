@@ -7,89 +7,67 @@ const ProjectManage = () => {
 
   useEffect(() => {
     getProjectApi()
-      .then((data) => {
-        setProjects(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
+      .then((data) => setProjects(data))
+      .catch((error) => console.error("Error fetching data:", error));
   }, []);
 
   return (
-    <div>
-      {/* <div style={{ background: "#C5EA31", height: "70px" }} className="header">
-        <h2 style={{ textAlign: "center", paddingTop: "15px" }}>
-          PROJECT MASTER
-        </h2>
-      </div> */}
-      <p></p>
-      <div style={{ overflowY: "scroll", maxHeight: "327px" }}>
+    <div style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+      <div style={{ overflowY: "auto", maxHeight: "350px", width: "fit-content", padding: "5px" }}>
         <Table
           striped
           bordered
           hover
-          className="project-table"
-          id="dataTable"
-          style={{ margin: "auto", width: "500px" }}
+          style={{
+            minWidth: "500px",
+            borderRadius: "10px",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+            backgroundColor: "#f7f9fc",
+          }}
         >
           <thead>
             <tr>
-              <th
-                style={{
-                  backgroundColor: "#C5EA31",
-                  width: "250px",
-                  color: "black",
-                  textAlign: "center",
-                  border: "1px solid black",
-                }}
-              >
-                Project Code
-              </th>
-              <th
-                style={{
-                  backgroundColor: "#C5EA31",
-                  width: "250px",
-                  color: "black",
-                  textAlign: "center",
-                  border: "1px solid black",
-                }}
-              >
-                Project Name
-              </th>
-              <th
-                style={{
-                  backgroundColor: "#C5EA31",
-                  width: "250px",
-                  color: "black",
-                  textAlign: "center",
-                  border: "1px solid black",
-                }}
-              >
-                Status
-              </th>
+              <th style={{ textAlign: "center", border: "1px solid #dee2e6", backgroundColor: "#f7f9fc", color:"#6c757d" }}>Project Code</th>
+              <th style={{ textAlign: "center", border: "1px solid #dee2e6", backgroundColor: "#f7f9fc", color:"#6c757d" }}>Project Name</th>
+              <th style={{ textAlign: "center", border: "1px solid #dee2e6", backgroundColor: "#f7f9fc", color:"#6c757d" }}>Status</th>
             </tr>
           </thead>
           <tbody>
-            {projects.map((proj) => (
-              <tr key={proj.project_code}>
-                <td style={{ textAlign: "center", border: "1px solid black" }}>
-                  {proj.project_code}
-                </td>
-                <td style={{ textAlign: "center", border: "1px solid black" }}>
-                  {proj.project_name || ""}
-                </td>
+            {projects.length === 0 ? (
+              <tr>
                 <td
+                  colSpan="3"
                   style={{
                     textAlign: "center",
-                    border: "1px solid black",
-                    color: proj.deleted === 0 ? "green" : "red",
-                    fontWeight: "bold",
+                    color: "#6c757d",
+                    padding: "20px 0",
                   }}
                 >
-                  {proj.deleted === 0 ? "Active" : "Inactive"}
+                  Currently no projects
                 </td>
               </tr>
-            ))}
+            ) : (
+              projects.map((proj) => (
+                <tr key={proj.project_code}>
+                  <td style={{ textAlign: "center", border: "1px solid #dee2e6" }}>
+                    {proj.project_code}
+                  </td>
+                  <td style={{ textAlign: "center", border: "1px solid #dee2e6" }}>
+                    {proj.project_name || ""}
+                  </td>
+                  <td
+                    style={{
+                      textAlign: "center",
+                      border: "1px solid #dee2e6",
+                      color: proj.deleted === 0 ? "green" : "red",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {proj.deleted === 0 ? "Active" : "Inactive"}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </Table>
       </div>

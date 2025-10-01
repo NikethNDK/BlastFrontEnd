@@ -42,7 +42,8 @@ const ChangePassword = ({ userDetails = { name: '', lab: '', designation: '' } }
           display: 'flex', 
           flexDirection: 'column', 
           width: '100%',
-          height: '100%'
+          height: '100%',
+          backgroundColor:"#f2f5e6"
         }}>
           {/* Header Section */}
           <div className="change-password-header">

@@ -9,10 +9,10 @@
     --header-gradient-end: #c5ea31;
     --accent-primary: #3182ce;
     --accent-secondary: #63b3ed;
-    --text-primary: #ffffff;
+    --text-primary: #000;
     --text-secondary: #e2e8f0;
     --text-muted: #cbd5e0;
-    --divider-color: rgba(255, 255, 255, 0.2);
+    --divider-color: rgba(0, 0, 0, 0.055);
     --shadow-primary: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     --shadow-button: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     
@@ -139,19 +139,19 @@
 
 .subtitle.light-text {
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: var(--text-primary);
     font-weight: 400;
 }
 
 .subtitle.dark-text {
     font-size: 1rem;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     font-weight: 600;
 }
 
 .address-text {
     font-size: 0.95rem;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     margin: 4px 0 16px 0;
     font-style: italic;
     opacity: 0.9;
@@ -165,7 +165,7 @@
     gap: 20px;
     padding-top: 16px;
     margin-top: 12px;
-    border-top: 1px solid var(--divider-color);
+    border-top: 2px solid var(--divider-color);
     position: relative;
 }
 
@@ -184,7 +184,7 @@
     font-family: var(--font-secondary);
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     margin: 0;
     letter-spacing: 0.1em;
     text-align: center;
@@ -424,7 +424,7 @@
 /* --- Dark mode support (if needed in future) --- */
 @media (prefers-color-scheme: dark) {
     :root {
-        --header-gradient-end: #013220 ;
-        --header-gradient-start: #013220 ;
+        --header-gradient-end: #c5ea31 ;
+        --header-gradient-start: #c5ea31 ;
     }
 }

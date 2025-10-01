@@ -140,6 +140,7 @@
 .lab-body-container {
   display: flex;
   /* margin-top: 160px;  */
+  background: #f2f5e6;
   min-height: 100vh;
   flex: 1;
   width: 100%;
@@ -163,7 +164,7 @@
   position: relative; /* Change from fixed to relative */
   width: 280px;
   height: calc(100vh - 120px);
-  background: var(--lab-white);
+  background: #f2f5e6;
   border-right: 1px solid var(--lab-neutral-200);
   box-shadow: var(--lab-shadow-sm);
   z-index: 999;
@@ -312,7 +313,7 @@
 
 .lab-main-content {
   flex: 1;
-  background: var(--lab-neutral-50);
+  background: #f2f5e6;
   transition: all var(--lab-transition-normal);
   overflow-y: auto;
   display: flex;

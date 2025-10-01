@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Card, Row, Col, Badge, InputGroup, Form, Alert } from "react-bootstrap";
 import { FaEdit, FaPlus, FaEye, FaSearch, FaDownload, FaFilter, FaSort, FaTrash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-import { RiDeleteBin5Line } from "react-icons/ri";
-import { AiOutlineDownload } from "react-icons/ai";
 import AddProjectModal from "./AddProjectModal";
 import UpdateProjectModal from "./UpdateProjectModal";
 import {
@@ -10,8 +7,7 @@ import {
   inactiveProjectApi,
 } from "../../../services/AppinfoService";
 import * as XLSX from "xlsx";
-import "../../styles/styles.css";
-// import "../../styles/modern-design.css";
+import "./ProjectManage.css";
 
 const ProjectManage = () => {
   const [projects, setProjects] = useState([]);
@@ -37,7 +33,7 @@ const ProjectManage = () => {
         const data = await getProjectApi();
         if (mounted) {
           setProjects(data);
-          setCurrentPage(1); // Reset to first page when data changes
+          setCurrentPage(1);
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -74,7 +70,6 @@ const ProjectManage = () => {
       await inactiveProjectApi(project_code);
       alert("Project Inactivated");
       
-      // Update the projects state to mark the project as inactive
       setProjects((prevProjects) =>
         prevProjects.map((proj) =>
           proj.project_code === project_code
@@ -90,10 +85,14 @@ const ProjectManage = () => {
 
   const handleSearch = (searchValue) => {
     setSearchTerm(searchValue);
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1);
   };
 
-  const handleSort = (key, direction) => {
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
     setSortConfig({ key, direction });
   };
 
@@ -105,7 +104,6 @@ const ProjectManage = () => {
   const filteredAndSortedProjects = React.useMemo(() => {
     let filtered = projects;
 
-    // Apply search filter
     if (searchTerm) {
       filtered = projects.filter(project =>
         project.project_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -113,7 +111,6 @@ const ProjectManage = () => {
       );
     }
 
-    // Apply sorting
     if (sortConfig.key) {
       filtered.sort((a, b) => {
         const aValue = a[sortConfig.key];
@@ -149,353 +146,309 @@ const ProjectManage = () => {
     XLSX.writeFile(workbook, "project_data.xlsx");
   };
 
-
   return (
-    <div className="modern-container fade-in">
-      {/* Modern Header */}
-      <div className="modern-header">
-        <div className="container">
-          <Row className="align-items-center">
-            <Col md={8}>
-              <h1 className="text-gradient mb-0">
-                <FaEye className="me-3" />
-                Project Management
+    <div className="project-manage-container">
+      <div className="project-manage-wrapper">
+        {/* Header */}
+        <div className="project-manage-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h1>
+                <FaEye style={{ marginRight: '0.75rem' }} />
+                PROJECT MANAGEMENT
               </h1>
-              <p className="mt-2 mb-0 opacity-75">
-                Manage and organize your research projects efficiently
-              </p>
-            </Col>
-            <Col md={4} className="text-end">
-              <Button
-                className="btn-modern btn-modern-primary"
-                onClick={handleAdd}
-                size="lg"
-              >
-                <FaPlus className="me-2" />
-                Add New Project
-              </Button>
-            </Col>
-          </Row>
+              <p>Manage and organize your research projects efficiently</p>
+            </div>
+            <button className="project-btn project-btn-primary project-btn-lg" onClick={handleAdd}>
+              <FaPlus />
+              Add New Project
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Stats Cards */}
-      <Row className="mb-5">
-        <Col md={3}>
-          <Card className="modern-card h-100">
-            <Card.Body className="text-center">
-              <div className="text-primary mb-2">
-                <FaEye size={32} />
-              </div>
-              <h3 className="text-gradient mb-1">{projects.length}</h3>
-              <p className="text-muted mb-0">Total Projects</p>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card className="modern-card h-100">
-            <Card.Body className="text-center">
-              <div className="text-success mb-2">
-                <FaCheckCircle size={32} />
-              </div>
-              <h3 className="text-gradient mb-1">
-                {projects.filter(p => p.deleted === 0).length}
-              </h3>
-              <p className="text-muted mb-0">Active Projects</p>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card className="modern-card h-100">
-            <Card.Body className="text-center">
-              <div className="text-warning mb-2">
-                <FaTimesCircle size={32} />
-              </div>
-              <h3 className="text-gradient mb-1">
-                {projects.filter(p => p.deleted === 1).length}
-              </h3>
-              <p className="text-muted mb-0">Inactive Projects</p>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
-          <Card className="modern-card h-100">
-            <Card.Body className="text-center">
-              <div className="text-info mb-2">
-                <FaDownload size={32} />
-              </div>
-              <h3 className="text-gradient mb-1">Export</h3>
-              <p className="text-muted mb-0">Download Data</p>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+        {/* Stats Cards */}
+        <div className="project-stats-container">
+          <div className="project-stat-card">
+            <div className="project-stat-icon primary">
+              <FaEye />
+            </div>
+            <div className="project-stat-value">{projects.length}</div>
+            <p className="project-stat-label">Total Projects</p>
+          </div>
+          
+          <div className="project-stat-card">
+            <div className="project-stat-icon success">
+              <FaCheckCircle />
+            </div>
+            <div className="project-stat-value">
+              {projects.filter(p => p.deleted === 0).length}
+            </div>
+            <p className="project-stat-label">Active Projects</p>
+          </div>
+          
+          <div className="project-stat-card">
+            <div className="project-stat-icon warning">
+              <FaTimesCircle />
+            </div>
+            <div className="project-stat-value">
+              {projects.filter(p => p.deleted === 1).length}
+            </div>
+            <p className="project-stat-label">Inactive Projects</p>
+          </div>
+          
+          <div className="project-stat-card">
+            <div className="project-stat-icon info">
+              <FaDownload />
+            </div>
+            <p className="project-stat-label">Download Data</p>
+          </div>
+        </div>
 
-      {/* Main Content Card */}
-      <Card className="modern-card">
-        <Card.Header className="modern-card-header">
-          <Row className="align-items-center">
-            <Col md={6}>
-              <h4 className="mb-0">
-                <FaFilter className="me-2" />
-                Project List
-              </h4>
-            </Col>
-            <Col md={6} className="text-end">
-              <Button
-                variant="outline-light"
-                className="btn-modern"
-                onClick={() => exportToExcel(projects)}
-              >
-                <FaDownload className="me-2" />
-                Export to Excel
-              </Button>
-            </Col>
-          </Row>
-        </Card.Header>
+        {/* Main Content Card */}
+        <div className="project-content-card">
+          <div className="project-content-header">
+            <h4>
+              <FaFilter />
+              Project List
+            </h4>
+            <button 
+              className="project-btn project-btn-outline-light"
+              onClick={() => exportToExcel(projects)}
+            >
+              <FaDownload />
+              Export to Excel
+            </button>
+          </div>
 
-        <Card.Body className="modern-card-body">
-          {/* Search and Filter Bar */}
-          <Row className="mb-4">
-            <Col md={8}>
-              <div className="modern-search">
-                <FaSearch className="search-icon" />
-                <Form.Control
+          <div className="project-content-body">
+            {/* Search and Filter Bar */}
+            <div className="project-search-bar">
+              <div className="project-search-wrapper">
+                <FaSearch className="project-search-icon" />
+                <input
                   type="text"
                   placeholder="Search projects by code or name..."
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="border-0 shadow-sm"
+                  className="project-search-input"
                 />
               </div>
-            </Col>
-            <Col md={4} className="text-end">
-              <div className="d-flex gap-2">
-                <Button
-                  variant="outline-primary"
-                  size="sm"
-                  className="btn-modern"
-                  onClick={() => setSortConfig({ key: 'project_name', direction: 'asc' })}
+              <div className="project-filter-buttons">
+                <button
+                  className="project-btn project-btn-outline-primary project-btn-sm"
+                  onClick={() => handleSort('project_name')}
                 >
-                  <FaSort className="me-1" />
+                  <FaSort />
                   Sort
-                </Button>
-                <Button
-                  variant="outline-secondary"
-                  size="sm"
-                  className="btn-modern"
+                </button>
+                <button
+                  className="project-btn project-btn-outline-secondary project-btn-sm"
                   onClick={() => {
                     setSearchTerm('');
                     setSortConfig({ key: null, direction: 'asc' });
                   }}
                 >
-                  <FaFilter className="me-1" />
+                  <FaFilter />
                   Clear
-                </Button>
+                </button>
               </div>
-            </Col>
-          </Row>
-
-          {/* Loading State */}
-          {loading && (
-            <div className="modern-spinner">
-              <div className="spinner"></div>
             </div>
-          )}
 
-          {/* Error State */}
-          {error && (
-            <Alert variant="danger" className="modern-card">
-              <FaTimesCircle className="me-2" />
-              {error}
-            </Alert>
-          )}
+            {/* Loading State */}
+            {loading && (
+              <div className="project-loading">
+                <div className="project-spinner"></div>
+              </div>
+            )}
 
-          {/* Projects Table */}
-          {!loading && !error && (
-            <>
-              <div className="modern-table">
-                <table className="table table-hover mb-0">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '20%' }}>
-                        <div className="d-flex align-items-center">
-                          Project Code
-                          <FaSort className="ms-2 text-muted" size={12} />
-                        </div>
-                      </th>
-                      <th style={{ width: '40%' }}>
-                        <div className="d-flex align-items-center">
-                          Project Name
-                          <FaSort className="ms-2 text-muted" size={12} />
-                        </div>
-                      </th>
-                      <th style={{ width: '15%' }}>Status</th>
-                      <th style={{ width: '15%' }}>Created</th>
-                      <th style={{ width: '10%' }} className="text-center">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedProjects.length === 0 ? (
+            {/* Error State */}
+            {error && (
+              <div className="project-alert project-alert-danger">
+                <FaTimesCircle />
+                {error}
+              </div>
+            )}
+
+            {/* Projects Table */}
+            {!loading && !error && (
+              <>
+                <div className="project-table-wrapper">
+                  <table className="project-table">
+                    <thead>
                       <tr>
-                        <td colSpan="5" className="text-center py-5">
-                          <div className="text-muted">
-                            <FaEye size={48} className="mb-3 opacity-50" />
-                            <h5>No projects found</h5>
-                            <p>Click "Add New Project" to create your first project</p>
+                        <th style={{ width: '20%' }}>
+                          <div 
+                            className="project-table-header-sortable"
+                            onClick={() => handleSort('project_code')}
+                          >
+                            Project Code
+                            <FaSort className="project-table-sort-icon" />
                           </div>
-                        </td>
+                        </th>
+                        <th style={{ width: '40%' }}>
+                          <div 
+                            className="project-table-header-sortable"
+                            onClick={() => handleSort('project_name')}
+                          >
+                            Project Name
+                            <FaSort className="project-table-sort-icon" />
+                          </div>
+                        </th>
+                        <th style={{ width: '15%' }}>Status</th>
+                        <th style={{ width: '15%' }}>Created</th>
+                        <th style={{ width: '10%', textAlign: 'center' }}>Actions</th>
                       </tr>
-                    ) : (
-                      paginatedProjects.map((project, index) => (
-                        <tr key={project.project_code} className="fade-in">
-                          <td>
-                            <div className="fw-bold text-primary">
-                              {project.project_code}
-                            </div>
-                          </td>
-                          <td>
-                            <div className="fw-semibold">
-                              {project.project_name}
-                            </div>
-                          </td>
-                          <td>
-                            <Badge 
-                              className={`modern-badge ${
-                                project.deleted === 0 
-                                  ? 'modern-badge-success' 
-                                  : 'modern-badge-secondary'
-                              }`}
-                            >
-                              {project.deleted === 0 ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </td>
-                          <td>
-                            <small className="text-muted">
-                              {new Date().toLocaleDateString()}
-                            </small>
-                          </td>
-                          <td className="text-center">
-                            <div className="d-flex gap-1 justify-content-center">
-                              <Button
-                                variant="outline-primary"
-                                size="sm"
-                                className="btn-modern"
-                                onClick={() => handleUpdate(null, project)}
-                                title="Edit Project"
-                              >
-                                <FaEdit size={12} />
-                              </Button>
-                              {project.deleted === 0 && (
-                                <Button
-                                  variant="outline-danger"
-                                  size="sm"
-                                  className="btn-modern"
-                                  onClick={() => {
-                                    if (window.confirm('Are you sure you want to inactivate this project?')) {
-                                      handleInactive(project.project_code);
-                                    }
-                                  }}
-                                  title="Inactivate Project"
-                                >
-                                  <FaTrash size={12} />
-                                </Button>
-                              )}
+                    </thead>
+                    <tbody>
+                      {paginatedProjects.length === 0 ? (
+                        <tr>
+                          <td colSpan="5">
+                            <div className="project-empty-state">
+                              <FaEye className="project-empty-icon" />
+                              <h5>No projects found</h5>
+                              <p>Click "Add New Project" to create your first project</p>
                             </div>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="modern-pagination">
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    className="btn-modern"
-                    onClick={() => handlePageChange(1)}
-                    disabled={currentPage === 1}
-                  >
-                    First
-                  </Button>
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    className="btn-modern"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-                    if (page > totalPages) return null;
-                    
-                    return (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "primary" : "outline-primary"}
-                        size="sm"
-                        className={`btn-modern ${currentPage === page ? 'active' : ''}`}
-                        onClick={() => handlePageChange(page)}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  })}
-                  
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    className="btn-modern"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                  <Button
-                    variant="outline-primary"
-                    size="sm"
-                    className="btn-modern"
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={currentPage === totalPages}
-                  >
-                    Last
-                  </Button>
+                      ) : (
+                        paginatedProjects.map((project) => (
+                          <tr key={project.project_code}>
+                            <td>
+                              <div style={{ fontWeight: '600', color: '#007bff' }}>
+                                {project.project_code}
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ fontWeight: '500' }}>
+                                {project.project_name}
+                              </div>
+                            </td>
+                            <td>
+                              <span 
+                                className={`project-badge ${
+                                  project.deleted === 0 
+                                    ? 'project-badge-success' 
+                                    : 'project-badge-secondary'
+                                }`}
+                              >
+                                {project.deleted === 0 ? 'Active' : 'Inactive'}
+                              </span>
+                            </td>
+                            <td>
+                              <small style={{ color: '#6c757d' }}>
+                                {new Date().toLocaleDateString()}
+                              </small>
+                            </td>
+                            <td>
+                              <div className="project-action-buttons">
+                                <button
+                                  className="project-btn project-btn-outline-primary project-btn-sm"
+                                  onClick={(e) => handleUpdate(e, project)}
+                                  title="Edit Project"
+                                >
+                                  <FaEdit />
+                                </button>
+                                {project.deleted === 0 && (
+                                  <button
+                                    className="project-btn project-btn-outline-danger project-btn-sm"
+                                    onClick={() => {
+                                      if (window.confirm('Are you sure you want to inactivate this project?')) {
+                                        handleInactive(project.project_code);
+                                      }
+                                    }}
+                                    title="Inactivate Project"
+                                  >
+                                    <FaTrash />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              )}
 
-              {/* Pagination Info */}
-              <div className="text-center mt-3">
-                <small className="text-muted">
-                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredAndSortedProjects.length)} of {filteredAndSortedProjects.length} projects
-                </small>
-              </div>
-            </>
-          )}
-        </Card.Body>
-      </Card>
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <>
+                    <div className="project-pagination">
+                      <button
+                        className="project-btn project-btn-outline-primary project-btn-sm"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                      >
+                        First
+                      </button>
+                      <button
+                        className="project-btn project-btn-outline-primary project-btn-sm"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </button>
+                      
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                        if (page > totalPages) return null;
+                        
+                        return (
+                          <button
+                            key={page}
+                            className={`project-btn project-btn-outline-primary project-btn-sm ${
+                              currentPage === page ? 'active' : ''
+                            }`}
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
+                      
+                      <button
+                        className="project-btn project-btn-outline-primary project-btn-sm"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </button>
+                      <button
+                        className="project-btn project-btn-outline-primary project-btn-sm"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Last
+                      </button>
+                    </div>
 
-      {/* Modals */}
-      <AddProjectModal
-        show={addModalShow}
-        setUpdated={setIsUpdated}
-        onHide={AddModelClose}
-        projects={projects || []}
-      />
-      
-      <UpdateProjectModal
-        show={editModalShow}
-        setUpdated={setIsUpdated}
-        onHide={EditModelClose}
-        editProjects={editProjects}
-        projects={projects || []}
-      />
+                    {/* Pagination Info */}
+                    <div className="project-pagination-info">
+                      Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredAndSortedProjects.length)} of {filteredAndSortedProjects.length} projects
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Modals */}
+        <AddProjectModal
+          show={addModalShow}
+          setUpdated={setIsUpdated}
+          onHide={AddModelClose}
+          projects={projects || []}
+        />
+        
+        <UpdateProjectModal
+          show={editModalShow}
+          setUpdated={setIsUpdated}
+          onHide={EditModelClose}
+          editProjects={editProjects}
+          projects={projects || []}
+        />
+      </div>
     </div>
   );
 };

@@ -14,7 +14,6 @@ const UserAvatarIcon = FaUserCircle;
 
 const BlastSidebar = ({ 
   userDetails = { name: 'User Name', lab: 'Lab Assistant', designation: 'Researcher' },
-  onLogout = '/',
   repositoryPath = '/dna' // Allow customization of repository path
 }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -22,6 +21,10 @@ const BlastSidebar = ({
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
+  };
+
+  const handleLogout = () => {
+    window.location.href = '/';
   };
 
   return (
@@ -98,7 +101,7 @@ const BlastSidebar = ({
         <div className="blast-sidebar-footer">
           <button 
             className="blast-sidebar-logout"
-            onClick={onLogout}
+            onClick={handleLogout}
             title="Logout"
           >
             <FaSignOutAlt />

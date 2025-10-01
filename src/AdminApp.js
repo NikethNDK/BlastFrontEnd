@@ -19,22 +19,23 @@ import RegistrationList from "./components/auth/RegistrationList";
 function AdminApp({ userDetails = { name: '', lab: '', designation: '' } }) {
   return (
     <BrowserRouter>
-      <AdminNavigation />
-      <Routes>
-        <Route path="/" element={<ProjectManage  userDetails={userDetails}/>}  />
-        <Route exact path="/home" element={<AdminHome userDetails={userDetails}/>} />
-        <Route path="/admin/appinfo" element={<Appinfo userDetails={userDetails}/>} />
-        <Route path="/admin/project" element={<Project userDetails={userDetails}/>} />
-        <Route path="/admin/project_manage" element={<ProjectManage userDetails={userDetails} />} />
-        <Route path="/register" element={<Register userDetails={userDetails}/>} />
-        <Route path="/password_reset" element={<PasswordReset userDetails={userDetails}/>} />
-        <Route path="/employee" element={<Employee/>} />
-        <Route path="/employee_manage" element={<EmployeeManage userDetails={userDetails}/>} />
-        <Route path="/master_table" element={<LabDesignationForm userDetails={userDetails}/>} />
-        <Route path="/master_table" element={<LabDesignationForm />} />
-        {/* <Route path="/register" element={<RegistrationForm />} /> */}
-        {/* <RegistrationList /> */}
-      </Routes>
+      <AdminNavigation>
+        <Routes>
+          <Route path="/" element={<ProjectManage  userDetails={userDetails}/>}  />
+          <Route exact path="/home" element={<AdminHome userDetails={userDetails}/>} />
+          <Route path="/admin/appinfo" element={<Appinfo userDetails={userDetails}/>} />
+          <Route path="/admin/project" element={<Project userDetails={userDetails}/>} />
+          <Route path="/admin/project_manage" element={<ProjectManage userDetails={userDetails} />} />
+          <Route path="/register" element={<Register userDetails={userDetails}/>} />
+          <Route path="/password_reset" element={<PasswordReset userDetails={userDetails}/>} />
+          <Route path="/employee" element={<Employee/>} />
+          <Route path="/employee_manage" element={<EmployeeManage userDetails={userDetails}/>} />
+          <Route path="/master_table" element={<LabDesignationForm userDetails={userDetails}/>} />
+          <Route path="/master_table" element={<LabDesignationForm />} />
+          {/* <Route path="/register" element={<RegistrationForm />} /> */}
+          {/* <RegistrationList /> */}
+        </Routes>
+      </AdminNavigation>
     </BrowserRouter>
   );
 }

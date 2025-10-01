@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Table } from "react-bootstrap";
-import { Button, ButtonToolbar } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { FaCheck, FaTimes } from "react-icons/fa";
-import { RiDeleteBin5Line } from "react-icons/ri";
 import { getIssueItems } from "../../services/AppinfoService";
 import AdminApprovalModal from "./AdminApproval";
 import ManagerNavigation from "../manager/ManagerNavigation";
@@ -55,13 +53,12 @@ const Notification = ({
   let AddModelClose = () => setAddModalShow(false);
   let EditModelClose = () => setEditModalShow(false);
 
-  // handling accept by changing
   const handleAccept = async (item) => {
-    console.log("Sending request with entry_no:", item.entry_no); // Debugging line
+    console.log("Sending request with entry_no:", item.entry_no);
 
     try {
       const payload = {
-        id: item.entry_no, // Dynamically set the id
+        id: item.entry_no,
         status: "LAB-OPEN",
       };
 
@@ -78,7 +75,6 @@ const Notification = ({
       const result = await response.json();
 
       if (response.ok) {
-        // Remove the accepted item from the UI
         setNote((prevNotes) =>
           prevNotes.filter((n) => n.entry_no !== item.entry_no)
         );
@@ -91,13 +87,12 @@ const Notification = ({
     }
   };
 
-  // handling accept by changing
   const handleDecline = async (item) => {
-    console.log("Sending request with entry_no:", item.entry_no); // Debugging line
+    console.log("Sending request with entry_no:", item.entry_no);
 
     try {
       const payload = {
-        id: item.entry_no, // Dynamically set the id
+        id: item.entry_no,
         status: "MGR-DCL",
       };
 
@@ -114,7 +109,6 @@ const Notification = ({
       const result = await response.json();
 
       if (response.ok) {
-        // Remove the accepted item from the UI
         setNote((prevNotes) =>
           prevNotes.filter((n) => n.entry_no !== item.entry_no)
         );
@@ -126,224 +120,397 @@ const Notification = ({
       console.error("Error accepting item:", error);
     }
   };
+
   return (
-    <div>
+    <div style={{ width: "100%" }}>
       <div
         style={{
-          backgroundColor: "#C5EA31",
-          height: "70px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          backgroundColor: "#f8fafc",
+          padding: "20px",
+          borderBottom: "2px solid #e2e8f0",
         }}
       >
-        <h2 style={{ textAlign: "center", paddingTop: "15px" }}>
+        <h2
+          style={{
+            textAlign: "center",
+            margin: 0,
+            fontSize: "1.75rem",
+            fontWeight: 600,
+            color: "#1e293b",
+          }}
+        >
           NOTIFICATION
         </h2>
       </div>
 
-      <div
-        style={{
-          overflowY: "scroll",
-          overflowX: "hidden",
-          maxHeight: "480px",
-        }}
-      >
-        <div className="row side-row" style={{ textAlign: "center" }}>
-          <p id="manage"></p>
-          <Table
-            striped
-            bordered
-            hover
-            className="react-bootstrap-table"
-            id="dataTable"
-            style={{ margin: "auto", width: "1500px" }}
+      <div style={{ padding: "20px" }}>
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              overflowX: "auto",
+              maxHeight: "480px",
+              overflowY: "auto",
+            }}
           >
-            <thead>
-              <tr>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Master Type
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Item Code
-                </th>
-
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Item Name
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Project Code
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Project Name
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Request Date
-                </th>
-
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Requested By
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Send To
-                </th>
-
-                <th
-                  colspan="2"
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {note.map((no) => (
-                <tr key={no.id}>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+                minWidth: "1200px",
+              }}
+            >
+              <thead>
+                <tr>
+                  <th
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      minWidth: "120px",
+                    }}
                   >
-                    {no.master_type || ""}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
+                    Master Type
+                  </th>
+                  <th
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      minWidth: "120px",
+                    }}
                   >
-                    {no.item_code || ""}
-                  </td>
-
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
+                    Item Code
+                  </th>
+                  <th
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      minWidth: "150px",
+                    }}
                   >
-                    {no.item_name || ""}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
+                    Item Name
+                  </th>
+                  <th
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      minWidth: "120px",
+                    }}
                   >
-                    {no.project_code || ""}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
+                    Project Code
+                  </th>
+                  <th
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      minWidth: "150px",
+                    }}
                   >
-                    {no.project_name || ""}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
+                    Project Name
+                  </th>
+                  <th
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      minWidth: "120px",
+                    }}
                   >
-                    {no.issue_date || ""}
-                  </td>
-
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
+                    Request Date
+                  </th>
+                  <th
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      minWidth: "130px",
+                    }}
                   >
-                    {no.issued_to || "Researcher"}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
+                    Requested By
+                  </th>
+                  <th
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      minWidth: "130px",
+                    }}
                   >
-                    {no.lab_assistant_name || ""}
-                  </td>
-
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
+                    Send To
+                  </th>
+                  <th
+                    colSpan="2"
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      minWidth: "150px",
+                    }}
                   >
-                    <Button
-                      style={{
-                        // backgroundColor: "white",
-                        border: "none",
-                        color: "black",
-                        marginRight: "5px",
-                        padding: "5px 18px",
-                      }}
-                      className="mr-2"
-                      onClick={() => handleAccept(no)}
-                    >
-                      ✔
-                    </Button>
-                    <button
-                      style={{
-                        backgroundColor: "white",
-                        border: "none",
-                        marginRight: "5px",
-                        padding: "5px 18px",
-                      }}
-                      onClick={() => handleDecline(no)}
-                    >
-                      ❌
-                    </button>
-                  </td>
+                    Action
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
+              </thead>
+              <tbody>
+                {note.map((no, index) => (
+                  <tr
+                    key={no.id}
+                    style={{
+                      transition: "background-color 0.15s",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#f1f5f9";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor =
+                        index % 2 === 0 ? "#ffffff" : "#f8fafc";
+                    }}
+                  >
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                        fontSize: "0.875rem",
+                        color: "#475569",
+                      }}
+                    >
+                      {no.master_type || ""}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                        fontSize: "0.875rem",
+                        color: "#475569",
+                      }}
+                    >
+                      {no.item_code || ""}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                        fontSize: "0.875rem",
+                        color: "#475569",
+                      }}
+                    >
+                      {no.item_name || ""}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                        fontSize: "0.875rem",
+                        color: "#475569",
+                      }}
+                    >
+                      {no.project_code || ""}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                        fontSize: "0.875rem",
+                        color: "#475569",
+                      }}
+                    >
+                      {no.project_name || ""}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                        fontSize: "0.875rem",
+                        color: "#475569",
+                      }}
+                    >
+                      {no.issue_date || ""}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                        fontSize: "0.875rem",
+                        color: "#475569",
+                      }}
+                    >
+                      {no.issued_to || "Researcher"}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                        fontSize: "0.875rem",
+                        color: "#475569",
+                      }}
+                    >
+                      {no.lab_assistant_name || ""}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "8px",
+                          justifyContent: "center",
+                          alignItems: "center",
+                        }}
+                      >
+                        <button
+                          onClick={() => handleAccept(no)}
+                          style={{
+                            backgroundColor: "#10b981",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            padding: "8px 16px",
+                            cursor: "pointer",
+                            fontSize: "0.875rem",
+                            fontWeight: 500,
+                            transition: "all 0.2s",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#059669";
+                            e.target.style.boxShadow =
+                              "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#10b981";
+                            e.target.style.boxShadow =
+                              "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
+                          }}
+                        >
+                          <FaCheck size={14} /> Accept
+                        </button>
+                        <button
+                          onClick={() => handleDecline(no)}
+                          style={{
+                            backgroundColor: "#ef4444",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "6px",
+                            padding: "8px 16px",
+                            cursor: "pointer",
+                            fontSize: "0.875rem",
+                            fontWeight: 500,
+                            transition: "all 0.2s",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                            boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.backgroundColor = "#dc2626";
+                            e.target.style.boxShadow =
+                              "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.backgroundColor = "#ef4444";
+                            e.target.style.boxShadow =
+                              "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
+                          }}
+                        >
+                          <FaTimes size={14} /> Decline
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

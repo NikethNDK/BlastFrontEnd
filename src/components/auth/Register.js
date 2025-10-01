@@ -7,8 +7,9 @@ import {
   getDesignationsApi,
   checkUsernameExistsApi,
 } from "../../services/AppinfoService";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaUserPlus, FaUser, FaLock, FaBriefcase, FaFlask } from "react-icons/fa";
 import Select from "react-select";
+import "./Register.css";
 
 function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
   const [username, setUsername] = useState("");
@@ -52,7 +53,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
       })
       .catch((error) => {
         setIsLoading(false);
-        console.error("Error fetchiAng designations data", error);
+        console.error("Error fetching designations data", error);
         setDesignations([]);
       });
   }, []);
@@ -75,7 +76,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
       return;
     }
 
-    const selectedLabIds = selectedLabs.map((lab) => lab.value); // Extract lab IDs
+    const selectedLabIds = selectedLabs.map((lab) => lab.value);
 
     if (isNaN(parseInt(designation, 10))) {
       alert("Please select a valid designation.");
@@ -86,25 +87,18 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
       user_name: username,
       password,
       role,
-      designation: parseInt(designation, 10), // Ensure it's a number
+      designation: parseInt(designation, 10),
       lab: selectedLabIds,
     };
 
     const empData = {
       user_name: username,
       role,
-      designation: parseInt(designation, 10), // Pass the ID
+      designation: parseInt(designation, 10),
       labs: selectedLabIds,
     };
 
     try {
-      // await addEmpRegApi(empData);
-      // console.log("Employee Details Added");
-
-      // addEmpRegApi(empData)
-      //   .then(() => console.log("Employee Details Added"))
-      //   .catch((error) => console.log("Failed to Add Employee", error));
-
       await addLoginApi(requestData);
       alert("Registered Successfully");
 
@@ -123,207 +117,155 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
     setShowPassword(!showPassword);
   };
 
-  const loginStyle = {
-    minHeight: "100%",
-    height: "77vh",
-    margin: 0,
-    display: "flex",
-    width: "600px",
-  };
-
-  const rightSideStyle = {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    paddingLeft: "100px",
-    paddingTop: "100px",
-    paddingRight: "50px",
-    marginTop: "-7%",
-    // backgroundColor: "#C5EA31",
-  };
-
-  const imageStyle = {
-    maxWidth: "100%",
-    maxHeight: "100%",
-    float: "left",
+  const customSelectStyles = {
+    control: (base) => ({
+      ...base,
+      backgroundColor: "#fff",
+      borderColor: "#dee2e6",
+      padding: "0.125rem",
+      fontSize: "0.875rem",
+      "&:hover": {
+        borderColor: "#007bff",
+      },
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: "#fff",
+      fontSize: "0.875rem",
+    }),
+    option: (base, { isFocused, isSelected }) => ({
+      ...base,
+      backgroundColor: isSelected ? "#007bff" : isFocused ? "#f8f9fa" : "#fff",
+      color: isSelected ? "#fff" : "#495057",
+    }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: "#e7f3ff",
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      color: "#007bff",
+    }),
+    multiValueRemove: (base) => ({
+      ...base,
+      color: "#007bff",
+      "&:hover": {
+        backgroundColor: "#007bff",
+        color: "#fff",
+      },
+    }),
   };
 
   return (
-    <div>
-      {/* <div
-        style={{ background: "lightpink", height: "70px" }}
-        className="header"
-      >
-        <h2 style={{ textAlign: "center", paddingTop: "15px" }}>SIGN UP!</h2>
-      </div> */}
-      <div className="col-sm-4" style={rightSideStyle}>
-        {/* <h3>Register Here</h3> */}
-        <h2
-          style={{
-            textAlign: "center",
+    <div className="register-container">
+      <div className="register-wrapper">
+        <div className="register-card">
+          <div className="register-header">
+            <h1>REGISTER</h1>
+            <p>Register new Employee</p>
+          </div>
 
-            paddingTop: "15px",
-          }}
-        >
-          Register Here!!
-        </h2>
+          <div className="register-form">
+            <div className="form-group-register">
+              <label className="form-label-register">
+                <FaUser className="label-icon" />
+                Username
+              </label>
+              <input
+                type="text"
+                value={username}
+                className="form-input-register"
+                placeholder="Enter your username"
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
 
-       
-        <div className="form-group">
-          <label>Username</label>
-          <input
-            type="text"
-            value={username}
-            className="form-control"
-            placeholder="Enter Username"
-            style={{
-              width: 350,
-              border: "1px solid lightgray",
-              backgroundColor: "lightyellow",
-              padding: "8px",
-            }}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </div>
+            <div className="form-group-register">
+              <label className="form-label-register">
+                <FaLock className="label-icon" />
+                Password
+              </label>
+              <div className="password-input-wrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  className="form-input-register"
+                  placeholder="Enter your password"
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="password-toggle-btn"
+                >
+                  {showPassword ? <FaEye /> : <FaEyeSlash />}
+                </button>
+              </div>
+            </div>
 
-        <div className="form-group">
-          <label>Password</label>
-          <div style={{ position: "relative", width: 350 }}>
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              className="form-control"
-              placeholder="Enter Password"
-              style={{
-                width: "100%",
-                border: "1px solid lightgray",
-                backgroundColor: "lightyellow",
-                padding: "8px",
-                paddingRight: "30px",
-              }}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button
-              type="button"
-              onClick={togglePasswordVisibility}
-              style={{
-                position: "absolute",
-                right: 0,
-                top: "50%",
-                transform: "translateY(-50%)",
-                cursor: "pointer",
-                border: "none",
-              }}
-            >
-              {showPassword ? <FaEye /> : <FaEyeSlash />}
+            <div className="form-group-register">
+              <label className="form-label-register">
+                <FaBriefcase className="label-icon" />
+                Role
+              </label>
+              <select
+                className="form-select-register"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="">Select Role</option>
+                <option value="Manager">Manager</option>
+                <option value="Lab Assistant">Lab Assistant</option>
+                <option value="Researcher">Researcher</option>
+              </select>
+            </div>
+
+            <div className="form-group-register">
+              <label className="form-label-register">
+                <FaBriefcase className="label-icon" />
+                Designation
+              </label>
+              <select
+                className="form-select-register"
+                value={designation}
+                onChange={(e) => setDesignation(e.target.value)}
+              >
+                <option value="">Select Designation</option>
+                {isLoading ? (
+                  <option>Loading...</option>
+                ) : (
+                  designations.map((designation) => (
+                    <option key={designation.id} value={designation.id}>
+                      {designation.title}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <div className="form-group-register">
+              <label className="form-label-register">
+                <FaFlask className="label-icon" />
+                Labs
+              </label>
+              <Select
+                options={labs}
+                isMulti
+                styles={customSelectStyles}
+                value={selectedLabs}
+                onChange={(selectedOptions) => setSelectedLabs(selectedOptions)}
+                className="basic-multi-select"
+                classNamePrefix="select"
+                placeholder="Select labs..."
+              />
+            </div>
+
+            <button onClick={handleRegister} className="register-btn">
+              <FaUserPlus />
+              Register Account
             </button>
           </div>
         </div>
-
-        <div className="form-group">
-          <label>Role</label>
-          <select
-            className="form-control"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            style={{
-              width: 350,
-              border: "1px solid lightgray",
-              backgroundColor: "lightyellow",
-              padding: "8px",
-            }}
-          >
-            <option value="">Select Role</option>
-            <option value="Manager">Manager</option>
-            <option value="Lab Assistant">Lab Assistant</option>
-            <option value="Researcher">Researcher</option>
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Designation</label>
-          <select
-            className="form-control"
-            value={designation}
-            onChange={(e) => setDesignation(e.target.value)}
-            style={{
-              width: 350,
-              border: "1px solid lightgray",
-              backgroundColor: "lightyellow",
-              padding: "8px",
-            }}
-          >
-            <option value="">Select Designation</option>
-            {isLoading ? (
-              <option>Loading...</option>
-            ) : (
-              designations.map((designation) => (
-                <option key={designation.id} value={designation.id}>
-                  {designation.title}
-                </option>
-              ))
-            )}
-          </select>
-        </div>
-
-        {/* <div className="form-group">
-          <label>Lab</label>
-          <select
-            className="form-control"
-            value={lab}
-            onChange={(e) => setLab(e.target.value)}
-            style={{
-              width: 350,
-              border: "1px solid lightgray",
-              backgroundColor: "lightyellow",
-              padding: "8px",
-            }}
-          >
-            <option value="">Select Lab</option>
-            {labs.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div> */}
-        <div className="form-group" style={{ width: "353px" }}>
-          <label>Labs</label>
-          <Select
-            options={labs}
-            isMulti
-            styles={{
-              control: (base) => ({
-                ...base,
-                backgroundColor: "lightyellow", // Sets the background color of the input field
-              }),
-              menu: (base) => ({
-                ...base,
-                backgroundColor: "lightyellow", // Sets the background color of the dropdown menu
-              }),
-              option: (base, { isFocused }) => ({
-                ...base,
-                backgroundColor: isFocused ? "lightyellow" : "lightyellow", // Hover effect
-                color: "black",
-              }),
-            }}
-            value={selectedLabs}
-            onChange={(selectedOptions) => setSelectedLabs(selectedOptions)}
-            className="basic-multi-select"
-            classNamePrefix="select"
-          />
-        </div>
-
-        <br />
-
-        <button
-          onClick={handleRegister}
-          style={{ marginLeft: "100px" }}
-          className="btn btn-primary"
-        >
-          Register
-        </button>
       </div>
     </div>
   );

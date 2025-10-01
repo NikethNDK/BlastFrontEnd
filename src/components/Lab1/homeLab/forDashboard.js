@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, ButtonToolbar } from "react-bootstrap";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { CDBContainer } from "cdbreact";
-import "../../../App.css";
+import "./forDashboard.css"; // New CSS file
 import {
   getStockLevelApi,
   getMastertyApi,
 } from "../../../services/AppinfoService";
-import MasterListTable from "../../researcher/tableResearcher";
+import MasterListTable from "./inventory";
 
 const HomeLab1 = () => {
-  const [selectedMasterType, setSelectedMasterType] = useState(""); // Stores selected type
+  const [selectedMasterType, setSelectedMasterType] = useState("");
   const [stockLevel, setStockLevel] = useState("");
   const [masterTypes, setMasterTypes] = useState([]);
+
+  // Constants for the Inventory Types
+  const inventoryTypes = ["Labware", "Chemical", "Equipment"];
 
   useEffect(() => {
     const fetchMasterTypes = async () => {
@@ -33,76 +36,62 @@ const HomeLab1 = () => {
       })
       .catch((error) => {
         console.error("Error fetching stock level:", error);
-        setStockLevel("Error fetching stock level");
+        setStockLevel("Stock Level Unknown");
       });
+
+    // Set a default selected type
+    if (inventoryTypes.length > 0) {
+      setSelectedMasterType(inventoryTypes[0]);
+    }
   }, []);
 
   const handleMasterTypeSelection = (type) => {
-    setSelectedMasterType((prevType) => (prevType === type ? null : type));
+    setSelectedMasterType(type);
   };
 
-  const backgroundColor =
-    stockLevel === "Stock is Sufficient"
-      ? "#3cb371"
-      : stockLevel === "Stock has to be Reorder"
-      ? "red"
-      : "";
+  // Determine the indicator class based on stock level for styling
+  const getStockLevelClass = () => {
+    if (stockLevel === "Stock is Sufficient" || stockLevel.includes("Sufficient")) {
+      return "stock-sufficient";
+    } else if (stockLevel === "Stock has to be Reorder" || stockLevel.includes("Reorder")) {
+      return "stock-reorder";
+    }
+    return "stock-unknown";
+  };
 
   return (
-    <div>
-      {/* Buttons for Labware, Chemical, Equipment */}
-      <div className="header-menubar" style={{ textAlign: "center" }}>
-        <ButtonToolbar style={{ textAlign: "center", paddingLeft: "250px" }}>
-          {["Labware", "Chemical", "Equipment"].map((type) => (
+    <div className="homelab-page-container">
+      {/* --- Inventory Type Selector --- */}
+      <div className="inventory-selector-bar">
+        <ButtonGroup className="inventory-type-group">
+          {inventoryTypes.map((type) => (
             <Button
               key={type}
-              variant="primary"
+              variant="light"
+              className={`inventory-type-button ${
+                selectedMasterType === type ? "active" : ""
+              }`}
               onClick={() => handleMasterTypeSelection(type)}
-              style={{
-                backgroundColor:
-                  selectedMasterType === type ? "#C5EA31" : "white",
-                width: "180px",
-                margin: "10px",
-                borderRadius: "20px",
-                color: "black",
-                fontWeight: "bold",
-              }}
             >
               {type} Inventory
             </Button>
           ))}
-        </ButtonToolbar>
-      </div>
-
-      {/* Dropdown for other master types */}
-      <div className="mb-3" style={{ textAlign: "center", marginTop: "10px" }}>
-        {/* <label className="form-label">Master Type</label> */}
-        {/* <select
-          value={selectedMasterType}
-          className="form-control"
-          onChange={(e) => handleMasterTypeSelection(e.target.value)}
-          style={{ width: "300px", margin: "auto" }}
-        >
-          <option value="">Select Master Type</option>
-          {masterTypes.map((type) => (
-            <option key={type.id} value={type.name}>
-              {type.name}
-            </option>
-          ))}
-        </select> */}
-      </div>
-
-      {/* Display MasterListTable when a selection is made */}
-      {selectedMasterType && (
-        <div
-          className="main-container"
-          style={{ marginTop: "1px", marginLeft: "150px" }}
-        >
-          <CDBContainer>
-            <MasterListTable masterType={selectedMasterType} />
-          </CDBContainer>
+        </ButtonGroup>
+        <div className={`stock-indicator-card ${getStockLevelClass()}`}>
+          <label className="stock-label">
+            {stockLevel}
+          </label>
         </div>
-      )}
+      </div>
+
+      {/* --- Main Data Table Container --- */}
+      <div className="data-table-container">
+        <CDBContainer>
+          {selectedMasterType && (
+            <MasterListTable masterType={selectedMasterType} />
+          )}
+        </CDBContainer>
+      </div>
     </div>
   );
 };

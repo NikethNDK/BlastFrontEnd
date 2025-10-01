@@ -2,7 +2,7 @@
 .homelab-page-container {
   padding: var(--lab-space-6, 1.5rem) var(--lab-space-8, 2rem); /* Use lab design system spacing */
   /* min-height: calc(100vh - 230px); */
-  background-color: var(--lab-neutral-50, #f7f9fc);
+  background-color: #f2f5e6;
   width: 100%; /* Take full width of parent */
 }
 
@@ -94,9 +94,9 @@
 
 .inventory-type-button.active {
   /* Use the sidebar's main accent color for the active state */
-  background-color: var(--lab-primary-600, #2563eb);
-  color: white;
-  border-color: var(--lab-primary-600, #2563eb);
+  background-color: #f3fbd6;
+  color: #1a3d2a;
+  border-color: #1a3d2a;
   /* Add a slight elevation */
   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); 
   position: relative;
@@ -104,8 +104,8 @@
 
 /* Remove the hover effect on the active button */
 .inventory-type-button.active:hover {
-    background-color: var(--lab-primary-600, #2563eb);
-    color: white;
+    background-color: #c5ea31;
+    color: #1a3d2a;
 }
 
 

@@ -6,10 +6,10 @@
   --blast-color-background-dark: var(--lab-neutral-100, #f8f8fa);
   --blast-color-text-dark: var(--lab-neutral-800, #334155);
   --blast-color-text-secondary: var(--lab-neutral-500, #64748b);
-  --blast-color-accent: var(--lab-primary-600, #2563eb);
-  --blast-color-accent-hover: var(--lab-primary-700, #1e40af);
+  --blast-color-accent: var(--lab-primary-600, #c5ea31);
+  --blast-color-accent-hover: var(--lab-primary-700, #f1f5f9);
   --blast-color-hover: var(--lab-primary-50, #f1f5f9);
-  --blast-color-active-bg: var(--lab-primary-100, #e0f2fe);
+  --blast-color-active-bg: rgba(197, 234, 49, 0.2);
   --blast-transition-speed: var(--lab-transition-normal, 0.3s);
   --blast-shadow-subtle: var(--lab-shadow-md, 0 4px 12px rgba(0, 0, 0, 0.05));
 }
@@ -18,7 +18,7 @@
 .blast-sidebar {
   position: sticky;
   top: 220px;
-  left: 0;
+  left: 10px;
   width: var(--blast-sidebar-width);
   height: calc(100vh - 230px);
   background-color: var(--blast-color-background-light);
@@ -28,7 +28,8 @@
   box-shadow: var(--blast-shadow-subtle);
   transition: width var(--blast-transition-speed) ease, transform var(--blast-transition-speed) ease;
   z-index: 999;
-  border-right: 1px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   flex-shrink: 0;
 }
 
@@ -64,7 +65,7 @@
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.5px;
-  color: var(--blast-color-accent);
+  color: #000;
 }
 
 .blast-sidebar-logo {
@@ -110,11 +111,11 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--blast-color-accent);
+  background: #c5ea31;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: #1a3d2a;
   font-size: 1.5rem;
   box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
 }

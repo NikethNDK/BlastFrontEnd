@@ -27,7 +27,7 @@ function Layout({ userId, userDetails }) {
   const hideNavigation = hiddenPaths.includes(location.pathname);
   return (
     <>
-      {!hideNavigation && <ManagerNavigation userDetails={userDetails}/>}
+    <ManagerNavigation userDetails={userDetails}>
       <Routes>
         <Route path="/" element={<Join />} />
         <Route path="/dashboard" element={<Dasboard userId={userId} userDetails={userDetails} />} />
@@ -49,6 +49,7 @@ function Layout({ userId, userDetails }) {
           <ReturnDataTableNotification managerId={userId} userDetails={userDetails} />
         } />
       </Routes>
+    </ManagerNavigation>
     </>
   );
 }

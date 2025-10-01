@@ -155,7 +155,6 @@ const IssueNotify = ({
 
 const styles = {
   container: {
-    backgroundColor: "#f3fbd6",
     overflow: "hidden",
     display: "flex",
     height: "69vh",

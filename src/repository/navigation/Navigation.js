@@ -14,8 +14,7 @@ import "../../App.css";
 const UserAvatarIcon = FaUserCircle;
 
 const Navigation = ({ 
-  userDetails = { name: 'User Name', lab: 'Lab Assistant', designation: 'Researcher' },
-  onLogout
+  userDetails = { name: 'User Name', lab: 'Lab Assistant', designation: 'Researcher' }
 }) => {
   const [collapsed, setCollapsed] = useState(false);
 
@@ -26,9 +25,7 @@ const Navigation = ({
   };
 
   const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
-    }
+    window.location.href = "/";
     // Add any logout logic here
     console.log('Logout clicked');
   };

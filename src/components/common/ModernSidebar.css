@@ -26,7 +26,7 @@
 .modern-sidebar {
   position: sticky; /* Change from fixed to relative */
   top: 220px;
-  left: 0;
+  left: 10px;
   width: var(--sidebar-width);
   height: calc(100vh - 230px); /* Account for header height */
   background-color: var(--color-background-light);
@@ -36,7 +36,8 @@
   box-shadow: var(--shadow-subtle);
   transition: width var(--transition-speed) ease, transform var(--transition-speed) ease;
   z-index: 999; /* Lower than header */
-  border-right: 1px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   flex-shrink: 0; /* Prevent sidebar from shrinking */
 }
 
@@ -72,11 +73,13 @@
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.5px;
-  color: var(--color-text-dark); /* Use dark primary color */
+  color: #000;
 }
 
 .modern-sidebar-logo {
   font-size: 1.5rem;
+  background-color: transparent;
+  border: none;
 }
 
 .modern-sidebar-toggle {

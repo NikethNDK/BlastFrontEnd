@@ -19,6 +19,7 @@ import {
 import Select from "react-select";
 import TempIssueTable from "../Lab1/issue/TempIssueTable";
 import ResearcherNavigation from "./ResearcherNavigation";
+import { Heading2 } from "lucide-react";
 const AddProductListReq = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
@@ -259,16 +260,28 @@ const AddProductListReq = ({
   };
 
   return (
-    <div style={{ marginTop: "5px", width: "100%",height: "100%", backgroundColor: "#f3fbd6" }}>
+    <div
+  style={{
+    margin: "5px",
+    padding: "10px",
+  }}
+>
       <div>
-        <h1 style={{ textAlign: "center", color: "black" }}>
+        <h2 style={{ textAlign: "center", color: "black" }}>
           Request Form TestAddProduct{" "}
           {/* <Button onClick={handleTransferData} style={{float: 'right'}}>Submit</Button> */}
-        </h1>
+        </h2>
       </div>
 
       <p></p>
-      <div>
+      <div style={{
+    padding: "10px",
+    border: "1px solid #ccc", // gray border
+    borderRadius: "5px",       // optional, rounded corners
+    width: "80%",
+    margin: "0 auto",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)" // subtle shadow
+  }}> 
         <Row>
           <Col sm={12}>
             {/* <Form onSubmit={handleAdd} ref={formRef}> */}
