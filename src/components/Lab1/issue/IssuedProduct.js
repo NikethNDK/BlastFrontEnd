@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Modal, Col, Row, Form, Button } from "react-bootstrap";
+import toast from "react-hot-toast";
 import {
   addItemIssueApi,
   getSuppliersApi,
@@ -22,6 +23,7 @@ import LabNavigation1 from "../homeLab/LabNavigation1";
 const IssuedProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  console.log("🏗️ [COMPONENT] IssuedProduct component initialized with userDetails:", userDetails);
   const [masterTypes, setMasterTypes] = useState([]);
   const [issues, setIssues] = useState([]);
   const [message, setMessage] = useState("");
@@ -48,7 +50,7 @@ const IssuedProduct = ({
   const [locations, setLocations] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState(null);
   const [expiryDate, setExpiryDate] = useState("");
-  const [quantityIssued, setQuantityIssued] = useState("");
+  const [quantityIssued, setQuantityIssued] = useState(0);
   const [selectedItem, setSelectedItem] = useState({
     code: null,
     name: null,
@@ -67,15 +69,18 @@ const IssuedProduct = ({
     units: "",
   });
 
-  // State to hold temporary items
-  const [tempItems, setTempItems] = useState([]);
-  
   // Modal state
   const [showModal, setShowModal] = useState(false);
 
+
   // --- Modal Handlers ---
-  const handleShow = () => setShowModal(true);
+  const handleShow = () => {
+    console.log("📝 [MODAL] Opening issue form modal");
+    setShowModal(true);
+  };
+  
   const handleClose = () => {
+    console.log("📝 [MODAL] Closing issue form modal and resetting form");
     // Reset form state when closing the modal
     setSelectedItemCode(null);
     setSelectedItemName(null);
@@ -85,7 +90,7 @@ const IssuedProduct = ({
     setSelectedProject("");
     setMasterType("");
     setExpiryDate("");
-    setQuantityIssued("");
+    setQuantityIssued(0);
     setSelectedItemDetails(null);
     setErrorMessages({});
     if (formRef.current) {
@@ -124,12 +129,15 @@ const IssuedProduct = ({
 
   const handleProjectChange = (event) => {
     const selectedValue = event.target.value;
+    console.log("🔍 [PROJECT SELECTION] Project changed to:", selectedValue);
     setSelectedProject(selectedValue);
 
     const selectedProj = projects.find((proj) => proj.value === selectedValue);
     if (selectedProj) {
+      console.log("🔍 [PROJECT SELECTION] Found matching project:", selectedProj);
       setSelectedCodes({ value: selectedProj.code, label: selectedProj.code });
     } else {
+      console.log("❌ [PROJECT SELECTION] No matching project found");
       setSelectedCodes(null);
     }
   };
@@ -149,37 +157,125 @@ const IssuedProduct = ({
 
   useEffect(() => {
     if (selectedItemCode && selectedProject && expiryDate) {
-      getTemptReceiveApi()
+      console.log("🔍 [QUANTITY FETCH] Starting quantity fetch with:", {
+        selectedItemCode: selectedItemCode.label,
+        selectedProject: selectedProject.value,
+        expiryDate,
+        userLab: userDetails.lab
+      });
+
+      getTemptReceiveApi(userDetails.lab)
         .then((data) => {
+          console.log("📊 [QUANTITY FETCH] Raw API response data:", data);
+          console.log("📊 [QUANTITY FETCH] Data length:", data.length);
+
+          console.log("🔍 [QUANTITY FETCH] Looking for exact match with:", {
+            targetItemCode: selectedItemCode.label,
+            targetProjectCode: selectedProject.value,
+            targetExpiryDate: expiryDate
+          });
+
           const matchedItem = data.find(
-            (item) =>
-              String(item.item_code).toLowerCase() ===
-                String(selectedItemCode.label).toLowerCase() &&
-              String(item.project_code).toLowerCase() ===
-                String(selectedProject.value).toLowerCase() &&
-              String(item.expiry_date) === String(expiryDate)
+            (item) => {
+              const itemCodeMatch = String(item.item_code).toLowerCase() === String(selectedItemCode.label).toLowerCase();
+              const projectMatch = String(item.project_code).toLowerCase() === String(selectedProject.value).toLowerCase();
+              const expiryMatch = String(item.expiry_date) === String(expiryDate);
+              
+              console.log("🔍 [QUANTITY FETCH] Checking item:", {
+                itemCode: item.item_code,
+                projectCode: item.project_code,
+                expiryDate: item.expiry_date,
+                stock: item.stock,
+                quantity_received: item.quantity_received,
+                itemCodeMatch,
+                projectMatch,
+                expiryMatch,
+                isMatch: itemCodeMatch && projectMatch && expiryMatch,
+                // Show the actual comparison values
+                comparison: {
+                  itemCode: `${String(item.item_code).toLowerCase()} === ${String(selectedItemCode.label).toLowerCase()}`,
+                  project: `${String(item.project_code).toLowerCase()} === ${String(selectedProject.value).toLowerCase()}`,
+                  expiry: `${String(item.expiry_date)} === ${String(expiryDate)}`
+                }
+              });
+              
+              return itemCodeMatch && projectMatch && expiryMatch;
+            }
           );
 
+          console.log("🎯 [QUANTITY FETCH] Matched item:", matchedItem);
+
           if (matchedItem) {
-            setQuantityIssued(matchedItem.quantity_received);
+            // Use stock field for available quantity, fallback to quantity_received
+            const availableQuantity = matchedItem.stock || matchedItem.quantity_received || 0;
+            console.log("✅ [QUANTITY FETCH] Setting quantity:", {
+              stock: matchedItem.stock,
+              quantity_received: matchedItem.quantity_received,
+              availableQuantity
+            });
+            
+            setQuantityIssued(availableQuantity);
             setSelectedItemDetails({
-              quantityIssued: matchedItem.quantity_received,
+              quantityIssued: availableQuantity,
             });
           } else {
-            setQuantityIssued("");
+            console.log("❌ [QUANTITY FETCH] No exact match found, trying fallback matching...");
+            
+            // Fallback 1: Try matching by item code only
+            const itemCodeMatch = data.find(item => 
+              String(item.item_code).toLowerCase() === String(selectedItemCode.label).toLowerCase()
+            );
+            
+            if (itemCodeMatch) {
+              console.log("🔄 [QUANTITY FETCH] Found item by code only:", itemCodeMatch);
+              const availableQuantity = itemCodeMatch.stock || itemCodeMatch.quantity_received || 0;
+              setQuantityIssued(availableQuantity);
+              setSelectedItemDetails({
+                quantityIssued: availableQuantity,
+              });
+            } else {
+              console.log("❌ [QUANTITY FETCH] No fallback match found either");
+              setQuantityIssued("");
+              setSelectedItemDetails(null);
+            }
           }
         })
-        .catch((error) => console.error("Error fetching quantity:", error));
+        .catch((error) => {
+          console.error("💥 [QUANTITY FETCH] Error fetching quantity:", error);
+        });
+    } else {
+      console.log("⏭️ [QUANTITY FETCH] Skipping - missing required fields:", {
+        selectedItemCode: !!selectedItemCode,
+        selectedProject: !!selectedProject,
+        expiryDate: !!expiryDate
+      });
     }
-  }, [selectedItemCode, selectedProject, expiryDate]);
+  }, [selectedItemCode, selectedProject, expiryDate, userDetails.lab]);
 
   useEffect(() => {
-    if (!masterType) return;
+    if (!masterType) {
+      console.log("⏭️ [ITEM LIST FETCH] Skipping - no master type selected");
+      return;
+    }
 
-    getTemptReceiveApi()
+    console.log("🔍 [ITEM LIST FETCH] Starting item list fetch with:", {
+      masterType,
+      userLab: userDetails.lab
+    });
+
+    getTemptReceiveApi(userDetails.lab)
       .then((data) => {
+        console.log("📊 [ITEM LIST FETCH] Raw API response data:", data);
+        console.log("📊 [ITEM LIST FETCH] Data length:", data.length);
+
         if (masterType) {
+          const beforeFilter = data.length;
           data = data.filter((item) => item.master_type === masterType);
+          console.log("🔍 [ITEM LIST FETCH] After master type filter:", {
+            beforeFilter,
+            afterFilter: data.length,
+            masterType
+          });
         }
 
         const seenCodes = new Set();
@@ -197,6 +293,8 @@ const IssuedProduct = ({
             itemName: item.item_name,
             details: { units: item.units },
           }));
+
+        console.log("📋 [ITEM LIST FETCH] Unique item codes:", uniqueItems);
 
         setItemsCodes(uniqueItems);
 
@@ -216,9 +314,12 @@ const IssuedProduct = ({
             details: { units: item.units },
           }));
 
+        console.log("📋 [ITEM LIST FETCH] Unique item names:", uniqueNames);
         setItemsNames(uniqueNames);
       })
-      .catch((error) => console.error("Error fetching project codes:", error));
+      .catch((error) => {
+        console.error("💥 [ITEM LIST FETCH] Error fetching project codes:", error);
+      });
 
     getProjectApi()
       .then((data) => {
@@ -251,13 +352,17 @@ const IssuedProduct = ({
           console.error("Error fetching issues:", error);
         });
     }
-  }, [masterType, selectedNames]);
+  }, [masterType, selectedNames, userDetails.lab]);
 
   const handleItemCodeChange = (selectedOption) => {
+    console.log("🔍 [ITEM SELECTION] Item code changed to:", selectedOption);
     setSelectedItemCode(selectedOption);
     const item = itemsCodes.find((item) => item.value === selectedOption.value);
     if (item) {
+      console.log("🔍 [ITEM SELECTION] Found matching item:", item);
       setSelectedItemName({ value: item.value, label: item.itemName });
+    } else {
+      console.log("❌ [ITEM SELECTION] No matching item found in itemsCodes");
     }
   };
 
@@ -339,28 +444,40 @@ const IssuedProduct = ({
     // Submit data
     addTempItemIssueApi(issueData)
       .then(() => {
-        window.alert("Issue added successfully");
+        console.log("✅ [FORM SUBMIT] Issue added successfully, refreshing table...");
+        toast.success("Issue added successfully");
         handleClose(); // Close modal and reset form
+        
+        // Refresh the temp issue table
+        if (window.refreshTempIssueTable) {
+          window.refreshTempIssueTable();
+        }
       })
       .catch((error) => {
-        console.error("Failed to Add Inventory Data", error);
-        alert("Failed to Add Inventory. Check console for details.");
+        console.error("💥 [FORM SUBMIT] Failed to Add Inventory Data", error);
+        toast.error("Failed to Add Inventory. Check console for details.");
       });
   };
 
   const handleTransferData = async () => {
     try {
+      console.log("🔄 [TRANSFER] Starting data transfer...");
       const response = await fetch("http://localhost:8000/transfer/issue/", {
         method: "POST",
       });
 
       const data = await response.json();
       setMessage(data.message);
-      alert("Success");
+      toast.success("Data transferred successfully");
+      
+      // Refresh the temp issue table after transfer
+      if (window.refreshTempIssueTable) {
+        window.refreshTempIssueTable();
+      }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("💥 [TRANSFER] Error:", error);
       setMessage("An error occurred. Please try again.");
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     }
   };
 
@@ -397,7 +514,7 @@ const IssuedProduct = ({
       <p></p>
 
       <div style={{ paddingTop: "10px" }}>
-        <TempIssueTable tempItems={tempItems} />
+        <TempIssueTable />
       </div>
 
       {/* --- Modal Component for Add Issue Form --- */}
@@ -652,23 +769,45 @@ const IssuedProduct = ({
                         name="quantityIssued"
                         value={quantityIssued}
                         onChange={(e) => {
-                          const enteredValue = e.target.value
-                            ? parseInt(e.target.value, 10)
-                            : "";
-                          const maxQuantity =
-                            selectedItemDetails?.quantityIssued || 0;
+                          const enteredValue = e.target.value;
+                          const numericValue = enteredValue === "" ? "" : parseInt(enteredValue, 10);
+                          const maxQuantity = selectedItemDetails?.quantityIssued || 0;
 
-                          if (enteredValue > maxQuantity) {
+                          console.log("🔢 [QUANTITY INPUT] Quantity field changed:", {
+                            enteredValue,
+                            numericValue,
+                            maxQuantity,
+                            selectedItemDetails
+                          });
+
+                          // Allow empty input for editing
+                          if (enteredValue === "") {
+                            console.log("🔢 [QUANTITY INPUT] Empty input - allowing");
+                            setQuantityIssued("");
+                            return;
+                          }
+
+                          // Check if it's a valid number
+                          if (isNaN(numericValue)) {
+                            console.log("🔢 [QUANTITY INPUT] Invalid number - ignoring");
+                            return; // Don't update if not a valid number
+                          }
+
+                          // Apply constraints
+                          if (numericValue > maxQuantity) {
+                            console.log("🔢 [QUANTITY INPUT] Exceeds max - setting to max");
                             setQuantityIssued(maxQuantity);
-                          } else if (enteredValue < 0) {
+                            toast.error(`Maximum available quantity is ${maxQuantity}`);
+                          } else if (numericValue < 0) {
+                            console.log("🔢 [QUANTITY INPUT] Negative value - setting to 0");
                             setQuantityIssued(0);
                           } else {
-                            setQuantityIssued(enteredValue);
+                            console.log("🔢 [QUANTITY INPUT] Valid value - setting to:", numericValue);
+                            setQuantityIssued(numericValue);
                           }
-                          if (
-                            errorMessages.quantityIssued &&
-                            enteredValue !== ""
-                          ) {
+
+                          // Clear error message
+                          if (errorMessages.quantityIssued && enteredValue !== "") {
                             setErrorMessages((prev) => ({
                               ...prev,
                               quantityIssued: "",
@@ -681,11 +820,17 @@ const IssuedProduct = ({
                         style={{ 
                           borderColor: errorMessages.quantityIssued ? "red" : "black" 
                         }}
+                        placeholder="Enter quantity"
                       />
                       {errorMessages.quantityIssued && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
                           {errorMessages.quantityIssued}
                         </span>
+                      )}
+                      {selectedItemDetails?.quantityIssued && (
+                        <small className="text-muted">
+                          Available: {selectedItemDetails.quantityIssued}
+                        </small>
                       )}
                     </Form.Group>
                   </Col>

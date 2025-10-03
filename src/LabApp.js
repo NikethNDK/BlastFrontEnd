@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/lab-design-system.css";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import ModernSidebar from "./components/common/ModernSidebar";
 import ModernHeader from "./components/common/ModernHeader";
 import Header from "./components/Lab1/homeLab/Header";
@@ -232,6 +233,30 @@ function Layout({ userDetails }) {
           </div>
         </div>
       </div>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/modern-design.css";
 import "./styles/lab-design-system.css";
+import { Toaster } from "react-hot-toast";
 import Navigation from "./components/Navigation";
 import Home from "./components/Home";
 import Appinfo from "./components/appinfo/Appinfo";
@@ -49,6 +50,30 @@ function App() {
         <Route path="/add_dna" element={<AddDNA />} />
         <Route path="/add_blast" element={<Comparision />} />
       </Routes>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </BrowserRouter>
   );
 }

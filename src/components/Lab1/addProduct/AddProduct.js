@@ -8,6 +8,7 @@ import {
   addLabMasterApi,
   getMastertyApi,
 } from "../../../services/AppinfoService";
+import toast from "react-hot-toast";
 import { Button } from "react-bootstrap";
 import LabNavigation1 from "../homeLab/LabNavigation1";
 import "./AddProduct.css";
@@ -35,7 +36,7 @@ const AddProduct = ({
 
   const handleSubmit = async () => {
     if (!selectedCategory || !inputValue) {
-      alert("Please select a category and enter a value.");
+      toast.error("Please select a category and enter a value.");
       return;
     }
 
@@ -58,10 +59,10 @@ const AddProduct = ({
         ],
       }));
 
-      alert(`${selectedCategory} added successfully!`);
+      toast.success(`${selectedCategory} added successfully!`);
       setInputValue("");
     } catch (error) {
-      alert(`Failed to add ${selectedCategory}.`);
+      toast.error(`Failed to add ${selectedCategory}.`);
     }
   };
 
@@ -100,7 +101,7 @@ const AddProduct = ({
 
     try {
       await addLabMasterApi(masterData, userDetails);
-      alert("Data added successfully");
+      toast.success("Data added successfully");
       setMasterType("");
       setItemCode("");
       setItemName("");
@@ -108,7 +109,7 @@ const AddProduct = ({
       setReqStock("");
       setErrorMessages({});
     } catch (error) {
-      alert("Failed to add data.");
+      toast.error("Failed to add data.");
     }
   };
 

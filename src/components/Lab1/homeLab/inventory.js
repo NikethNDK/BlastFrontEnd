@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 import { FaBell, FaTimes } from "react-icons/fa";
 import { AiOutlineDownload } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import "./inventory.css"; // 👈 Link to the new CSS file
 
 const MasterListTable = ({
@@ -76,11 +77,11 @@ const MasterListTable = ({
 
     try {
       await createEquipmentDetails(equipmentData);
-      alert("Equipment details saved successfully!");
+      toast.success("Equipment details saved successfully!");
       setShowModal(false);
       setIsUpdateMode(false);
     } catch (error) {
-      alert("Failed to save equipment details.");
+      toast.error("Failed to save equipment details.");
     }
   };
 
@@ -90,7 +91,7 @@ const MasterListTable = ({
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
-      alert("No data to download!");
+      toast.error("No data to download!");
       return;
     }
 
@@ -142,17 +143,40 @@ const MasterListTable = ({
     const getData = async () => {
       try {
         setLoading(true);
+        console.log("🔍 [INVENTORY TABLE] Starting data fetch with:", {
+          masterType: masterType || "",
+          userLab: userDetails.lab
+        });
+        
         // Fetch data based on the selected masterType (from HomeLab)
         const response = await fetchMasterListByType(
           masterType || "",
           userDetails.lab
         );
 
+        console.log("📊 [INVENTORY TABLE] API response:", response);
+
         const combinedData = [...(response.master_data || [])];
+
+        console.log("📋 [INVENTORY TABLE] Combined data:", combinedData);
+        console.log("📋 [INVENTORY TABLE] Data length:", combinedData.length);
+
+        // Log sample items for debugging
+        combinedData.slice(0, 3).forEach((item, index) => {
+          console.log(`📋 [INVENTORY TABLE] Sample item ${index + 1}:`, {
+            item_code: item.item_code,
+            item_name: item.item_name,
+            master_type: item.master_type,
+            stock: item.stock,
+            quantity_received: item.quantity_received,
+            lab: item.c_id?.lab?.name || 'No lab info'
+          });
+        });
 
         setData(combinedData);
         setFilteredData(combinedData);
       } catch (err) {
+        console.error("💥 [INVENTORY TABLE] Error fetching data:", err);
         setError(err.message);
       } finally {
         setLoading(false);

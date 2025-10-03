@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import { Download } from "lucide-react";
 import { AiOutlineDownload } from "react-icons/ai";
 import LabNavigation1 from "../homeLab/LabNavigation1";
+import toast from "react-hot-toast";
 
 const ReceivedDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -52,7 +53,7 @@ const ReceivedDataTable = ({
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
-      alert("No data to download!");
+      toast.error("No data to download!");
       return;
     }
 

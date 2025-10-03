@@ -7,6 +7,7 @@ import {
   inactiveProjectApi,
 } from "../../../services/AppinfoService";
 import * as XLSX from "xlsx";
+import toast from "react-hot-toast";
 import "./ProjectManage.css";
 
 const ProjectManage = () => {
@@ -68,7 +69,7 @@ const ProjectManage = () => {
   const handleInactive = async (project_code) => {
     try {
       await inactiveProjectApi(project_code);
-      alert("Project Inactivated");
+      toast.success("Project Inactivated");
       
       setProjects((prevProjects) =>
         prevProjects.map((proj) =>
@@ -79,7 +80,7 @@ const ProjectManage = () => {
       );
     } catch (error) {
       console.error("Failed to inactivate project:", error);
-      alert("Failed to Inactivate Project");
+      toast.error("Failed to Inactivate Project");
     }
   };
 

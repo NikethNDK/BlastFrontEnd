@@ -6,6 +6,7 @@ import {
   getEmployeeApi,
   inactiveEmployeeApi,
 } from "../../../services/AppinfoService";
+import toast from "react-hot-toast";
 
 const EmployeeManage = () => {
   const [employees, setEmployees] = useState([]);
@@ -68,7 +69,7 @@ const EmployeeManage = () => {
     }
     try {
       await inactiveEmployeeApi(emp_id);
-      alert("Employee marked as inactive");
+      toast.success("Employee marked as inactive");
       setInactiveEmployees((prev) => {
         const updatedSet = new Set(prev).add(emp_id);
         localStorage.setItem(
@@ -79,7 +80,7 @@ const EmployeeManage = () => {
       });
     } catch (error) {
       console.error("Failed to mark Employee as inactive:", error);
-      alert("Failed to update Employee status");
+      toast.error("Failed to update Employee status");
     }
   };
 

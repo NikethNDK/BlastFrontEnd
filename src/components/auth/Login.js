@@ -11,6 +11,7 @@ import ResearcherApp from "../../ResearcherApp";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import CareApp from "../../dnacar";
 import Header from "../Lab1/homeLab/Header";
+import toast, { Toaster } from "react-hot-toast";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -29,12 +30,12 @@ function Login() {
 
   const handleLogin = async () => {
     if (!username?.trim()) {
-      alert("Please enter username");
+      toast.error("Please enter username");
       return;
     }
   
     if (!password?.trim()) {
-      alert("Please enter password");
+      toast.error("Please enter password");
       return;
     }
   
@@ -46,8 +47,9 @@ function Login() {
         let foundUser = response.find(
           (user) => user.user_name === username && user.password === password
         );
-  
-        if (foundUser) {
+        if(!foundUser.is_active){
+          toast.error("You are blocked")
+        }else if (foundUser) {
           console.log("Logged in User:", foundUser);
           setLoggedIn(true);
           setUserRole(foundUser.role);
@@ -60,14 +62,14 @@ function Login() {
             designation: foundUser.designation || "Not Assigned"
           });
         } else {
-          alert("The username or password you entered is incorrect. Please try again.");
+          toast.error("The username or password you entered is incorrect. Please try again.");
         }
       } else {
-        alert("No users found in system");
+        toast.error("No user found in system");
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert("Login failed. Please try again.");
+      toast.error("Login failed. Please try again.");
     }
   };
 
@@ -101,7 +103,7 @@ function Login() {
                 return <ResearcherAccessApp userDetails={userDetails}/>;
               }
             default:
-              alert("Something went wrong. Please contact support.");
+              toast.error("Something went wrong. Please contact support.");
               setLoggedIn(false);
               return null;
           }
@@ -420,6 +422,30 @@ function Login() {
               }
             }
           `}</style>
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+              },
+              success: {
+                duration: 3000,
+                iconTheme: {
+                  primary: '#4ade80',
+                  secondary: '#fff',
+                },
+              },
+              error: {
+                duration: 5000,
+                iconTheme: {
+                  primary: '#ef4444',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
         </>
       )}
     </div>

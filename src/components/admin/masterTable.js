@@ -7,6 +7,7 @@ import {
   deleteLabApi,
   deleteDesignationApi,
 } from "../../services/AppinfoService";
+import toast from "react-hot-toast";
 import {
   Container,
   Typography,
@@ -50,7 +51,7 @@ const LabDesignationForm = ({
         setDataList(response.data);
       }
     } catch (error) {
-      alert(`Error fetching data: ${error}`);
+      toast.error(`Error fetching data: ${error}`);
       setOpenSnackbar(true);
     }
   };
@@ -63,12 +64,12 @@ const LabDesignationForm = ({
         await addDesignationApi(inputValue);
       }
 
-      alert("Data saved successfully!");
+      toast.success("Data saved successfully!");
       setOpenSnackbar(true);
       setInputValue("");
       fetchData(); // Refresh the table after saving
     } catch (error) {
-      alert("Fill the field !");
+      toast.error("Fill the field !");
       setOpenSnackbar(true);
     }
   };
@@ -77,16 +78,16 @@ const LabDesignationForm = ({
     try {
       if (selectedOption === "Lab") {
         await deleteLabApi(id);
-        alert("Lab deleted successfully!");
+        toast.success("Lab deleted successfully!");
       } else if (selectedOption === "Designation") {
         await deleteDesignationApi(id);
-        alert("Designation deleted successfully!");
+        toast.success("Designation deleted successfully!");
       }
 
       setOpenSnackbar(true);
       fetchData(); // Refresh the table after deletion
     } catch (error) {
-      alert(
+      toast.error(
         `Error deleting ${selectedOption.toLowerCase()}: ${
           error.error || "Something went wrong"
         }`

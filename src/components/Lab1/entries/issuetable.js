@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 import "./TransferredDataTable.css";
 import { AiOutlineDownload } from "react-icons/ai";
 import LabNavigation1 from "../homeLab/LabNavigation1";
+import toast from "react-hot-toast";
 
 const IssueDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -49,7 +50,7 @@ const IssueDataTable = ({
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
-      alert("No data to download!");
+      toast.error("No data to download!");
       return;
     }
 

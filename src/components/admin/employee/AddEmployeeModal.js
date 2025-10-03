@@ -7,6 +7,7 @@ import {
   getLabsApi,
   fetchUsernames,
 } from "../../../services/AppinfoService";
+import toast from "react-hot-toast";
 
 const AssignProjectModal = (props) => {
   const [selectedProjects, setSelectedProjects] = useState([]);
@@ -82,12 +83,12 @@ const AssignProjectModal = (props) => {
 
     addEmployeeApi(empData)
       .then(() => {
-        window.alert("Project assigned successfully");
+        toast.success("Employee added successfully");
         props.setUpdated(true);
       })
       .catch((error) => {
         console.error("Employee ID already exist", error);
-        alert("Employee ID already exist.");
+        toast.error("Employee ID already exist.");
       });
   };
 
