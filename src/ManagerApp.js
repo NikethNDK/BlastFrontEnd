@@ -27,29 +27,37 @@ function Layout({ userId, userDetails }) {
   const hideNavigation = hiddenPaths.includes(location.pathname);
   return (
     <>
-    <ManagerNavigation userDetails={userDetails}>
-      <Routes>
-        <Route path="/" element={<Join />} />
-        <Route path="/dashboard" element={<Dasboard userId={userId} userDetails={userDetails} />} />
-        <Route path="/project" element={<Project />} />
-        <Route path="/manager/appinfo" element={<AppinfoManager />} />
-        <Route path="/manager/master" element={<ChemicalManager />} />
-        <Route path="/manager/master_filter" element={<MasterFilter />} />
-        <Route path="/manager/inventory" element={<InventoryManager />} />
-        <Route path="/notification" element={<Notification userDetails={userDetails} />} />
-        <Route path="/view_entry" element={<ViewEntry />} />
-        <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
-        <Route path="/common_name" element={<CommonNameDna />} />
-        <Route path="/scientific_name" element={<ScientificNameDna />} />
-        <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
-        <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
-        <Route path="/return_data" element={<ReturnDataTable />} />
-        <Route path="/change_password" element={<ChangePassword userDetails={userDetails} />} />
-        <Route path="/returnNoti" element={
-          <ReturnDataTableNotification managerId={userId} userDetails={userDetails} />
-        } />
-      </Routes>
-    </ManagerNavigation>
+      {hideNavigation ? (
+        // Directly render routes without ManagerNavigation
+        <Routes>
+          <Route path="/" element={<Join />} />
+        </Routes>
+      ) : (
+        // Wrap everything else with ManagerNavigation
+        <ManagerNavigation userDetails={userDetails}>
+          <Routes>
+            <Route path="/dashboard" element={<Dasboard userId={userId} userDetails={userDetails} />} />
+            <Route path="/project" element={<Project />} />
+            <Route path="/manager/appinfo" element={<AppinfoManager />} />
+            <Route path="/manager/master" element={<ChemicalManager />} />
+            <Route path="/manager/master_filter" element={<MasterFilter />} />
+            <Route path="/manager/inventory" element={<InventoryManager />} />
+            <Route path="/notification" element={<Notification userDetails={userDetails} />} />
+            <Route path="/view_entry" element={<ViewEntry />} />
+            <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
+            <Route path="/common_name" element={<CommonNameDna />} />
+            <Route path="/scientific_name" element={<ScientificNameDna />} />
+            <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
+            <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
+            <Route path="/return_data" element={<ReturnDataTable />} />
+            <Route path="/change_password" element={<ChangePassword userDetails={userDetails} />} />
+            <Route
+              path="/returnNoti"
+              element={<ReturnDataTableNotification managerId={userId} userDetails={userDetails} />}
+            />
+          </Routes>
+        </ManagerNavigation>
+      )}
     </>
   );
 }
