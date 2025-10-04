@@ -4,6 +4,7 @@ import * as XLSX from "xlsx";
 import LabNavigation1 from "./LabNavigation1";
 import "../entries/TransferredDataTable.css";
 import { AiOutlineDownload } from "react-icons/ai";
+import toast from "react-hot-toast";
 
 const EquipmentList = () => {
   const [equipmentData, setEquipmentData] = useState([]);
@@ -61,7 +62,7 @@ const EquipmentList = () => {
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
-      alert("No data to download!");
+      toast.error("No data to download!");
       return;
     }
 

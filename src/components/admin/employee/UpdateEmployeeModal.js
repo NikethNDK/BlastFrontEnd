@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Col, Row, Form, Button } from 'react-bootstrap';
 import { updateEmployeeApi, getLoginApi, getProjectApi } from '../../../services/AppinfoService';
+import toast from 'react-hot-toast';
 
 const UpdateEmployeeModal = (props) => {
     const [designations, setDesignations] = useState([]);
@@ -36,12 +37,12 @@ const UpdateEmployeeModal = (props) => {
         try {
             // Call the updateEmployeeApi with empData and employee ID
             const result = await updateEmployeeApi(props.employee.emp_id, empData);
-            alert(result);
+            toast.success(result);
             // Set updated to true to trigger a re-render of the employee list
             props.setUpdated(true);
         } catch (error) {
             console.error('Failed to Update Employee:', error);
-            alert(`Failed to Update Employee: ${error.message}`);
+            toast.error(`Failed to Update Employee: ${error.message}`);
         }
     };
 

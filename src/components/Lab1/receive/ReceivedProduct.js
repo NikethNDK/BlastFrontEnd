@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Row, Form, Button, Modal } from "react-bootstrap";
+import toast from "react-hot-toast";
 import {
   // Keeping all original imports for completeness,
   // although some like getMasterChemicalApi etc. are currently unused in the component's logic
@@ -314,19 +315,26 @@ const ReceivedProduct = ({
     // API call
     addTempItemReceiveApi(receiveData, userDetails.name)
       .then(() => {
-        alert("Received Data added successfully");
+        console.log("✅ [FORM SUBMIT] Received data added successfully, refreshing table...");
+        toast.success("Received Data added successfully");
         // Reset all state and close modal
         handleClose();
+        
+        // Refresh the temp receive table
+        if (window.refreshTempReceiveTable) {
+          window.refreshTempReceiveTable();
+        }
       })
       .catch((error) => {
-        console.error("Add Error:", error);
-        alert("Failed to add received data. Please check console.");
+        console.error("💥 [FORM SUBMIT] Add Error:", error);
+        toast.error("Failed to add received data. Please check console.");
       });
   };
 
   // --- Transfer Data Handler (remains the same) ---
   const handleTransferData = async () => {
     try {
+      console.log("🔄 [TRANSFER] Starting receive data transfer...");
       // NOTE: This uses a hardcoded URL. In a real application, this should be configurable.
       const response = await fetch("http://localhost:8000/transfer/receive/", {
         method: "POST",
@@ -339,11 +347,16 @@ const ReceivedProduct = ({
 
       const data = await response.json();
       setMessage(data.message);
-      alert("Submit Success");
+      toast.success("Data transferred successfully");
+      
+      // Refresh the temp receive table after transfer
+      if (window.refreshTempReceiveTable) {
+        window.refreshTempReceiveTable();
+      }
     } catch (error) {
-      console.error("Error during data transfer:", error);
+      console.error("💥 [TRANSFER] Error during data transfer:", error);
       setMessage("An error occurred. Please try again.");
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     }
   };
 

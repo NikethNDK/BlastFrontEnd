@@ -1302,21 +1302,46 @@ export function getLabassistantEmployeeApi() {
     .get("http://127.0.0.1:8000/lab-assistants/")
     .then((response) => response.data);
 }
-export const fetchMasterListByType = async (masterType) => {
+export const fetchMasterListByType = async (masterType, lab = null) => {
   try {
+    const params = { master_type: masterType };
+    if (lab) {
+      params.lab = lab;
+    }
+    
+    console.log("🌐 [API] fetchMasterListByType called with:", { masterType, lab, params });
+    console.log("🌐 [API] Making request to:", `${API_BASE_URL}/api/master-list-by-type/`);
+    
     const response = await axios.get(`${API_BASE_URL}/api/master-list-by-type/`, {
-      params: { master_type: masterType },
+      params: params,
     });
+    
+    console.log("🌐 [API] fetchMasterListByType response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error fetching master list:", error);
+    console.error("💥 [API] Error fetching master list:", error);
     throw error;
   }
 };
-export function getTemptReceiveApi() {
+export function getTemptReceiveApi(lab = null) {
+  const params = {};
+  if (lab) {
+    params.lab = lab;
+  }
+  
+  console.log("🌐 [API] getTemptReceiveApi called with:", { lab, params });
+  console.log("🌐 [API] Making request to:", "http://127.0.0.1:8000/api/inventoryReceive/");
+  
   return axios
-    .get("http://127.0.0.1:8000/api/inventoryReceive/")
-    .then((response) => response.data);
+    .get("http://127.0.0.1:8000/api/inventoryReceive/", { params })
+    .then((response) => {
+      console.log("🌐 [API] getTemptReceiveApi response:", response.data);
+      return response.data;
+    })
+    .catch((error) => {
+      console.error("💥 [API] getTemptReceiveApi error:", error);
+      throw error;
+    });
 }
 
 export const createEquipmentDetails = async (equipmentData) => {

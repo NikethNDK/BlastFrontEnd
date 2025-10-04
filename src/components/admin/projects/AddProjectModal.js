@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Col, Row, Form, Button } from "react-bootstrap";
 // import {FormControl, FormGroup, FormLabel} from 'react-bootstrap';
 import { addProjectApi } from "../../../services/AppinfoService";
+import toast from "react-hot-toast";
 
 const AddProjectModal = (props) => {
   const [showModal, setShowModal] = useState(false);
@@ -36,7 +37,7 @@ const AddProjectModal = (props) => {
 
     addProjectApi(projectData)
       .then((result) => {
-        alert("Project added successfully");
+        toast.success("Project added successfully");
         setShowModal(false);
         props.setUpdated(true);
       })
@@ -44,9 +45,9 @@ const AddProjectModal = (props) => {
         console.error("Failed to Add Project Data", error);
 
         if (error.response && error.response.data.error) {
-          alert(error.response.data.error); // Show duplicate error message
+          toast.error(error.response.data.error); // Show duplicate error message
         } else {
-          alert("Project code already exist.");
+          toast.error("Project code already exist.");
         }
       });
   };

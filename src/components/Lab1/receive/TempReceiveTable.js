@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import toast from "react-hot-toast";
 import {
   getTempReceiveApi,
   updateTempReceiveApi,
@@ -32,6 +33,14 @@ const TempReceiveTable = () => {
   useEffect(() => {
     fetchData();
     fetchDropdownData();
+    
+    // Expose refresh function globally
+    window.refreshTempReceiveTable = fetchData;
+    
+    // Cleanup on unmount
+    return () => {
+      delete window.refreshTempReceiveTable;
+    };
   }, []);
 
   const fetchData = async () => {
@@ -102,12 +111,12 @@ const TempReceiveTable = () => {
     if (!selectedItem) return;
     try {
       await updateTempReceiveApi(selectedItem.bill_no, selectedItem);
-      alert("Updated Successfully!");
+      toast.success("Updated Successfully!");
       setShowModal(false);
       fetchData();
     } catch (error) {
       console.error("Error updating item:", error);
-      alert("Update Failed!");
+      toast.error("Update Failed!");
     }
   };
 
@@ -118,7 +127,7 @@ const TempReceiveTable = () => {
       setReceive(receive.filter((item) => item.bill_no !== billNo));
     } catch (error) {
       console.error("Error deleting item:", error);
-      alert("Delete Failed!");
+      toast.error("Delete Failed!");
     }
   };
 

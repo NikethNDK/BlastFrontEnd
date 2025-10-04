@@ -268,7 +268,7 @@ const AddProductListReq = ({
 >
       <div>
         <h2 style={{ textAlign: "center", color: "black" }}>
-          Request Form TestAddProduct{" "}
+          Request Form
           {/* <Button onClick={handleTransferData} style={{float: 'right'}}>Submit</Button> */}
         </h2>
       </div>
@@ -293,8 +293,7 @@ const AddProductListReq = ({
               ref={formRef}
             >
               <Row>
-                <Col>
-                  <Form.Group controlId="masterType">
+                <Col>                 <Form.Group controlId="masterType">
                     <Form.Label style={{ marginRight: "8px" }}>
                       Master Type
                     </Form.Label>
