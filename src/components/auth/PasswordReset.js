@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { updateLoginApi, getLoginApi } from "../../services/AppinfoService";
 import { FaEye, FaEyeSlash, FaKey, FaUser, FaLock } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 function PasswordReset({ userDetails = { name: "", lab: "", designation: "" } }) {
   const [username, setUsername] = useState("");
@@ -24,17 +25,17 @@ function PasswordReset({ userDetails = { name: "", lab: "", designation: "" } })
 
   const handleResetPassword = async () => {
     if (!username && !password) {
-      alert("Please select a username and enter a new password.");
+      toast.error("Please select a username and enter a new password.");
       return;
     }
 
     if (!username) {
-      alert("Please select a username.");
+      toast.error("Please select a username.");
       return;
     }
 
     if (!password) {
-      alert("Please enter a new password.");
+      toast.error("Please enter a new password.");
       return;
     }
 
@@ -46,15 +47,15 @@ function PasswordReset({ userDetails = { name: "", lab: "", designation: "" } })
         setResetStatus("Password reset successfully!");
         setUsername("");
         setPassword("");
-        alert("Password reset successfully!");
+        toast.success("Password reset successfully!");
       } else {
         setResetStatus("Username not found. Password reset failed.");
-        alert("Username not found. Please check and try again.");
+        toast.error("Username not found. Please check and try again.");
       }
     } catch (error) {
       console.error("Error resetting password:", error);
       setResetStatus("An error occurred while resetting the password.");
-      alert("An error occurred. Please try again later.");
+      toast.error("An error occurred. Please try again later.");
     }
   };
 

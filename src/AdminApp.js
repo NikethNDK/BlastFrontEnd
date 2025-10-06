@@ -15,6 +15,7 @@ import EmployeeManage from "./components/admin/employee/EmployeeManage";
 import LabDesignationForm from "./components/admin/masterTable";
 import RegistrationForm from "./components/auth/RegistrationForm";
 import RegistrationList from "./components/auth/RegistrationList";
+import { Toaster } from "react-hot-toast";
 
 function AdminApp({ userDetails = { name: '', lab: '', designation: '' } }) {
   return (
@@ -36,6 +37,30 @@ function AdminApp({ userDetails = { name: '', lab: '', designation: '' } }) {
           {/* <RegistrationList /> */}
         </Routes>
       </AdminNavigation>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            theme: {
+              primary: 'green',
+              secondary: 'black',
+            },
+          },
+          error: {
+            duration: 4000,
+            theme: {
+              primary: 'red',
+              secondary: 'black',
+            },
+          },
+        }}
+      />
     </BrowserRouter>
   );
 }

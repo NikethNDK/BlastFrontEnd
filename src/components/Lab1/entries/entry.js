@@ -125,6 +125,7 @@ const TransferredDataTable = ({
         "Item Name": item.item_name,
         Price: item.price_unit,
         "Quantity to be returned": item.quantity_received,
+        "Remaining Stock": item.stock,
         "Batch Number": item.batch_number,
         Remarks: item.remarks,
         "Receipt Date": item.receipt_date,
@@ -163,6 +164,7 @@ const TransferredDataTable = ({
     { label: "Item Name", key: "item_name", className: "item-name-column" },
     { label: "Price", key: "price_unit", className: "price-column" },
     { label: "Received Quantity", key: "quantity_received", className: "quantity-column" },
+    { label: "Remaining Stock", key: "stock", className: "stock-column"},
     { label: "Batch Number", key: "batch_number", className: "batch-column" },
     { label: "Remarks", key: "remarks", className: "remarks-column" },
     { label: "Receipt Date", key: "receipt_date", className: "date-column" },
@@ -175,7 +177,7 @@ const TransferredDataTable = ({
     { label: "Po Number/Date", key: "po_number", className: "po-column" },
     { label: "Location", key: "location", className: "location-column" },
   ];
-
+  console.log(data)
   return (
     <div>
       <div className="table-container">
@@ -248,6 +250,7 @@ const TransferredDataTable = ({
                     <td className="table-cell item-name-column">{item.item_name}</td>
                     <td className="table-cell price-column">{item.price_unit}</td>
                     <td className="table-cell quantity-column">{item.quantity_received}</td>
+                    <td className="table-cell stock-column">{item.stock}</td>
                     <td className="table-cell batch-column">{item.batch_number}</td>
                     <td className="table-cell remarks-column">{item.remarks}</td>
                     <td className="table-cell date-column">{item.receipt_date}</td>
@@ -295,8 +298,8 @@ const TransferredDataTable = ({
                 >
                   <option value="">Select Manager</option>
                   {managerNames.map((manager) => (
-                    <option key={manager.value} value={manager.value}>
-                      {manager.label}
+                    <option key={manager.value} value={manager.value[0]}>
+                      {manager.label[0]}
                     </option>
                   ))}
                 </select>

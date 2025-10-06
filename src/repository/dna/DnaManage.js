@@ -217,7 +217,7 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
           </div>
           
           <div className="dna-manage-controls">
-            <div className="partial-names-container">
+            {/* <div className="partial-names-container">
               {partialNames && partialNames.length > 0 ? (
                 partialNames.map((name, index) => (
                   <button
@@ -231,7 +231,7 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
               ) : (
                 <span className="no-partial-names-message">No partial names available</span>
               )}
-            </div>
+            </div> */}
             <div className="unique-names-counter">
               Total Unique Scientific Names:{" "}
               {new Set(filteredDnas.map((dna) => dna.scientific_name)).size}

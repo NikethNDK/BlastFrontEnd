@@ -8,8 +8,8 @@ import {
   FaSyncAlt,
   FaUserTie
 } from 'react-icons/fa';
-import Header from "../Lab1/homeLab/Header";
 import "../../blast/BlastSidebar.css";
+import Header from "../Lab1/homeLab/Header";
 
 const ManagerNavigation = ({ 
   children,
@@ -24,9 +24,9 @@ const ManagerNavigation = ({
 
   return (
     <div style={{ backgroundColor: "#f2f5e6" }}>
-      <header className="headerr">
+      {/* <header className="headerr"> */}
         <Header />
-      </header>
+      {/* </header> */}
 
       <div style={{ display: "flex" }}>
         {/* Mobile Overlay */}

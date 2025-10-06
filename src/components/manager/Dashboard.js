@@ -124,7 +124,7 @@ const Dashboard = ({ userDetails = { name: "", lab: "", designation: "" } }) => 
       <div className="data-table-container">
         <CDBContainer>
           {selectedButton === "ProjectFilter" && <ProjectFilter />}
-          {selectedButton === "Inven" && <Inven />}
+          {selectedButton === "Inven" && <Inven userDetails={userDetails} />}
           {selectedButton === "EmployeeFilter" && <EmployeeFilter />}
           {selectedButton === "ReceivedFilter" && (
             <ReceivedFilter setReceivedCount={handleReceivedCount} />

@@ -102,7 +102,7 @@ const ModernSidebar = ({
             {!collapsed && (
               <div className="modern-sidebar-brand">
                 <button className="modern-sidebar-logo" onClick={() => navigate("/")}>
-                  <FaArrowLeft />
+                  <FaHome />
                 </button>
                 <span>Lab Management</span>
               </div>

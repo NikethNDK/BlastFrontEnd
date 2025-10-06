@@ -3,6 +3,7 @@ import {
   fetchRegistrations,
   deleteRegistration,
 } from "../../services/AppinfoService";
+import toast from "react-hot-toast";
 
 const RegistrationList = () => {
   const [registrations, setRegistrations] = useState([]);
@@ -21,8 +22,9 @@ const RegistrationList = () => {
     try {
       await deleteRegistration(id);
       setRegistrations((prev) => prev.filter((reg) => reg.id !== id));
+      toast.success("Registration deleted successfully!");
     } catch (error) {
-      alert("Error deleting the registration.");
+      toast.error("Error deleting the registration.");
     }
   };
 

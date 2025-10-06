@@ -5,6 +5,7 @@ import {
   getLabsApi,
 } from "../../services/AppinfoService";
 import { Alert } from "react-bootstrap";
+import toast from "react-hot-toast";
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -53,7 +54,7 @@ const RegistrationForm = () => {
     e.preventDefault();
     try {
       const response = await createRegistration(formData);
-      Alert("Registration successful!");
+      toast.success("Registration successful!");
       setErrorMessage("");
       setFormData({
         username: "",
@@ -65,6 +66,7 @@ const RegistrationForm = () => {
     } catch (error) {
       setErrorMessage("An error occurred during registration.");
       setSuccessMessage("");
+      toast.error("An error occurred during registration.");
     }
   };
 

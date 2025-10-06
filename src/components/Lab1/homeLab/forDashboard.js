@@ -8,7 +8,7 @@ import {
 } from "../../../services/AppinfoService";
 import MasterListTable from "./inventory";
 
-const HomeLab1 = () => {
+const HomeLab1 = ({userDetails}) => {
   const [selectedMasterType, setSelectedMasterType] = useState("");
   const [stockLevel, setStockLevel] = useState("");
   const [masterTypes, setMasterTypes] = useState([]);
@@ -88,7 +88,7 @@ const HomeLab1 = () => {
       <div className="data-table-container">
         <CDBContainer>
           {selectedMasterType && (
-            <MasterListTable masterType={selectedMasterType} />
+            <MasterListTable masterType={selectedMasterType} userDetails={userDetails} />
           )}
         </CDBContainer>
       </div>

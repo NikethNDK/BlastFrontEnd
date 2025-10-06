@@ -9,6 +9,7 @@ import {
 } from "../../services/AppinfoService";
 import { FaEye, FaEyeSlash, FaUserPlus, FaUser, FaLock, FaBriefcase, FaFlask } from "react-icons/fa";
 import Select from "react-select";
+import toast from "react-hot-toast";
 import "./Register.css";
 
 function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
@@ -72,14 +73,14 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
       !designation ||
       selectedLabs.length === 0
     ) {
-      alert("Please fill all fields.");
+      toast.error("Please fill all fields.");
       return;
     }
 
     const selectedLabIds = selectedLabs.map((lab) => lab.value);
 
     if (isNaN(parseInt(designation, 10))) {
-      alert("Please select a valid designation.");
+      toast.error("Please select a valid designation.");
       return;
     }
 
@@ -100,7 +101,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
 
     try {
       await addLoginApi(requestData);
-      alert("Registered Successfully");
+      toast.success("Registered Successfully");
 
       setUsername("");
       setPassword("");
@@ -109,7 +110,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
       setSelectedLabs([]);
     } catch (error) {
       console.error("Failed to register", error);
-      alert("Failed to Register");
+      toast.error("Failed to Register");
     }
   };
 

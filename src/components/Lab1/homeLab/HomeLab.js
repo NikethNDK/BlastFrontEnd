@@ -13,23 +13,23 @@ import LabNavigation1 from "./LabNavigation1"; // Assuming this is the main navi
 const HomeLab = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
   const [selectedMasterType, setSelectedMasterType] = useState("");
   const [stockLevel, setStockLevel] = useState("");
-  const [masterTypes, setMasterTypes] = useState([]);
+  // const [masterTypes, setMasterTypes] = useState([]);
   const [showUserModal, setShowUserModal] = useState(false);
 
   // Constants for the Inventory Types
   const inventoryTypes = ["Labware", "Chemical", "Equipment"];
 
-  useEffect(() => {
-    const fetchMasterTypes = async () => {
-      try {
-        const data = await getMastertyApi();
-        setMasterTypes(data);
-      } catch (error) {
-        console.error("Error fetching Master Types:", error);
-      }
-    };
-    fetchMasterTypes();
-  }, []);
+  // useEffect(() => {
+  //   const fetchMasterTypes = async () => {
+  //     try {
+  //       const data = await getMastertyApi();
+  //       setMasterTypes(data);
+  //     } catch (error) {
+  //       console.error("Error fetching Master Types:", error);
+  //     }
+  //   };
+  //   fetchMasterTypes();
+  // }, []);
 
   useEffect(() => {
     // Fetch Stock Level
