@@ -5,7 +5,8 @@ import {
   FaTimes,
   FaUserCircle,
   FaSignOutAlt,
-  FaArrowLeft
+  FaArrowLeft,
+  FaHome
 } from 'react-icons/fa';
 import { FcBiotech, FcBiohazard } from "react-icons/fc";
 import "./Navigation.css";
@@ -50,7 +51,7 @@ const Navigation = ({
               <div className="blast-sidebar-brand">
                 <div className="blast-sidebar-logo">
                   <button className="blast-sidebar-logo" onClick={() => navigate("/")}>
-                                    <FaArrowLeft />
+                                    <FaHome />
                                   </button>
                 </div>
                 <span>DNA Repository</span>

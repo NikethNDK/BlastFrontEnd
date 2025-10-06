@@ -6,7 +6,8 @@ import {
   FaDatabase,
   FaUserCircle,
   FaSignOutAlt,
-  FaArrowLeft
+  FaArrowLeft,
+  FaHome
 } from 'react-icons/fa';
 import './BlastSidebar.css';
 
@@ -46,7 +47,7 @@ const BlastSidebar = ({
             {!collapsed && (
               <div className="blast-sidebar-brand">
                 <button className="blast-sidebar-logo" onClick={() => navigate("/")}>
-                  <FaArrowLeft />
+                  <FaHome />
                 </button>
                 <span>DNA Blast</span>
               </div>

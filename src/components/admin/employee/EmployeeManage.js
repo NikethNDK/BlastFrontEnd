@@ -309,7 +309,7 @@ const EmployeeManage = () => {
               }}
             >
               <FaUserPlus />
-              Add Employee
+              Assign Employee
             </button>
           </div>
         </div>
