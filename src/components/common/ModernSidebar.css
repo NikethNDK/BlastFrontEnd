@@ -1,0 +1,342 @@
+/* --- Variables for a cleaner look (Light Theme) --- */
+:root {
+  /* Inherit colors from the Login component's style */
+  --color-brand-primary: #1a3d2a; /* Dark Green/Charcoal from login-title */
+  --color-brand-accent: #c5ea31; /* Bright Green from login-submit-btn */
+  --color-brand-accent-dark: #b5da21; /* Darker Green for hover/shadow */
+
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
+  --color-background-light: #f3fbd6;
+  --color-background-dark: #f9fafb; /* Light Gray from form-input-modern background */
+  --color-text-dark: var(--color-brand-primary); /* Main Text */
+  --color-text-secondary: #6b7280; /* Muted Gray from login-subtitle */
+  
+  /* Accent/Interactive Colors */
+  --color-accent: var(--color-brand-accent); 
+  --color-accent-hover: var(--color-brand-accent-dark); 
+  --color-hover: #f1f5f9; /* Retained light hover for menu items */
+  --color-active-bg: rgba(197, 234, 49, 0.2); /* Transparent active background based on accent */
+  
+  --transition-speed: 0.3s;
+  --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Base Sidebar Styles --- */
+.modern-sidebar {
+  position: sticky; /* Change from fixed to relative */
+  top: 220px;
+  left: 10px;
+  width: var(--sidebar-width);
+  height: calc(100vh - 230px); /* Account for header height */
+  background-color: var(--color-background-light);
+  color: var(--color-text-dark);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-subtle);
+  transition: width var(--transition-speed) ease, transform var(--transition-speed) ease;
+  z-index: 999; /* Lower than header */
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  flex-shrink: 0; /* Prevent sidebar from shrinking */
+}
+
+.modern-sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.modern-sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+}
+
+/* --- Header and Brand --- */
+.modern-sidebar-header {
+  padding: 1rem 1rem;
+  min-height: 80px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modern-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-right: 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #000;
+}
+
+.modern-sidebar-logo {
+  font-size: 1.5rem;
+  background-color: transparent;
+  border: none;
+}
+
+.modern-sidebar-toggle {
+  background: var(--color-background-dark);
+  border: none;
+  color: var(--color-text-dark);
+  font-size: 1.25rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all var(--transition-speed) ease;
+  cursor: pointer;
+}
+
+.modern-sidebar-toggle:hover {
+  background: var(--color-hover);
+}
+
+.modern-sidebar.collapsed .modern-sidebar-toggle {
+  border-radius: 0.375rem;
+}
+
+/* --- Top Meta (User and Notifications) --- */
+.modern-sidebar-top-meta {
+  padding: 0 1.5rem 1rem;
+}
+
+/* --- User Info --- */
+.modern-sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 1rem;
+}
+
+.modern-sidebar-user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-brand-accent); /* Use bright green accent */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-brand-primary); /* Dark text on bright background */
+  font-size: 1.5rem;
+  box-shadow: 0 2px 4px rgba(197, 234, 49, 0.4); /* Accent shadow */
+}
+
+.modern-sidebar-user-name {
+  font-weight: 600;
+  color: var(--color-text-dark);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.modern-sidebar-user-role,
+.modern-sidebar-user-lab {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* --- Notifications --- */
+.modern-notification-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  width: 100%;
+  color: var(--color-text-dark);
+  font-size: 1rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background var(--transition-speed) ease;
+}
+
+.modern-notification-toggle:hover {
+  background: var(--color-hover);
+}
+
+.modern-sidebar.collapsed .modern-notification-toggle {
+  justify-content: center;
+  padding: 0.5rem 0;
+}
+
+.modern-notification-bell {
+  position: relative;
+  font-size: 1.2rem;
+  padding: 0.25rem;
+}
+
+.modern-notification-badge {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background: #ef4444; /* Red for alerts/notifications */
+  color: white;
+  border-radius: 50%;
+  padding: 1px 5px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid white;
+}
+
+.modern-notification-menu {
+  /* Menu styles remain clean and white */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-radius: 0.75rem;
+}
+
+/* --- Menu and Navigation --- */
+.modern-sidebar-menu-wrapper {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 0 1rem;
+}
+
+.modern-sidebar-section {
+  margin-bottom: 1rem;
+}
+
+.modern-sidebar-section-title {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  padding: 0.5rem 0.5rem 0.25rem;
+  letter-spacing: 0.5px;
+}
+
+.modern-sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.modern-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  color: var(--color-text-dark);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all var(--transition-speed) ease;
+  line-height: 1;
+}
+
+/* Collapsed state item styling */
+.modern-sidebar.collapsed .modern-sidebar-item {
+  justify-content: center;
+  padding: 0.75rem;
+  gap: 0;
+}
+
+.modern-sidebar-item:hover {
+  background: var(--color-hover);
+  color: var(--color-text-dark);
+}
+
+.modern-sidebar-item.active {
+  background: var(--color-active-bg);
+  color: var(--color-brand-primary); /* Dark text on light accent background */
+  box-shadow: 0 2px 5px rgba(197, 234, 49, 0.3); /* Accent shadow */
+  font-weight: 600;
+}
+
+.modern-sidebar-item-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+/* Active item icon color takes the accent color */
+.modern-sidebar-item.active .modern-sidebar-item-icon {
+  color: var(--color-brand-accent) !important; /* Bold accent icon color */
+}
+
+/* --- Icon Colors (Re-toned to complement the new primary color) --- */
+.modern-sidebar-item-icon.color-primary { color: #3772ff; } /* Blue for primary actions */
+.modern-sidebar-item-icon.color-success { color: #10b981; } /* Emerald */
+.modern-sidebar-item-icon.color-danger { color: #ef4444; } /* Red */
+.modern-sidebar-item-icon.color-warning { color: #f59e0b; } /* Amber */
+.modern-sidebar-item-icon.color-info { color: #06b6d4; } /* Cyan */
+.modern-sidebar-item-icon.color-secondary { color: #8b5cf6; } /* Violet */
+.modern-sidebar-item-icon.color-neutral { color: #64748b; } /* Gray - used for settings */
+
+
+/* --- Footer and Logout --- */
+.modern-sidebar-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.modern-sidebar-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: #fef9c3; /* Very light yellow for gentle alert/exit */
+  border: 1px solid #fde68a;
+  border-radius: 0.5rem;
+  color: #ca8a04; /* Darker yellow/gold color */
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-speed) ease;
+}
+
+.modern-sidebar-logout:hover {
+  background: #fde68a; /* Lighter red on hover */
+  border-color: #ca8a04;
+  color: #ca8a04;
+}
+
+.modern-sidebar.collapsed .modern-sidebar-logout {
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  border-width: 0; /* Remove border when collapsed for cleaner look */
+}
+
+/* Hide text when collapsed (remains the same) */
+.modern-sidebar.collapsed .modern-sidebar-item-text,
+.modern-sidebar.collapsed .modern-sidebar-brand span,
+.modern-sidebar.collapsed .modern-sidebar-user,
+.modern-sidebar.collapsed .modern-sidebar-section-title,
+.modern-sidebar.collapsed .modern-sidebar-logout span,
+.modern-sidebar.collapsed .modern-notification-toggle span {
+  display: none;
+}
+
+.modern-sidebar.collapsed .modern-notification-toggle {
+  justify-content: center;
+  padding: 0.75rem 0.5rem;
+}
+
+/* --- Responsive Design (remains the same) --- */
+@media (max-width: 1024px) {
+  .modern-sidebar {
+    transform: translateX(-100%);
+    width: 300px;
+  }
+  
+  .modern-sidebar:not(.collapsed) {
+    transform: translateX(0);
+  }
+}

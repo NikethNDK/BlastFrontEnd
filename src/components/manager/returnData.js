@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
-// import "./TransferredDataTable.css";
 import { AiOutlineDownload } from "react-icons/ai";
 
 const ReturnDataTable = () => {
@@ -33,7 +32,7 @@ const ReturnDataTable = () => {
         return filterValue ? cellValue.includes(filterValue) : true;
       })
     )
-    .sort((a, b) => a.entry_no - b.entry_no); // Sort in ascending order ;
+    .sort((a, b) => a.entry_no - b.entry_no);
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
@@ -57,160 +56,329 @@ const ReturnDataTable = () => {
         Remarks: item.remarks,
       }))
     );
-    // Protecting the sheet from edits
+
     worksheet["!protect"] = {
       password: "readonly",
-      edit: false, // Disable editing
-      selectLockedCells: true, // Allow selection of locked cells
-      selectUnlockedCells: false, // Prevent editing
+      edit: false,
+      selectLockedCells: true,
+      selectUnlockedCells: false,
     };
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Issue Data");
     XLSX.writeFile(workbook, "IssueData.xlsx");
   };
-  // ✅ Calculate totals
+
   const totalQuantityReceived = filteredData.reduce(
     (sum, item) => sum + (parseInt(item.quantity_issued) || 0),
     0
   );
 
+  const columns = [
+    { key: "entry_no", label: "Entry No" },
+    { key: "item_name", label: "Item Name" },
+    { key: "item_code", label: "Item Code" },
+    { key: "quantity_returned", label: "Quantity Returned" },
+    { key: "batch_number", label: "Batch Number" },
+    { key: "receipt_date", label: "Receipt Date" },
+    { key: "expiry_date", label: "Expiry Date" },
+    { key: "manufacturer", label: "Manufacturer" },
+    { key: "supplier", label: "Supplier" },
+    { key: "project_name", label: "Project Name" },
+    { key: "invoice_no", label: "Invoice No" },
+    { key: "return_date", label: "Return Date" },
+    { key: "remarks", label: "Remarks" },
+  ];
+
   return (
-    <div className="table-container">
-      <h2>Return Data</h2>
-      <div className="total-summary">
-        {/* <p>
-          <strong>Total Quantity Returned: </strong> {totalQuantityReceived}
-        </p> */}
-      </div>
-      <button
-        style={{
-          marginLeft: "95%",
-          width: "3%",
-          height: "20%",
-          border: "none",
-          backgroundColor: "#198754",
-          color: "White",
-          borderRadius: "5px",
-          marginTop: "-1px",
-        }}
-        variant="success"
-        onClick={handleDownload}
-      >
-        <AiOutlineDownload size={20} />
-      </button>
-      <p></p>
+    <div style={{ padding: "20px", width: "100%" }}>
       <div
         style={{
-          maxWidth: "100%",
-          overflowX: "auto",
-          borderRadius: "1px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "16px",
         }}
-        className="table-wrapper"
       >
-        <table
+        <h2
           style={{
-            width: "100%",
-            borderRadius: "2px",
-            borderCollapse: "collapse",
-            backgroundColor: "white",
+            margin: 0,
+            fontSize: "1.5rem",
+            fontWeight: 600,
+            color: "#1e293b",
           }}
-          className="styled-table"
         >
-          <thead>
-            <tr>
-              {[
-                "Entry No",
-                "Item Name",
-                "Item Code",
-                "Quantity Returned",
-                "Batch Number",
-                "Receipt Date",
-                "Expiry Date",
-                "Manufacturer",
-                "Supplier",
-                "Project Name",
-                "Invoice No",
+          Return Data
+        </h2>
+        <button
+          onClick={handleDownload}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "8px 16px",
+            backgroundColor: "#10b981",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            transition: "all 0.2s",
+            boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = "#059669";
+            e.target.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = "#10b981";
+            e.target.style.boxShadow = "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
+          }}
+        >
+          <AiOutlineDownload size={18} style={{ marginRight: "6px" }} />
+          Download
+        </button>
+      </div>
 
-                "Return Date",
-                "Remarks",
-              ].map((heading, index) => (
-                <th
-                  style={{
-                    padding: "12px",
-                    textAlign: "left",
-                    border: "1px solid black",
-                    backgroundColor: "rgb(197, 234, 49)",
-                    color: "black",
-                  }}
-                  key={index}
-                >
-                  {heading}
-                  <br />
-                  <input
-                    style={{ border: "1px solid black" }}
-                    type="text"
-                    placeholder="Filter"
-                    onChange={(e) =>
-                      handleFilterChange(
-                        e,
-                        heading.toLowerCase().replace(/\s/g, "_")
-                      )
-                    }
-                  />
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredData.map((item, index) => (
-              <tr key={item.id} className={index < 10 ? "highlight-row" : ""}>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.entry_no}
-                </td>
-
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.item_name}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.item_code}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.quantity_returned}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.batch_number}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.receipt_date}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.expiry_date}
-                </td>
-
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.manufacturer}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.supplier}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.project_name}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.invoice_no}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.return_date}
-                </td>
-                <td style={{ padding: "10px", border: "1px solid black" }}>
-                  {item.remarks}
-                </td>
+      <div
+        style={{
+          backgroundColor: "#ffffff",
+          borderRadius: "8px",
+          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+          overflow: "hidden",
+        }}
+      >
+        <div style={{ overflowX: "auto" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "separate",
+              borderSpacing: 0,
+            }}
+          >
+            <thead>
+              <tr>
+                {columns.map((column, index) => (
+                  <th
+                    key={index}
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                    }}
+                  >
+                    <div style={{ marginBottom: "8px" }}>{column.label}</div>
+                    <input
+                      type="text"
+                      placeholder="Filter"
+                      onChange={(e) => handleFilterChange(e, column.key)}
+                      style={{
+                        width: "100%",
+                        padding: "6px 8px",
+                        border: "1px solid #cbd5e1",
+                        borderRadius: "4px",
+                        fontSize: "0.875rem",
+                        outline: "none",
+                        transition: "all 0.2s",
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = "#3b82f6";
+                        e.target.style.boxShadow =
+                          "0 0 0 2px rgba(59, 130, 246, 0.1)";
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = "#cbd5e1";
+                        e.target.style.boxShadow = "none";
+                      }}
+                    />
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredData.map((item, index) => (
+                <tr
+                  key={item.id}
+                  style={{
+                    transition: "background-color 0.15s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f1f5f9";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor =
+                      index % 2 === 0 ? "#ffffff" : "#f8fafc";
+                  }}
+                >
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.entry_no}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.item_name}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.item_code}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.quantity_returned}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.batch_number}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.receipt_date}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.expiry_date}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.manufacturer}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.supplier}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.project_name}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.invoice_no}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.return_date}
+                  </td>
+                  <td
+                    style={{
+                      padding: "12px",
+                      border: "1px solid #e2e8f0",
+                      textAlign: "center",
+                      fontSize: "0.875rem",
+                      color: "#475569",
+                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
+                    }}
+                  >
+                    {item.remarks}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

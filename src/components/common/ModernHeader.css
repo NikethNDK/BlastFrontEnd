@@ -1,0 +1,225 @@
+/* Modern Header Styles */
+
+.lab-header-toggle {
+  background: none;
+  border: none;
+  color: var(--lab-neutral-600);
+  font-size: 1.2rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.lab-header-toggle:hover {
+  background: var(--lab-neutral-100);
+  color: var(--lab-neutral-800);
+}
+
+.lab-header-title-section {
+  margin-left: 1rem;
+}
+
+.lab-header-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--lab-neutral-800);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.lab-header-subtitle {
+  font-size: 0.875rem;
+  color: var(--lab-neutral-500);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.lab-header-notification {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+}
+
+.lab-header-notification-bell {
+  position: relative;
+  color: var(--lab-neutral-600);
+  font-size: 1.2rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.lab-header-notification-bell:hover {
+  color: var(--lab-primary-600);
+  background: var(--lab-primary-50);
+}
+
+.lab-header-notification-badge {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background: var(--lab-error-500);
+  color: white;
+  border-radius: 50%;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lab-header-notification-menu {
+  min-width: 320px;
+  max-height: 400px;
+  overflow-y: auto;
+  border: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.lab-header-notification-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--lab-neutral-100);
+  transition: all 0.2s ease;
+}
+
+.lab-header-notification-item:hover {
+  background: var(--lab-neutral-50);
+}
+
+.lab-header-notification-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.lab-header-notification-title {
+  font-weight: 600;
+  color: var(--lab-neutral-800);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.lab-header-notification-meta {
+  font-size: 0.8rem;
+  color: var(--lab-neutral-500);
+}
+
+.lab-header-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.lab-header-user:hover {
+  background: var(--lab-neutral-100);
+}
+
+.lab-header-user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--lab-primary-100);
+  color: var(--lab-primary-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.lab-header-user-info {
+  text-align: left;
+}
+
+.lab-header-user-name {
+  font-weight: 600;
+  color: var(--lab-neutral-800);
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.lab-header-user-role {
+  font-size: 0.8rem;
+  color: var(--lab-neutral-500);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.lab-header-user-menu {
+  min-width: 280px;
+  border: none;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.lab-header-user-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.lab-header-user-menu-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--lab-primary-100);
+  color: var(--lab-primary-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.lab-header-user-menu-name {
+  font-weight: 600;
+  color: var(--lab-neutral-800);
+  font-size: 1rem;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.lab-header-user-menu-role {
+  font-size: 0.875rem;
+  color: var(--lab-neutral-600);
+  margin: 0.25rem 0 0 0;
+  line-height: 1.2;
+}
+
+.lab-header-user-menu-lab {
+  font-size: 0.8rem;
+  color: var(--lab-neutral-500);
+  margin: 0.25rem 0 0 0;
+  line-height: 1.2;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .lab-header-title {
+    font-size: 1.25rem;
+  }
+  
+  .lab-header-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .lab-header-notification-menu {
+    min-width: 280px;
+  }
+  
+  .lab-header-user-menu {
+    min-width: 260px;
+  }
+}

@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import BootstrapTable from "react-bootstrap-table-next";
 import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
-import "../../../App.css";
+import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
+import "react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css";
 
 const ReceivedFilter = ({ setReceivedCount }) => {
   const seenEntryNos = useRef(new Set());
@@ -10,16 +11,21 @@ const ReceivedFilter = ({ setReceivedCount }) => {
   const [newEntries, setNewEntries] = useState(new Set());
 
   const getHeaderStyle = () => ({
-    backgroundColor: "#C5EA31",
-    width: "50px",
-    color: "black",
+    backgroundColor: "#f8fafc",
+    fontWeight: 600,
+    color: "#1e293b",
     textAlign: "center",
-    border: "1px solid black",
+    border: "1px solid #e2e8f0",
+    padding: "12px",
+    fontSize: "0.875rem",
   });
 
   const getCellStyle = () => ({
     textAlign: "center",
-    border: "1px solid black",
+    border: "1px solid #e2e8f0",
+    padding: "12px",
+    fontSize: "0.875rem",
+    color: "#475569",
   });
 
   const columns = [
@@ -156,10 +162,6 @@ const ReceivedFilter = ({ setReceivedCount }) => {
           );
         }
 
-        // const newEntrySet = new Set(
-        //   freshEntries.map((item) => String(item.entry_no))
-        // );
-        // setNewEntries(newEntrySet);
         const newEntrySet = new Set([
           ...newEntries,
           ...freshEntries.map((item) => String(item.entry_no)),
@@ -167,7 +169,6 @@ const ReceivedFilter = ({ setReceivedCount }) => {
         setNewEntries(newEntrySet);
 
         setTimeout(() => {
-          // Remove only those specific entries after 50 seconds
           const updated = new Set(newEntrySet);
           freshEntries.forEach((item) => updated.delete(String(item.entry_no)));
           setNewEntries(updated);
@@ -180,21 +181,94 @@ const ReceivedFilter = ({ setReceivedCount }) => {
     fetchData();
     const interval = setInterval(fetchData, 10000);
     return () => clearInterval(interval);
-  }, [setReceivedCount]);
+  }, [setReceivedCount, newEntries]);
 
   return (
-    <div>
-      <div style={{ overflowY: "scroll", maxHeight: "300px" }}>
-        <BootstrapTable
-          keyField="entry_no"
-          data={receive}
-          columns={columns}
-          filter={filterFactory()}
-          rowClasses={rowClasses} // ✅ THIS is what applies the CSS class
-        />
+    <div style={{ marginTop: "1px", width: "100%" }}>
+
+      <div style={{ paddingTop: "10px" }}>
+        <div
+          style={{
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
+            overflow: "hidden",
+          }}
+        >
+          <div style={{ overflowY: "scroll", maxHeight: "300px" }}>
+            <BootstrapTable
+              keyField="entry_no"
+              data={receive}
+              columns={columns}
+              striped
+              hover
+              bordered={false}
+              className="react-bootstrap-table"
+              filter={filterFactory()}
+              rowClasses={rowClasses}
+              rowStyle={{
+                borderBottom: "1px solid #e2e8f0",
+              }}
+              headerClasses="table-header"
+            />
+          </div>
+        </div>
       </div>
+
+      <style jsx>{`
+        :global(.react-bootstrap-table) {
+          border-collapse: separate;
+          border-spacing: 0;
+        }
+
+        :global(.react-bootstrap-table table) {
+          margin-bottom: 0 !important;
+        }
+
+        :global(.react-bootstrap-table tbody tr:hover) {
+          background-color: #f1f5f9 !important;
+        }
+
+        :global(.react-bootstrap-table .filter) {
+          border: 1px solid #cbd5e1;
+          border-radius: 4px;
+          padding: 6px 8px;
+          font-size: 0.875rem;
+          margin-top: 4px;
+        }
+
+        :global(.react-bootstrap-table .filter:focus) {
+          outline: none;
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        :global(.table-header) {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+        }
+
+        :global(.highlight-new-row) {
+          background-color: #fef3c7 !important;
+          animation: fadeHighlight 100s ease-out forwards;
+        }
+
+        :global(.highlight-new-row:hover) {
+          background-color: #fde68a !important;
+        }
+
+        @keyframes fadeHighlight {
+          0% {
+            background-color: #fef3c7;
+          }
+          100% {
+            background-color: #ffffff;
+          }
+        }
+      `}</style>
     </div>
   );
 };
 
-export default ReceivedFilter;
+export default ReceivedFilter

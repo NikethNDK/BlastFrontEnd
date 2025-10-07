@@ -1,0 +1,224 @@
+/* --- Global Layout Configuration --- */
+.dashboard-page-container {
+  padding: 1.5rem 2rem;
+  background-color: #f2f5e6;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* --- Content Header (Title and Notification Indicator) --- */
+.content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e0e7ef;
+  /* padding-bottom: 1rem; */
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* --- Notification Indicator Card --- */
+.notification-indicator-card {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  transition: all 0.3s ease;
+}
+
+.notification-indicator-card.notification-new {
+  background-color: #ef4444; /* Red for new notifications */
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.notification-indicator-card.notification-active {
+  background-color: #10b981; /* Green for acknowledged notifications */
+}
+
+.notification-indicator-card.notification-none {
+  background-color: #94a3b8; /* Gray for no notifications */
+}
+
+.notification-label {
+  margin: 0;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.8);
+  }
+}
+
+/* --- Dashboard Section Selector Bar --- */
+.dashboard-selector-bar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+}
+
+.dashboard-section-group {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.dashboard-section-button {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  z-index: 1;
+  position: relative;
+  white-space: nowrap;
+}
+
+/* Remove default Bootstrap border radius for button group */
+.dashboard-section-group .btn:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.dashboard-section-group .btn:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.dashboard-section-button:hover:not(.active) {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.dashboard-section-button.active {
+  background-color: #c5ea31;
+  color: #1a3d2a;
+  border-color: #1a3d2a;
+  box-shadow: 0 4px 10px rgba(197, 234, 49, 0.3);
+  position: relative;
+  z-index: 2;
+}
+
+.dashboard-section-button.active:hover {
+  background-color: #c5ea31;
+  color: #1a3d2a;
+}
+
+/* --- Notification Badge on Button --- */
+.notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  height: 20px;
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  color: white;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.notification-badge.badge-new {
+  background-color: #ef4444; /* Red */
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+.notification-badge.badge-active {
+  background-color: #10b981; /* Green */
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* --- Main Data Table Container --- */
+.data-table-container {
+  padding: 1.5rem;
+  min-height: 400px;
+}
+
+.data-table-container .cdb-container {
+  padding: 0;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 1024px) {
+  .dashboard-page-container {
+    padding: 1rem;
+    padding-top: 5rem;
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .notification-indicator-card {
+    margin-top: 0.5rem;
+    min-width: 100%;
+  }
+
+  .dashboard-selector-bar {
+    justify-content: flex-start;
+  }
+
+  .dashboard-section-group {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  .dashboard-section-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .dashboard-section-button {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .notification-badge {
+    top: -6px;
+    right: -6px;
+    height: 18px;
+    min-width: 18px;
+    font-size: 10px;
+  }
+}

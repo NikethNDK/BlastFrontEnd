@@ -1,79 +1,134 @@
-import React from "react";
-import {
-  CDBSidebar,
-  CDBSidebarContent,
-  CDBSidebarHeader,
-  CDBSidebarMenu,
-  CDBSidebarMenuItem,
-} from "cdbreact";
-import { NavLink } from "react-router-dom";
+import React, { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { 
+  FaBars,
+  FaTimes,
+  FaUserCircle,
+  FaSignOutAlt,
+  FaArrowLeft,
+  FaHome
+} from 'react-icons/fa';
+import { FcBiotech, FcBiohazard } from "react-icons/fc";
 import "./Navigation.css";
 import "../../App.css";
-import { FcBiotech, FcBiohazard } from "react-icons/fc";
 
-const Navigation = () => {
+const UserAvatarIcon = FaUserCircle;
+
+const Navigation = ({ 
+  userDetails = { name: 'User Name', lab: 'Lab Assistant', designation: 'Researcher' }
+}) => {
+  const [collapsed, setCollapsed] = useState(false);
+
+  const navigate = useNavigate()
+
+  const toggleSidebar = () => {
+    setCollapsed(!collapsed);
+  };
+
+  const handleLogout = () => {
+    window.location.href = "/";
+    // Add any logout logic here
+    console.log('Logout clicked');
+  };
+
   return (
-    <div>
-      {/*  <Navbar bg="dark" variant="dark" id="my-nav" className="custom-navbar">
-        <Navbar.Brand className="app-logo">
-          <img
-            src={DNA}
-            width="40"
-            height="50"
-            className="d-inline-block align-center"
-            alt="React Bootstrap logo"
-          />{' '}
-            AIWC DNA REPOSITORY BACKBONE
-        </Navbar.Brand>
-  </Navbar>  */}
-      <div className="sidebar" style={{ height: "100vh" }}>
-        <CDBSidebar textColor="black" backgroundColor="gray" maxWidth="200px">
-          {/* <CDBSidebarHeader>
-            Dashboard
-          </CDBSidebarHeader> */}
-          <CDBSidebarContent style={{ marginLeft: "-7px" }}>
-            <CDBSidebarMenu>
-              <NavLink exact to="/dna" activeClassName="activeClicked">
-                <CDBSidebarMenuItem
-                  className="black-text"
-                  style={{ fontWeight: "bold" }}
-                >
-                  <FcBiotech style={{ marginRight: "8px", fontSize: "24px" }} />
-                  Home
-                </CDBSidebarMenuItem>
+    <>
+      {/* Mobile Overlay */}
+      {!collapsed && (
+        <div 
+          className="blast-sidebar-overlay d-lg-none"
+          onClick={() => setCollapsed(true)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`blast-sidebar ${collapsed ? 'collapsed' : ''}`}>
+        
+        {/* Header and Toggle */}
+        <div className="blast-sidebar-header">
+          <div className="d-flex align-items-center justify-content-between w-100">
+            {!collapsed && (
+              <div className="blast-sidebar-brand">
+                <div className="blast-sidebar-logo">
+                  <button className="blast-sidebar-logo" onClick={() => navigate("/")}>
+                                    <FaHome />
+                                  </button>
+                </div>
+                <span>DNA Repository</span>
+              </div>
+            )}
+            {/* <button 
+              className="blast-sidebar-toggle"
+              onClick={toggleSidebar}
+            >
+              {collapsed ? <FaBars /> : <FaTimes />}
+            </button> */}
+          </div>
+        </div>
+
+        {/* User Info Section */}
+        <div className="blast-sidebar-top-meta">
+          {!collapsed && (
+            <div className="blast-sidebar-user">
+              <div className="blast-sidebar-user-avatar">
+                <UserAvatarIcon />
+              </div>
+              <div className="blast-sidebar-user-info">
+                <div className="blast-sidebar-user-name">{userDetails.name}</div>
+                <div className="blast-sidebar-user-role">{userDetails.designation}</div>
+                <div className="blast-sidebar-user-lab">{userDetails.lab}</div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Menu (Navigation) */}
+        <div className="blast-sidebar-menu-wrapper">
+          <div className="blast-sidebar-section">
+            {!collapsed && <div className="blast-sidebar-section-title">Navigation</div>}
+            <nav className="blast-sidebar-menu">
+              <NavLink
+                to="/dna"
+                className={({ isActive }) => 
+                  `blast-sidebar-item ${isActive ? 'active' : ''}`
+                }
+                title="Home"
+              >
+                <FcBiotech className="blast-sidebar-item-icon" />
+                {!collapsed && (
+                  <span className="blast-sidebar-item-text">Home</span>
+                )}
               </NavLink>
-              <NavLink exact to="/add_dna" activeClassName="activeClicked">
-                <CDBSidebarMenuItem
-                  className="black-text"
-                  style={{ fontWeight: "bold" }}
-                >
-                  <FcBiohazard
-                    style={{
-                      marginRight: "8px",
-                      fontSize: "24px",
-                      color: "rgb(24, 81, 12)",
-                    }}
-                  />
-                  New Submission
-                </CDBSidebarMenuItem>
+              
+              <NavLink
+                to="/add_dna"
+                className={({ isActive }) => 
+                  `blast-sidebar-item ${isActive ? 'active' : ''}`
+                }
+                title="New Submission"
+              >
+                <FcBiohazard className="blast-sidebar-item-icon" />
+                {!collapsed && (
+                  <span className="blast-sidebar-item-text">New Submission</span>
+                )}
               </NavLink>
-              {/* <NavLink exact to="/common_name" activeClassName="activeClicked">
-                <CDBSidebarMenuItem className="black-text" style={{ fontWeight: "bold" }}>
-                  <FcBiohazard  style={{ marginRight: '8px', fontSize: '24px' }} />
-                    Common Name 
-                  </CDBSidebarMenuItem>
-              </NavLink>
-            {/*    <NavLink exact to="/scientific_name" activeClassName="activeClicked">
-                <CDBSidebarMenuItem className="black-text" style={{ fontWeight: "bold" }}>
-                  <FcEngineering  style={{ marginRight: '8px', fontSize: '24px' }} />
-                    Scientific Name 
-                  </CDBSidebarMenuItem>
-            </NavLink>  */}
-            </CDBSidebarMenu>
-          </CDBSidebarContent>
-        </CDBSidebar>
+            </nav>
+          </div>
+        </div>
+
+        {/* Footer - Logout Button */}
+        <div className="blast-sidebar-footer">
+          <button 
+            className="blast-sidebar-logout"
+            onClick={handleLogout}
+            title="Logout"
+          >
+            <FaSignOutAlt />
+            {!collapsed && <span>Logout</span>}
+          </button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

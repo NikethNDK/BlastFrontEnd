@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Form } from "react-bootstrap";
-import { Button, ButtonToolbar } from "react-bootstrap";
-import { FaEdit } from "react-icons/fa";
-import { RiDeleteBin5Line } from "react-icons/ri";
+import { FaEdit, FaPlus, FaEye, FaSearch, FaDownload, FaFilter, FaSort, FaTrash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import AddProjectModal from "./AddProjectModal";
 import UpdateProjectModal from "./UpdateProjectModal";
 import {
@@ -10,8 +7,8 @@ import {
   inactiveProjectApi,
 } from "../../../services/AppinfoService";
 import * as XLSX from "xlsx";
-import { AiOutlineDownload } from "react-icons/ai";
-import "../../styles/styles.css";
+import toast from "react-hot-toast";
+import "./ProjectManage.css";
 
 const ProjectManage = () => {
   const [projects, setProjects] = useState([]);
@@ -19,38 +16,49 @@ const ProjectManage = () => {
   const [editModalShow, setEditModalShow] = useState(false);
   const [editProjects, setEditProjects] = useState([]);
   const [isUpdated, setIsUpdated] = useState(false);
-  const [filteredProjects, setFilteredProjects] = useState([]);
-  const [searchTerm, setSearchTerm] = useState({ code: "", name: "" });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   useEffect(() => {
     let mounted = true;
 
-    console.log("Effect triggered. Checking conditions...");
-
-    if (projects.length && !isUpdated) {
-      console.log("Data already present and not updated. Returning early.");
-      return;
-    }
-
-    console.log("Fetching new data...");
-
-    getProjectApi()
-      .then((data) => {
+    const fetchProjects = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const data = await getProjectApi();
         if (mounted) {
-          console.log("Project Data received:", data);
           setProjects(data);
+          setCurrentPage(1);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching data:", error);
-      });
+        if (mounted) {
+          setError("Failed to load projects. Please try again.");
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProjects();
 
     return () => {
-      console.log("Cleanup: Effect will unmount.");
       mounted = false;
-      setIsUpdated(false);
     };
-  }, [isUpdated, projects]);
+  }, [isUpdated]);
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    setAddModalShow(true);
+  };
 
   const handleUpdate = (e, stu) => {
     e.preventDefault();
@@ -58,262 +66,389 @@ const ProjectManage = () => {
     setEditProjects(stu);
   };
 
-  const handleAdd = (e) => {
-    e.preventDefault();
-    setAddModalShow(true);
+  const handleInactive = async (project_code) => {
+    try {
+      await inactiveProjectApi(project_code);
+      toast.success("Project Inactivated");
+      
+      setProjects((prevProjects) =>
+        prevProjects.map((proj) =>
+          proj.project_code === project_code
+            ? { ...proj, deleted: 1 }
+            : proj
+        )
+      );
+    } catch (error) {
+      console.error("Failed to inactivate project:", error);
+      toast.error("Failed to Inactivate Project");
+    }
   };
 
-  const handleInactive = (e, project_code) => {
-    e.preventDefault();
-    inactiveProjectApi(project_code)
-      .then((data) => {
-        alert("Project Inactivated");
-        console.log("Project inactive:", data);
+  const handleSearch = (searchValue) => {
+    setSearchTerm(searchValue);
+    setCurrentPage(1);
+  };
 
-        // Update the projects state to mark the project as inactive
-        setProjects((prevProjects) =>
-          prevProjects.map((proj) =>
-            proj.project_code === project_code
-              ? { ...proj, deleted: 1 } // Update the 'deleted' flag to 1
-              : proj
-          )
-        );
-      })
-      .catch((error) => {
-        console.error("Failed to inactivate project:", error);
-        alert("Failed to Inactivate Project");
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  // Filter and sort data
+  const filteredAndSortedProjects = React.useMemo(() => {
+    let filtered = projects;
+
+    if (searchTerm) {
+      filtered = projects.filter(project =>
+        project.project_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        project.project_name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (sortConfig.key) {
+      filtered.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
       });
-  };
+    }
+
+    return filtered;
+  }, [projects, searchTerm, sortConfig]);
+
+  // Paginate data
+  const totalPages = Math.ceil(filteredAndSortedProjects.length / pageSize);
+  const paginatedProjects = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredAndSortedProjects.slice(startIndex, startIndex + pageSize);
+  }, [filteredAndSortedProjects, currentPage, pageSize]);
 
   let AddModelClose = () => setAddModalShow(false);
   let EditModelClose = () => setEditModalShow(false);
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    const newSearchTerm = { ...searchTerm, [name]: value };
-    setSearchTerm(newSearchTerm);
-
-    const filtered = projects.filter((item) => {
-      return (
-        item.project_code
-          .toLowerCase()
-          .includes(newSearchTerm.code.toLowerCase()) &&
-        item.project_name
-          .toLowerCase()
-          .includes(newSearchTerm.name.toLowerCase())
-      );
-    });
-
-    setFilteredProjects(filtered);
-  };
-
-  const exportToExcel = () => {
-    const exportData =
-      filteredProjects.length > 0 || searchTerm.code || searchTerm.name
-        ? filteredProjects
-        : projects;
-
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const exportToExcel = (data = projects) => {
+    const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Projects");
     XLSX.writeFile(workbook, "project_data.xlsx");
   };
 
   return (
-    <div>
-      <div style={{ background: "#C5EA31", height: "70px" }} className="header">
-        <h2
-          style={{ textAlign: "center", paddingTop: "15px", marginLeft: "40%" }}
-        >
-          PROJECT MASTER
-        </h2>
-      </div>
-      <div style={{ overflowX: "hidden", maxHeight: "500px" }}>
-        <div className="row side-row" style={{ textAlign: "center" }}>
-          <div className="d-flex justify-content-center align-items-center gap-3 m-3">
-            <ButtonToolbar>
-              <Button variant="primary" onClick={handleAdd}>
-                Add Project
-              </Button>
-
-              <AddProjectModal
-                show={addModalShow}
-                setUpdated={setIsUpdated}
-                onHide={AddModelClose}
-                projects={projects || []}
-              ></AddProjectModal>
-            </ButtonToolbar>
-            <p id="manage"></p>
-            <div className="m-3">
-              <Form>
-                <div className="d-flex gap-2">
-                  <Form.Control
-                    type="text"
-                    name="code"
-                    placeholder="Search by Project Code"
-                    value={searchTerm.code}
-                    onChange={handleFilterChange}
-                    style={{ maxWidth: "300px" }}
-                  />
-                  <Form.Control
-                    type="text"
-                    name="name"
-                    placeholder="Search by Project Name"
-                    value={searchTerm.name}
-                    onChange={handleFilterChange}
-                    style={{ maxWidth: "300px" }}
-                  />
-                  <Button variant="success" onClick={exportToExcel}>
-                    <AiOutlineDownload size={20} /> {/* Download Icon */}
-                  </Button>
-                  {/* <Button
-                    variant="success"
-                   
-                    onClick={exportToExcel}
-                  >
-                    Export to Excel
-                  </Button> */}
-                </div>
-              </Form>
+    <div className="project-manage-container">
+      <div className="project-manage-wrapper">
+        {/* Header */}
+        <div className="project-manage-header">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h1>
+                <FaEye style={{ marginRight: '0.75rem' }} />
+                PROJECT MANAGEMENT
+              </h1>
+              <p>Manage and organize your research projects efficiently</p>
             </div>
+            <button className="project-btn project-btn-primary project-btn-lg" onClick={handleAdd}>
+              <FaPlus />
+              Add New Project
+            </button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="project-stats-container">
+          <div className="project-stat-card">
+            <div className="project-stat-icon primary">
+              <FaEye />
+            </div>
+            <div className="project-stat-value">{projects.length}</div>
+            <p className="project-stat-label">Total Projects</p>
+          </div>
+          
+          <div className="project-stat-card">
+            <div className="project-stat-icon success">
+              <FaCheckCircle />
+            </div>
+            <div className="project-stat-value">
+              {projects.filter(p => p.deleted === 0).length}
+            </div>
+            <p className="project-stat-label">Active Projects</p>
+          </div>
+          
+          <div className="project-stat-card">
+            <div className="project-stat-icon warning">
+              <FaTimesCircle />
+            </div>
+            <div className="project-stat-value">
+              {projects.filter(p => p.deleted === 1).length}
+            </div>
+            <p className="project-stat-label">Inactive Projects</p>
+          </div>
+          
+          <div className="project-stat-card">
+            <div className="project-stat-icon info">
+              <FaDownload />
+            </div>
+            <p className="project-stat-label">Download Data</p>
+          </div>
+        </div>
+
+        {/* Main Content Card */}
+        <div className="project-content-card">
+          <div className="project-content-header">
+            <h4>
+              <FaFilter />
+              Project List
+            </h4>
+            <button 
+              className="project-btn project-btn-outline-light"
+              onClick={() => exportToExcel(projects)}
+            >
+              <FaDownload />
+              Export to Excel
+            </button>
           </div>
 
-          <Table
-            style={{
-              maxHeight: projects.length > 5 ? "300px" : "auto", // Enable scroll if more than 5 rows
-              overflowY: projects.length > 5 ? "auto" : "hidden", // Scroll only if more than 5
-              border: projects.length > 5 ? "1px solid black" : "none",
-              scrollbarWidth: "thin",
-              msOverflowStyle: "none",
-            }}
-            striped
-            bordered
-            hover
-            className="react-bootstrap-table"
-            id="dataTable"
-            // style={{ margin: "auto", overflowY: "hidden", width: "840px" }}
-          >
-            <thead>
-              <tr>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
+          <div className="project-content-body">
+            {/* Search and Filter Bar */}
+            <div className="project-search-bar">
+              <div className="project-search-wrapper">
+                <FaSearch className="project-search-icon" />
+                <input
+                  type="text"
+                  placeholder="Search projects by code or name..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="project-search-input"
+                />
+              </div>
+              <div className="project-filter-buttons">
+                <button
+                  className="project-btn project-btn-outline-primary project-btn-sm"
+                  onClick={() => handleSort('project_name')}
+                >
+                  <FaSort />
+                  Sort
+                </button>
+                <button
+                  className="project-btn project-btn-outline-secondary project-btn-sm"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSortConfig({ key: null, direction: 'asc' });
                   }}
                 >
-                  Project Code
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Projects Name
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "#C5EA31",
-                    width: "250px",
-                    color: "black",
-                    textAlign: "center",
-                    border: "1px solid black",
-                  }}
-                >
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {(filteredProjects.length > 0 ||
-              searchTerm.code ||
-              searchTerm.name
-                ? filteredProjects
-                : projects
-              ).map((proj) => (
-                <tr key={proj.project_code}>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {proj.project_code}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {proj.project_name || ""}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    <Button
-                      className="mr-2"
-                      variant={proj.deleted === 0 ? "primary" : "secondary"}
-                      onClick={
-                        proj.deleted === 0
-                          ? (event) => handleInactive(event, proj.project_code)
-                          : undefined
-                      }
-                      disabled={proj.deleted !== 0}
-                      style={{
-                        backgroundColor:
-                          proj.deleted === 0 ? "#0d6efd" : "gray",
-                        borderColor: proj.deleted === 0 ? "#0d6efd" : "gray",
-                        cursor: proj.deleted === 0 ? "pointer" : "not-allowed",
-                      }}
-                    >
-                      {proj.deleted === 0 ? "Inactive" : "Inactive"}
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                  <FaFilter />
+                  Clear
+                </button>
+              </div>
+            </div>
 
-            {/* <tbody>
-              {projects.map((proj) => (
-                <tr key={proj.project_code}>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {proj.project_code}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    {proj.project_name || ""}
-                  </td>
-                  <td
-                    style={{ textAlign: "center", border: "1px solid black" }}
-                  >
-                    <Button
-                      className="mr-2"
-                      variant={proj.deleted === 0 ? "primary" : "secondary"}
-                      onClick={
-                        proj.deleted === 0
-                          ? (event) => handleInactive(event, proj.project_code)
-                          : undefined
-                      }
-                      disabled={proj.deleted !== 0}
-                      style={{
-                        backgroundColor:
-                          proj.deleted === 0 ? "#0d6efd" : "gray",
-                        borderColor: proj.deleted === 0 ? "#0d6efd" : "gray",
-                        cursor: proj.deleted === 0 ? "pointer" : "not-allowed",
-                      }}
-                    >
-                      {proj.deleted === 0 ? "Inactive" : "Inactive"}
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody> */}
-          </Table>
+            {/* Loading State */}
+            {loading && (
+              <div className="project-loading">
+                <div className="project-spinner"></div>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <div className="project-alert project-alert-danger">
+                <FaTimesCircle />
+                {error}
+              </div>
+            )}
+
+            {/* Projects Table */}
+            {!loading && !error && (
+              <>
+                <div className="project-table-wrapper">
+                  <table className="project-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '20%' }}>
+                          <div 
+                            className="project-table-header-sortable"
+                            onClick={() => handleSort('project_code')}
+                          >
+                            Project Code
+                            <FaSort className="project-table-sort-icon" />
+                          </div>
+                        </th>
+                        <th style={{ width: '40%' }}>
+                          <div 
+                            className="project-table-header-sortable"
+                            onClick={() => handleSort('project_name')}
+                          >
+                            Project Name
+                            <FaSort className="project-table-sort-icon" />
+                          </div>
+                        </th>
+                        <th style={{ width: '15%' }}>Status</th>
+                        <th style={{ width: '15%' }}>Created</th>
+                        <th style={{ width: '10%', textAlign: 'center' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedProjects.length === 0 ? (
+                        <tr>
+                          <td colSpan="5">
+                            <div className="project-empty-state">
+                              <FaEye className="project-empty-icon" />
+                              <h5>No projects found</h5>
+                              <p>Click "Add New Project" to create your first project</p>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        paginatedProjects.map((project) => (
+                          <tr key={project.project_code}>
+                            <td>
+                              <div style={{ fontWeight: '600', color: '#007bff' }}>
+                                {project.project_code}
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ fontWeight: '500' }}>
+                                {project.project_name}
+                              </div>
+                            </td>
+                            <td>
+                              <span 
+                                className={`project-badge ${
+                                  project.deleted === 0 
+                                    ? 'project-badge-success' 
+                                    : 'project-badge-secondary'
+                                }`}
+                              >
+                                {project.deleted === 0 ? 'Active' : 'Inactive'}
+                              </span>
+                            </td>
+                            <td>
+                              <small style={{ color: '#6c757d' }}>
+                                {new Date().toLocaleDateString()}
+                              </small>
+                            </td>
+                            <td>
+                              <div className="project-action-buttons">
+                                <button
+                                  className="project-btn project-btn-outline-primary project-btn-sm"
+                                  onClick={(e) => handleUpdate(e, project)}
+                                  title="Edit Project"
+                                >
+                                  <FaEdit />
+                                </button>
+                                {project.deleted === 0 && (
+                                  <button
+                                    className="project-btn project-btn-outline-danger project-btn-sm"
+                                    onClick={() => {
+                                      if (window.confirm('Are you sure you want to inactivate this project?')) {
+                                        handleInactive(project.project_code);
+                                      }
+                                    }}
+                                    title="Inactivate Project"
+                                  >
+                                    <FaTrash />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <>
+                    <div className="project-pagination">
+                      <button
+                        className="project-btn project-btn-outline-primary project-btn-sm"
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                      >
+                        First
+                      </button>
+                      <button
+                        className="project-btn project-btn-outline-primary project-btn-sm"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </button>
+                      
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                        if (page > totalPages) return null;
+                        
+                        return (
+                          <button
+                            key={page}
+                            className={`project-btn project-btn-outline-primary project-btn-sm ${
+                              currentPage === page ? 'active' : ''
+                            }`}
+                            onClick={() => handlePageChange(page)}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
+                      
+                      <button
+                        className="project-btn project-btn-outline-primary project-btn-sm"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </button>
+                      <button
+                        className="project-btn project-btn-outline-primary project-btn-sm"
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Last
+                      </button>
+                    </div>
+
+                    {/* Pagination Info */}
+                    <div className="project-pagination-info">
+                      Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredAndSortedProjects.length)} of {filteredAndSortedProjects.length} projects
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </div>
         </div>
+
+        {/* Modals */}
+        <AddProjectModal
+          show={addModalShow}
+          setUpdated={setIsUpdated}
+          onHide={AddModelClose}
+          projects={projects || []}
+        />
+        
+        <UpdateProjectModal
+          show={editModalShow}
+          setUpdated={setIsUpdated}
+          onHide={EditModelClose}
+          editProjects={editProjects}
+          projects={projects || []}
+        />
       </div>
     </div>
   );

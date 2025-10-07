@@ -19,6 +19,7 @@ import {
 import Select from "react-select";
 import TempIssueTable from "../Lab1/issue/TempIssueTable";
 import ResearcherNavigation from "./ResearcherNavigation";
+import { Heading2 } from "lucide-react";
 const AddProductListReq = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
@@ -35,7 +36,7 @@ const AddProductListReq = ({
   const [selectedItem, setSelectedItem] = useState(null);
   const [projectCodes, setProjectCodes] = useState([]);
   const [projectNames, setProjectNames] = useState([]);
-
+  const [masterTypeList, setMasterTypeList]=useState([]);
   const [selectedCodes, setSelectedCodes] = useState(null);
   const [masterType, setMasterType] = useState("");
   const formRef = useRef(null);
@@ -95,9 +96,14 @@ const AddProductListReq = ({
     getMasterApi()
       .then((data) => {
         // Filter data based on masterType
+        console.log("Before selection master type",data)
+        const uniqueMasterType=[...new Set(data.map((item)=>item.master_type))]
+        setMasterTypeList(uniqueMasterType)
+        
         if (masterType) {
           data = data.filter((item) => item.master_type === masterType);
         }
+        console.log("After selecting master type",data)
         // Set items codes and names
         setItemsCodes(
           data.map((item) => ({
@@ -107,11 +113,12 @@ const AddProductListReq = ({
             details: { units: item.units },
           }))
         );
+        console.log("item codes in the addProduct",itemsCodes)
         setItemsNames(
           data.map((item) => ({
             value: item.c_id,
             label: item.item_name,
-            itemCode: item.item_code,
+            itemCode: item.label,
             details: { units: item.units },
           }))
         );
@@ -253,16 +260,28 @@ const AddProductListReq = ({
   };
 
   return (
-    <div style={{ marginTop: "5px", width: "100%" }}>
+    <div
+  style={{
+    margin: "5px",
+    padding: "10px",
+  }}
+>
       <div>
-        <h1 style={{ textAlign: "center", color: "black" }}>
-          Request Form{" "}
+        <h2 style={{ textAlign: "center", color: "black" }}>
+          Request Form
           {/* <Button onClick={handleTransferData} style={{float: 'right'}}>Submit</Button> */}
-        </h1>
+        </h2>
       </div>
 
       <p></p>
-      <div>
+      <div style={{
+    padding: "10px",
+    border: "1px solid #ccc", // gray border
+    borderRadius: "5px",       // optional, rounded corners
+    width: "80%",
+    margin: "0 auto",
+    boxShadow: "0 4px 6px rgba(0,0,0,0.1)" // subtle shadow
+  }}> 
         <Row>
           <Col sm={12}>
             {/* <Form onSubmit={handleAdd} ref={formRef}> */}
@@ -274,8 +293,7 @@ const AddProductListReq = ({
               ref={formRef}
             >
               <Row>
-                <Col>
-                  <Form.Group controlId="masterType">
+                <Col>                 <Form.Group controlId="masterType">
                     <Form.Label style={{ marginRight: "8px" }}>
                       Master Type
                     </Form.Label>
@@ -291,9 +309,11 @@ const AddProductListReq = ({
                       onChange={(e) => setMasterType(e.target.value)}
                     >
                       <option>Select Master Type</option>
-                      <option value="Chemical">Chemical</option>
-                      <option value="Labware">Labware</option>
-                      <option value="Equipment">Equipment</option>
+                      {masterTypeList.map((masterType)=>{
+                        return (
+                          <option value={masterType}>{masterType}</option>
+                        )
+                      })}
                     </select>
                     {errorMessages.masterType && (
                       <div style={{ color: "red", marginTop: "5px" }}>

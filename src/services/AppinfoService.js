@@ -1,8 +1,9 @@
 import axios from "axios";
+import { API_ENDPOINTS, API_BASE_URL } from "../config/api";
 
 export function getAppinfo() {
   return axios
-    .get("http://127.0.0.1:8000/appinfo")
+    .get(API_ENDPOINTS.APP_INFO)
     .then((response) => response.data);
 }
 
@@ -295,11 +296,11 @@ export async function updateInventoryApi(enNo, inventory) {
 
 //------------------------------------Login system----------------------------
 
-const BASE_URL = "http://127.0.0.1:8000"; // Replace with your actual base URL
+// API_BASE_URL is now imported from config/api.js
 
 export async function loginUserApi(credentials) {
   try {
-    const response = await axios.post(`${BASE_URL}/login-view/`, credentials);
+    const response = await axios.post(`${API_BASE_URL}/login-view/`, credentials);
     return response.data;
   } catch (error) {
     console.error("Error logging in:", error);
@@ -309,7 +310,7 @@ export async function loginUserApi(credentials) {
 
 export async function registerUserApi(userInfo) {
   try {
-    const response = await axios.post(`${BASE_URL}/register/`, userInfo);
+    const response = await axios.post(`${API_BASE_URL}/register/`, userInfo);
     return response.data;
   } catch (error) {
     console.error("Error registering user:", error);
@@ -398,7 +399,7 @@ export function addIssueApi(researcher) {
 
 export function getLoginApi() {
   return axios
-    .get("http://127.0.0.1:8000/view_login/")
+    .get("http://127.0.0.1:8000/view_login")
     .then((response) => response.data);
 }
 
@@ -531,7 +532,7 @@ export function addEmpRegApi(emp) {
 
 export const getResEmployeeApi = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/researcherEmpName/`);
+    const response = await axios.get(`${API_BASE_URL}/researcherEmpName/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching researcher names:", error);
@@ -783,7 +784,7 @@ export function addTempItemReceiveApi(receive) {
       receipt_date: currentDate,
       quantity_received: receive.quantity_received,
       po_number: receive.po_number,
-      batch_number: receive.batch_number,
+      batch_number: receive.batch_number, 
       remarks: receive.remarks,
       master_type: receive.master_type,
       min_req_stock: receive.min_req_stock,
@@ -917,7 +918,7 @@ export const deleteDesignationApi = async (designationId) => {
 
 export const updateLabApi = async (labId, labName) => {
   try {
-    const response = await axios.put(`${BASE_URL}labs/${labId}/`, {
+    const response = await axios.put(`${API_BASE_URL}labs/${labId}/`, {
       name: labName,
     });
     return response.data;
@@ -930,7 +931,7 @@ export const updateLabApi = async (labId, labName) => {
 export const updateDesignationApi = async (designationId, designationName) => {
   try {
     const response = await axios.put(
-      `${BASE_URL}designations/${designationId}/`,
+      `${API_BASE_URL}designations/${designationId}/`,
       {
         name: designationName,
       }
@@ -943,21 +944,18 @@ export const updateDesignationApi = async (designationId, designationName) => {
   }
 };
 
-const fetchRole = async (roleId) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/roles/${roleId}/`);
-    console.log(response.data); // Handle the role data
-  } catch (error) {
-    console.error(error.response?.data || "An error occurred");
-  }
-};
+// const fetchRole = async (roleId) => {
+//   try {
+//     const response = await axios.get(`${API_BASE_URL}/roles/${roleId}/`);
+//     console.log(response.data); // Handle the role data
+//   } catch (error) {
+//     console.error(error.response?.data || "An error occurred");
+//   }
+// };
 
-fetchRole(1);
+// fetchRole(1);
 
-export const API_ENDPOINTS = {
-  REGISTRATION_LIST: `${BASE_URL}/registrations/`,
-  REGISTRATION_DETAIL: (id) => `${BASE_URL}/registrations/${id}/`,
-};
+// API_ENDPOINTS is now imported from config/api.js
 
 // API Functions
 export const fetchRegistrations = async () => {
@@ -1013,7 +1011,7 @@ export const fetchUsernames = async (selectedLab, selectedRole) => {
 
 export const createUnit = async (unitName) => {
   try {
-    const response = await axios.post(`${BASE_URL}/unit/`, {
+    const response = await axios.post(`${API_BASE_URL}/unit/`, {
       unit_measure: unitName,
     });
     return response.data;
@@ -1026,7 +1024,7 @@ export const createUnit = async (unitName) => {
 // Create Location Code
 // export const createLocationCode = async (locationCode) => {
 //   try {
-//     const response = await axios.post(`${BASE_URL}/location-code/`, {
+//     const response = await axios.post(`${API_BASE_URL}/location-code/`, {
 //       location: locationCode,
 //     });
 //     return response.data;
@@ -1038,7 +1036,7 @@ export const createUnit = async (unitName) => {
 export const createLocationCode = async (locationCode, username) => {
   try {
     const response = await axios.post(
-      `${BASE_URL}/location-code/?username=${username}`,
+      `${API_BASE_URL}/location-code/?username=${username}`,
       {
         location: locationCode,
       }
@@ -1053,7 +1051,7 @@ export const createLocationCode = async (locationCode, username) => {
 //masterType
 export const createMasterType = async (masterype) => {
   try {
-    const response = await axios.post(`${BASE_URL}/api/master_type/`, {
+    const response = await axios.post(`${API_BASE_URL}/api/master_type/`, {
       name: masterype,
     });
     return response.data;
@@ -1065,7 +1063,7 @@ export const createMasterType = async (masterype) => {
 // Create Manufacturer
 // export const createManufacturer = async (manufacturerName) => {
 //   try {
-//     const response = await axios.post(`${BASE_URL}/manufacturer/`, {
+//     const response = await axios.post(`${API_BASE_URL}/manufacturer/`, {
 //       manufacturer: manufacturerName,
 //     });
 //     return response.data;
@@ -1078,7 +1076,7 @@ export const createMasterType = async (masterype) => {
 export const createManufacturer = async (manufacturerName, username) => {
   try {
     const response = await axios.post(
-      `${BASE_URL}/manufacturer/?username=${username}`,
+      `${API_BASE_URL}/manufacturer/?username=${username}`,
       {
         manufacturer: manufacturerName,
       }
@@ -1094,7 +1092,7 @@ export const createManufacturer = async (manufacturerName, username) => {
 export const createSupplier = async (supplierName, username) => {
   try {
     const response = await axios.post(
-      `${BASE_URL}/supplier/?username=${username}`,
+      `${API_BASE_URL}/supplier/?username=${username}`,
       {
         supplier: supplierName,
       }
@@ -1108,7 +1106,7 @@ export const createSupplier = async (supplierName, username) => {
 // Create Supplier
 // export const createSupplier = async (supplierName) => {
 //   try {
-//     const response = await axios.post(`${BASE_URL}/supplier/`, {
+//     const response = await axios.post(`${API_BASE_URL}/supplier/`, {
 //       supplier: supplierName,
 //     });
 //     return response.data;
@@ -1140,7 +1138,7 @@ export const getMastertyApi = async () => {
 export const getSuppliersApi = async (username) => {
   try {
     const response = await axios.get(
-      `${BASE_URL}/suppliers/?username=${username}`
+      `${API_BASE_URL}/suppliers/?username=${username}`
     );
     return response.data;
   } catch (error) {
@@ -1172,7 +1170,7 @@ export const getUnitsApi = async () => {
 export const getLocationsApi = async (username) => {
   try {
     const response = await axios.get(
-      `${BASE_URL}/locations-code/?username=${username}`
+      `${API_BASE_URL}/locations-code/?username=${username}`
     );
     return response.data;
   } catch (error) {
@@ -1196,7 +1194,7 @@ export const getLocationsApi = async (username) => {
 export const getManufacturersApi = async (username) => {
   try {
     const response = await axios.get(
-      `${BASE_URL}/manufacturers/?username=${username}`
+      `${API_BASE_URL}/manufacturers/?username=${username}`
     );
     return response.data; // Assuming the response is an array of manufacturers
   } catch (error) {
@@ -1254,7 +1252,7 @@ export function deleteTempReceiveApi(billNo) {
 
 export const getIssuesByResearcher = async (researcherName) => {
   try {
-    const response = await axios.get(`${BASE_URL}/get_issues_by_researcher/`, {
+    const response = await axios.get(`${API_BASE_URL}/get_issues_by_researcher/`, {
       params: { issued_to: researcherName }, // Ensure correct researcher is passed
     });
     return response.data;
@@ -1304,21 +1302,78 @@ export function getLabassistantEmployeeApi() {
     .get("http://127.0.0.1:8000/lab-assistants/")
     .then((response) => response.data);
 }
-export const fetchMasterListByType = async (masterType) => {
+export const fetchMasterListByType = async (masterType, lab = null) => {
   try {
-    const response = await axios.get(`${BASE_URL}/api/master-list-by-type/`, {
-      params: { master_type: masterType },
+    const params = { master_type: masterType };
+    if (lab) {
+      params.lab = lab;
+    }
+    
+    console.log("🌐 [API] fetchMasterListByType called with:", { masterType, lab, params });
+    console.log("🌐 [API] Making request to:", `${API_BASE_URL}/api/master-list-by-type/`);
+    
+    const response = await axios.get(`${API_BASE_URL}/api/master-list-by-type/`, {
+      params: params,
     });
+    
+    console.log("🌐 [API] fetchMasterListByType response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error fetching master list:", error);
+    console.error("💥 [API] Error fetching master list:", error);
     throw error;
   }
 };
-export function getTemptReceiveApi() {
+
+export const fetchItemExpiryDates = async (itemCode) => {
+  try {
+    console.log("🌐 [API] fetchItemExpiryDates called with itemCode:", itemCode);
+    
+    const response = await axios.get(`${API_BASE_URL}/api/item-expiry-dates/`, {
+      params: { item_code: itemCode },
+    });
+    
+    console.log("🌐 [API] fetchItemExpiryDates response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("💥 [API] Error fetching expiry dates:", error);
+    throw error;
+  }
+};
+
+export const fetchItemLocations = async (itemCode) => {
+  try {
+    console.log("🌐 [API] fetchItemLocations called with itemCode:", itemCode);
+    
+    const response = await axios.get(`${API_BASE_URL}/api/item-locations/`, {
+      params: { item_code: itemCode },
+    });
+    
+    console.log("🌐 [API] fetchItemLocations response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("💥 [API] Error fetching locations:", error);
+    throw error;
+  }
+};
+export function getTemptReceiveApi(lab = null) {
+  const params = {};
+  if (lab) {
+    params.lab = lab;
+  }
+  
+  console.log("🌐 [API] getTemptReceiveApi called with:", { lab, params });
+  console.log("🌐 [API] Making request to:", "http://127.0.0.1:8000/api/inventoryReceive/");
+  
   return axios
-    .get("http://127.0.0.1:8000/api/inventoryReceive/")
-    .then((response) => response.data);
+    .get("http://127.0.0.1:8000/api/inventoryReceive/", { params })
+    .then((response) => {
+      console.log("🌐 [API] getTemptReceiveApi response:", response.data);
+      return response.data;
+    })
+    .catch((error) => {
+      console.error("💥 [API] getTemptReceiveApi error:", error);
+      throw error;
+    });
 }
 
 export const createEquipmentDetails = async (equipmentData) => {
@@ -1344,7 +1399,7 @@ export const createEquipmentDetails = async (equipmentData) => {
 
 // DNA & Repository
 
-const API_BASE_URL = "http://localhost:8000";
+// API_BASE_URL is now imported from config/api.js
 
 export function getDnaApi() {
   return axios.get(`${API_BASE_URL}/dna`).then((response) => response.data);
@@ -1541,7 +1596,7 @@ export const copySequence = async (reference_id) => {
 export const downloadSequenceByReference = async (reference_id) => {
   try {
     const response = await axios.get(
-      `${BASE_URL}/download-sequence/ref/${reference_id}/`,
+      `${API_BASE_URL}/download-sequence/ref/${reference_id}/`,
       {
         responseType: "blob", // Important for handling file downloads
       }
@@ -1622,7 +1677,7 @@ export const revertStock = async (entry_no) => {
 export const getItemReturnsForManager = async (managerId) => {
   try {
     console.log("Fetching data for managerId:", managerId);
-    const response = await axios.get(`${BASE_URL}/item_returns/${managerId}/`);
+    const response = await axios.get(`${API_BASE_URL}/item_returns/${managerId}/`);
     console.log("Response data from API:", response.data);
     return response.data; // Return the fetched data
   } catch (error) {

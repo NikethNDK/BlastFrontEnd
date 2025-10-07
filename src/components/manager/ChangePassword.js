@@ -37,14 +37,22 @@ const ChangePassword = ({  userDetails= { name: '', lab: '', designation: '' } }
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center" }}>
       <div
         style={{
-          backgroundColor: "#C5EA31",
-          height: "70px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          backgroundColor: "#f8fafc",
+          padding: "20px",
+          borderBottom: "2px solid #e2e8f0",
         }}
       >
-        <h1 style={{ color: "black", margin: 0 }}>Change Password</h1>
+        <h2
+          style={{
+            textAlign: "center",
+            margin: 0,
+            fontSize: "1.75rem",
+            fontWeight: 600,
+            color: "#1e293b",
+          }}
+        >
+          CHANGE PASSWORD
+        </h2>
       </div>
      
       <div

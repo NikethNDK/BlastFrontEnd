@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import axios from "axios";
-import ResearcherNavigation from "./ResearcherNavigation";
 const ChangePassword = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
   const [userName, setUserName] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -37,19 +36,20 @@ const ChangePassword = ({ userDetails= { name: '', lab: '', designation: '' } })
     <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center" }}>
       <div
         style={{
-          backgroundColor: "#C5EA31",
           height: "70px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          borderBottom: "2px solid #ccc",
+          boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
         }}
       >
-        <h1 style={{ color: "black", margin: 0 }}>Change Password</h1>
+        <h2 style={{ color: "black", margin: 0, fontWeight: "bold" }}>CHANGE PASSWORD</h2>
       </div>
      
       <div
         className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: "70vh", backgroundColor: "#f8f9fa" }}
+        style={{ minHeight: "70vh"}}
       >
         <div
           className="p-5 border rounded shadow-lg bg-white"

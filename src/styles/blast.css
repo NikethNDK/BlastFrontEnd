@@ -1,19 +1,20 @@
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  /* justify-content: space-between; */
+  /* align-items: center; */
   background-color: #8bc34a; /* Matching the green color in your image */
-  padding: 10px;
+  /* padding: 10px; */
   color: rgb(24, 81, 12);
   text-align: center;
   max-height: 223px;
 }
+
 .header-blast {
-  display: flex;
-  justify-content: space-between;
+  /* display: flex;
+  justify-content: space-between; */
   align-items: center;
   /* background-color: #fafcf8; Matching the green color in your image */
-  padding: 10px;
+  /* padding: 10px; */
   color: rgb(24, 81, 12);
   text-align: center;
   max-height: 187px;
@@ -52,6 +53,9 @@
   margin-left: -40%;
   max-width: 150%;
 }
+.blast-main-content {
+  background-color: #f2f5e6;
+}
 @media (max-width: 768px) {
   .header-title h1 {
     font-size: 1.2em;
@@ -78,4 +82,5 @@ body {
   height: 100%;
   width: 100%;
   margin: 0;
+  background-color: #f2f5e6;
 }

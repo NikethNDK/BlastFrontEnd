@@ -1,0 +1,164 @@
+.pagination-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem 0;
+  padding: 0.5rem 0;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #dee2e6;
+  background-color: #fff;
+  color: #495057;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-btn.active {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f8f9fa;
+  border-color: #e9ecef;
+  color: #6c757d;
+}
+
+.pagination-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Size variants */
+.pagination-buttons.btn-group-sm .pagination-btn {
+  min-width: 32px;
+  height: 32px;
+  font-size: 0.875rem;
+}
+
+.pagination-buttons.btn-group-lg .pagination-btn {
+  min-width: 48px;
+  height: 48px;
+  font-size: 1.125rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .pagination-wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  
+  .pagination-buttons {
+    justify-content: center;
+  }
+  
+  .pagination-btn {
+    min-width: 36px;
+    height: 36px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pagination-buttons {
+    gap: 0.125rem;
+  }
+  
+  .pagination-btn {
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  
+  .pagination-info {
+    font-size: 0.8rem;
+  }
+}
+
+/* Animation for page changes */
+.pagination-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.pagination-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.pagination-btn:active::before {
+  width: 100%;
+  height: 100%;
+}
+
+/* Focus styles for accessibility */
+.pagination-btn:focus {
+  outline: 2px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .pagination-btn {
+    background-color: #343a40;
+    border-color: #495057;
+    color: #fff;
+  }
+  
+  .pagination-btn:hover:not(:disabled) {
+    background-color: #495057;
+    border-color: #6c757d;
+  }
+  
+  .pagination-btn:disabled {
+    background-color: #212529;
+    border-color: #343a40;
+    color: #6c757d;
+  }
+  
+  .pagination-info {
+    color: #adb5bd;
+  }
+}

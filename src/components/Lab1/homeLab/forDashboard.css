@@ -1,0 +1,157 @@
+/* --- Content Header (Title and Stock Indicator) --- */
+.content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e0e7ef;
+  padding-bottom: 1rem;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* --- Stock Indicator Card --- */
+.stock-indicator-card {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 250px;
+  transition: all 0.3s ease;
+}
+
+.stock-indicator-card.stock-sufficient {
+  background-color: #10b981; /* Green */
+}
+
+.stock-indicator-card.stock-reorder {
+  background-color: #ef4444; /* Red */
+  animation: stockPulse 2s ease-in-out infinite;
+}
+
+.stock-indicator-card.stock-unknown {
+  background-color: #94a3b8; /* Gray/Neutral */
+}
+
+.stock-label {
+  margin: 0;
+}
+
+@keyframes stockPulse {
+  0%, 100% {
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.8);
+  }
+}
+
+/* --- Inventory Type Selector Bar --- */
+.inventory-selector-bar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 2rem;
+}
+
+.inventory-type-group {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.inventory-type-button {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.2s ease;
+  z-index: 1;
+}
+
+/* Remove default Bootstrap border radius for button group ends */
+.inventory-type-group .btn:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.inventory-type-group .btn:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.inventory-type-button:hover:not(.active) {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.inventory-type-button.active {
+  background-color: #c5ea31;
+  color: #1a3d2a;
+  border-color: #1a3d2a;
+  box-shadow: 0 4px 10px rgba(197, 234, 49, 0.3);
+  position: relative;
+}
+
+.inventory-type-button.active:hover {
+  background-color: #c5ea31;
+  color: #1a3d2a;
+}
+
+.data-table-container .cdb-container {
+  padding: 0;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 1024px) {
+  .homelab-page-container {
+    padding: 1rem;
+    padding-top: 5rem;
+  }
+
+  .content-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stock-indicator-card {
+    margin-top: 0.5rem;
+    min-width: 100%;
+  }
+
+  .inventory-selector-bar {
+    justify-content: center;
+  }
+  
+  .inventory-type-group {
+    width: 100%;
+    display: flex;
+  }
+  
+  .inventory-type-button {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 1.5rem;
+  }
+
+  .inventory-type-button {
+    padding: 0.6rem 0.4rem;
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,247 @@
+/* Register Component Styling - Matching ProjectManage Theme */
+.register-container {
+  background-color: #f2f5e6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-wrapper {
+  width: 100%;
+  max-width: 600px;
+}
+
+.register-card {
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+/* Header Section */
+.register-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  text-align: center;
+  padding: 10px;
+}
+
+.register-header h1 {
+  color: #495057;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.register-header p {
+  color: #6c757d;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Form Section */
+.register-form {
+  padding: 1rem;
+}
+
+.form-group-register {
+  margin-bottom: 1rem;
+}
+
+.form-label-register {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #495057;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.label-icon {
+  color: #c5ea31;
+  font-size: 0.875rem;
+}
+
+.form-input-register,
+.form-select-register {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-input-register:focus,
+.form-select-register:focus {
+  outline: 0;
+  border-color: #c5ea31;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-input-register::placeholder {
+  color: #6c757d;
+}
+
+.form-select-register {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+  padding-right: 2.5rem;
+}
+
+/* Password Input Wrapper */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .form-input-register {
+  padding-right: 2.5rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease-in-out;
+}
+
+.password-toggle-btn:hover {
+  color: #007bff;
+}
+
+.password-toggle-btn:focus {
+  outline: none;
+}
+
+/* Register Button */
+.register-btn {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
+  background-color: #c5ea31;
+  border: 1px solid #c5ea31;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.register-btn:hover {
+  background-color: #eff7d2;
+  border-color: #eff7d2;
+  transform: translateY(-1px);
+  box-shadow: 0 0.25rem 0.5rem #eff7d2;
+}
+
+.register-btn:active {
+  transform: translateY(0);
+}
+
+.register-btn:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem #c5ea31;
+}
+
+/* React Select Custom Styling */
+.basic-multi-select .select__control {
+  min-height: 38px;
+  font-size: 0.875rem;
+}
+
+.basic-multi-select .select__control:hover {
+  border-color: #007bff;
+}
+
+.basic-multi-select .select__control--is-focused {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.basic-multi-select .select__placeholder {
+  color: #6c757d;
+}
+
+.basic-multi-select .select__multi-value {
+  background-color: #e7f3ff;
+  border-radius: 0.25rem;
+}
+
+.basic-multi-select .select__multi-value__label {
+  color: #007bff;
+  font-size: 0.875rem;
+}
+
+.basic-multi-select .select__multi-value__remove {
+  color: #007bff;
+  cursor: pointer;
+}
+
+.basic-multi-select .select__multi-value__remove:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .register-container {
+    padding: 1rem;
+  }
+
+  .register-wrapper {
+    max-width: 100%;
+  }
+
+  .register-header {
+    padding: 1.5rem;
+  }
+
+  .register-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .register-form {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .register-header {
+    padding: 1.25rem;
+  }
+
+  .register-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .register-form {
+    padding: 1.25rem;
+  }
+
+  .form-group-register {
+    margin-bottom: 1.25rem;
+  }
+}

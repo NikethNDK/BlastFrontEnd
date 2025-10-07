@@ -1,6 +1,9 @@
 import React from "react";
 import { useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./styles/modern-design.css";
+import "./styles/lab-design-system.css";
+import { Toaster } from "react-hot-toast";
 import Navigation from "./components/Navigation";
 import Home from "./components/Home";
 import Appinfo from "./components/appinfo/Appinfo";
@@ -20,23 +23,13 @@ import AddDNA from "./repository/dna/addDna/AddDna";
 import MainPage from "./repository/landing";
 import Comparision from "../src/blast/comparision";
 function App() {
-  useEffect(() => {
-    setInterval(() => {
-      const before = new Date().getTime();
-      debugger; // This triggers DevTools
-      const after = new Date().getTime();
-      if (after - before > 100) {
-        alert("DevTools detected! Please close it.");
-        window.location.reload(); // Optional: Refresh the page
-      }
-    }, 1000);
-  }, []);
+  // Removed debugger code for production
   return (
     <BrowserRouter>
       <Navigation />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route exact path="/home" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/appinfo" element={<Appinfo />} />
         <Route path="/appinfo_manage" element={<Manage />} />
 
@@ -50,13 +43,37 @@ function App() {
         <Route path="/inventory_manage" element={<InventoryManage />} />
 
         {/* <Route path="/register" element={<Register />} /> */}
-        <Route path="/" element={<MainPage />} />
+        <Route path="/main" element={<MainPage />} />
         <Route path="/dna" element={<DnaManage />} />
         <Route path="/common_name" element={<CommonNameDna />} />
         <Route path="/scientific_name" element={<ScientificNameDna />} />
         <Route path="/add_dna" element={<AddDNA />} />
         <Route path="/add_blast" element={<Comparision />} />
       </Routes>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </BrowserRouter>
   );
 }

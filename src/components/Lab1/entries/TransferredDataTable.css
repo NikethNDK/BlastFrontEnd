@@ -1,309 +1,544 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
+/* TransferredDataTable.css - Updated with Header Fixes */
+/* --- Variables (Matching the Light Theme) --- */
+:root {
+    --color-background-light: #ffffff;
+    --color-background-gray: #f7f9fc;
+    --color-text-dark: #334155;
+    --color-text-secondary: #64748b;
+    --color-accent: #2563eb; /* Blue Accent */
+    --color-accent-hover: #1e40af;
+    --color-success: #10b981; /* Green */
+    --color-danger: #ef4444; /* Red */
+    --color-warning: #f59e0b; /* Amber */
+    --color-border-light: #e2e8f0;
+    --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --transition-speed: 0.2s;
 }
 
+/* --- Main Container --- */
 .table-container {
-  padding: 20px;
-  margin: auto;
-  max-width: 100%;
-  overflow-x: auto; /* Enables horizontal scroll for smaller screens */
+    width: 100%;
+    padding: 1rem;
+    background: var(--color-background-light);
+    border-radius: 8px;
+    box-shadow: var(--shadow-subtle);
 }
 
 .table-container h2 {
-  text-align: center;
-  font-size: 24px;
-  margin-bottom: 20px;
+    color: var(--color-text-dark);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
 }
 
-.total-summary {
-  margin-bottom: 20px;
-  text-align: center;
-  font-size: 18px;
-  font-weight: bold;
+/* --- Header Controls --- */
+.table-header-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    gap: 1rem;
 }
 
-/* Table wrapper */
+.return-button {
+    background-color: var(--color-success);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all var(--transition-speed);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.return-button:enabled:hover {
+    background-color: var(--color-background-gray);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.return-button:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.download-button {
+    background-color: var(--color-success);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0.75rem;
+    transition: all var(--transition-speed);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    min-height: 48px;
+}
+
+.download-button:hover {
+    background-color: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* --- Table Wrapper --- */
 .table-wrapper {
-  max-width: 100%;
-  overflow-x: auto;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  background-color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 390px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 8px;
+    background: var(--color-background-light);
+    box-shadow: var(--shadow-subtle);
+    margin-bottom: 1rem;
 }
 
-/* Styled table */
-.styled-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
+/* --- Table Styles --- */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1800px; /* Increased from 1400px to accommodate wider headers */
+    table-layout: fixed;
 }
 
-.styled-table th,
-.styled-table td {
-  padding: 12px;
-  border: 1px solid #ccc;
+.data-table .table-header {
+    background-color: #f7f9fc;
+    color: var(--color-text-dark);
+    text-align: center;
+    vertical-align: top; /* Changed from middle to top */
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem; /* Slightly smaller font */
+    font-weight: 600;
+    border: 1px solid var(--color-border-light);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: normal;
+    word-wrap: break-word;
+    line-height: 1.2;
+    min-height: 120px; /* Increased minimum height for headers with date filters */
 }
 
-.styled-table th {
-  background-color: #c5ea31;
-  color: #000;
-  font-weight: bold;
+.data-table .table-cell {
+    text-align: center;
+    vertical-align: middle;
+    padding: 10px 8px;
+    border: 1px solid var(--color-border-light);
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: var(--color-background-light);
 }
 
-.styled-table td {
-  background-color: #fff;
+/* Radio button column */
+.data-table .select-column {
+    min-width: 60px;
+    max-width: 60px;
 }
 
-/* Highlighted rows */
-.highlight-row {
-  background-color: #f9f9f9;
+.data-table .select-column input[type="radio"] {
+    transform: scale(1.2);
+    cursor: pointer;
 }
 
-/* Filters */
-.styled-table input[type="text"],
-.styled-table input[type="date"] {
-  width: calc(100% - 0px);
-  padding: 5px;
-  border: 1px solid #ddd;
-  border-radius: 3px;
+/* Updated column widths to prevent overlap */
+.data-table .entry-no-column {
+    min-width: 100px;
+    max-width: 100px;
 }
 
-/* Download button */
-button {
-  cursor: pointer;
-  padding: 8px 12px;
-  font-size: 14px;
-  border: none;
-  border-radius: 5px;
-  background-color: #198754;
-  color: #fff;
-  transition: background-color 0.3s ease;
+.data-table .item-code-column {
+    min-width: 120px;
+    max-width: 120px;
 }
 
-button:hover {
-  background-color: #145f3b;
+.data-table .item-name-column {
+    min-width: 180px;
+    max-width: 180px;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
-/* Responsive design */
-@media screen and (max-width: 768px) {
-  .table-container {
-    padding: 10px;
-  }
-
-  .styled-table th,
-  .styled-table td {
-    font-size: 14px;
-    padding: 8px;
-  }
-
-  button {
-    font-size: 12px;
-    padding: 6px 10px;
-  }
+.data-table .price-column {
+    min-width: 100px;
+    max-width: 100px;
 }
 
-.table-container {
-  width: 75%; /* Ensure it spans the entire available width */
-  max-width: 100%; /* Allow it to expand fully */
-  margin: 0 auto;
-  padding: 20px 50px; /* Adding 50px padding on both left and right */
-  background-color: #f4f4f9;
-  border-radius: 8px;
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+.data-table .quantity-column {
+    min-width: 110px;
+    max-width: 110px;
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-family: Arial, sans-serif;
-  color: #333;
+.data-table .batch-column {
+    min-width: 120px;
+    max-width: 120px;
 }
 
-.download-btn {
-  display: block;
-  width: 200px;
-  margin: 10px auto;
-  padding: 10px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.data-table .remarks-column {
+    min-width: 140px;
+    max-width: 140px;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
-.download-btn:hover {
-  background-color: #45a049;
+.data-table .date-column {
+    min-width: 140px; /* Increased from 120px to accommodate date filters */
+    max-width: 140px;
 }
 
-/* Table styling */
-.table-wrapper {
-  overflow-x: auto;
+.data-table .manufacturer-column,
+.data-table .supplier-column {
+    min-width: 140px;
+    max-width: 140px;
 }
 
-.styled-table {
-  width: 100%; /* Set table width to 100% to fit container */
-  max-width: 100%; /* Ensure it can fit within the container */
-  border-collapse: collapse;
-  margin-top: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-height: 400px; /* Minimum height increase */
+.data-table .project-column {
+    min-width: 150px;
+    max-width: 150px;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
-.styled-table th,
-.styled-table td {
-  padding: 1px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
-  font-family: Arial, sans-serif;
+.data-table .invoice-column,
+.data-table .catalogue-column,
+.data-table .po-column {
+    min-width: 130px;
+    max-width: 130px;
 }
 
-.styled-table th {
-  background-color: #4caf50;
-  color: white;
+.data-table .location-column {
+    min-width: 120px;
+    max-width: 120px;
 }
 
-.styled-table tr:hover {
-  background-color: #f1f1f1;
+/* --- Data Row Hover Effect --- */
+.data-table tbody tr:hover {
+    background-color: #fcfcfc;
+    transition: background-color var(--transition-speed);
 }
 
-.styled-table td {
-  word-wrap: break-word;
+/* --- Filter Inputs --- */
+.filter-input {
+    width: 100%;
+    padding: 4px;
+    border-radius: 4px;
+    border: 1px solid var(--color-border-light);
+    font-size: 11px; /* Smaller font size */
+    transition: border-color var(--transition-speed);
+    box-sizing: border-box;
+    margin-top: 4px;
 }
 
-
-
-
-/* Table container styling */
-
-.table-container {
-  width: 75%; /* Ensure it spans the entire available width */
-  max-width: 100%; /* Allow it to expand fully */
-  margin: 0 auto;
-  padding: 20px 50px; /* Adding 50px padding on both left and right */
-  background-color: #f4f4f9;
-  border-radius: 8px;
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+.filter-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-family: Arial, sans-serif;
-  color: #333;
+/* --- Date Filter Specific Styles --- */
+.date-filter-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 5px;
+    width: 100%;
 }
 
-.download-btn {
-  display: block;
-  width: 200px;
-  margin: 10px auto;
-  padding: 10px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.date-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    width: 100%;
 }
 
-.download-btn:hover {
-  background-color: #45a049;
+.date-filter-label {
+    font-weight: bold;
+    font-size: 10px;
+    min-width: 30px;
+    width: 30px;
+    text-align: left;
 }
 
-/* Table styling */
-.table-wrapper {
-  overflow-x: auto;
+.date-filter-input {
+    flex: 1;
+    padding: 2px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 3px;
+    font-size: 10px;
+    min-width: 0; /* Allow shrinking */
+    box-sizing: border-box;
 }
 
-.styled-table {
-  width: 100%; /* Set table width to 100% to fit container */
-  max-width: 100%; /* Ensure it can fit within the container */
-  border-collapse: collapse;
-  margin-top: 20px;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-height: 400px; /* Minimum height increase */
+.date-filter-input:focus {
+    outline: none;
+    border-color: var(--color-accent);
 }
 
-.styled-table th,
-.styled-table td {
-  padding: 1px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-  font-size: 18px;
-  font-family: Arial, sans-serif;
+/* --- Modal/Popup Styles --- */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.styled-table th {
-  background-color: #4caf50;
-  color: white;
+.popup-content {
+    background: var(--color-background-light);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 10001;
+    padding: 2rem;
+    text-align: center;
 }
 
-.styled-table tr:hover {
-  background-color: #f1f1f1;
+.popup-content h3 {
+    color: var(--color-text-dark);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
 }
 
-.styled-table td {
-  word-wrap: break-word;
+.popup-content p {
+    color: var(--color-text-dark);
+    margin-bottom: 1rem;
+    text-align: left;
 }
 
-/* Responsive styling */
-@media screen and (max-width: 768px) {
-  .styled-table th,
-  .styled-table td {
-    padding: 10px;
-    font-size: 12px;
-  }
-
-  .download-btn {
-    width: 150px;
-  }
-
-  .styled-table {
-    width: 100%; /* Ensure table fits within smaller screens */
-  }
+.popup-content strong {
+    font-weight: 600;
 }
 
-/* Ensure table wrapper has a fixed height with vertical scrolling */
-.table-wrapper {
-  max-height: 370px;
-  overflow-y: auto;
-  overflow-x: auto;
-  border: 1px solid #ddd;
+/* --- Form Controls in Popup --- */
+.popup-form-group {
+    margin-bottom: 1.25rem;
+    text-align: left;
 }
 
-/* Remove conflicting max-width */
-.styled-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  min-height: 100px; /* Ensure some minimum height */
+.popup-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-dark);
 }
 
-.styled-table th,
-.styled-table td {
-  padding: 8px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-  font-size: 14px;
-  font-family: Arial, sans-serif;
+.popup-form-control,
+.popup-form-select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border-light);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+    box-sizing: border-box;
 }
 
-.styled-table th {
-  background-color: #4caf50;
-  color: white;
+.popup-form-control:focus,
+.popup-form-select:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
-.styled-table tr:hover {
-  background-color: #f1f1f1;
+.popup-form-select {
+    background-color: var(--color-background-light);
+    cursor: pointer;
+}
+
+.popup-form-control[type="number"] {
+    text-align: center;
+}
+
+/* --- Popup Action Buttons --- */
+.popup-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    font-size: 0.9rem;
+    margin: 0.5rem;
+    min-width: 120px;
+}
+
+.popup-button-primary {
+    background-color: var(--color-success);
+    color: white;
+}
+
+.popup-button-primary:hover {
+    background-color: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.popup-button-secondary {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+.popup-button-secondary:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* --- Quantity Display --- */
+.quantity-display {
+    background-color: var(--color-background-gray);
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin: 1rem 0;
+    border: 1px solid var(--color-border-light);
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    .table-container {
+        padding: 0.5rem;
+    }
+    
+    .table-wrapper {
+        max-height: 300px;
+    }
+    
+    .popup-content {
+        width: 95%;
+        padding: 1.5rem;
+        max-height: 90vh;
+    }
+    
+    .table-header-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+    
+    .return-button,
+    .download-button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .popup-button {
+        width: 100%;
+        margin: 0.25rem 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .data-table {
+        min-width: 1600px;
+    }
+    
+    .popup-content {
+        padding: 1rem;
+    }
+    
+    .popup-content h3 {
+        font-size: 1.1rem;
+    }
+}
+
+/* --- Scrollbar Styling --- */
+.table-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: var(--color-background-gray);
+    border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: var(--color-border-light);
+    border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+}
+
+/* --- Loading and Error States --- */
+.loading-state,
+.error-state {
+    padding: 2rem;
+    text-align: center;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    background-color: var(--color-background-light);
+    margin: 2rem 0;
+    box-shadow: var(--shadow-subtle);
+}
+
+.error-state {
+    color: var(--color-danger);
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+}
+
+/* --- No Data State --- */
+.no-data-state {
+    text-align: center;
+    padding: 2rem;
+    font-style: italic;
+    color: var(--color-text-secondary);
+    background-color: var(--color-background-gray);
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+/* --- Utility Classes --- */
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+.mb-1 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-2 {
+    margin-bottom: 1rem;
+}
+
+.mt-1 {
+    margin-top: 0.5rem;
+}
+
+.mt-2 {
+    margin-top: 1rem;
 }

@@ -15,26 +15,52 @@ import EmployeeManage from "./components/admin/employee/EmployeeManage";
 import LabDesignationForm from "./components/admin/masterTable";
 import RegistrationForm from "./components/auth/RegistrationForm";
 import RegistrationList from "./components/auth/RegistrationList";
+import { Toaster } from "react-hot-toast";
 
 function AdminApp({ userDetails = { name: '', lab: '', designation: '' } }) {
   return (
     <BrowserRouter>
-      <AdminNavigation />
-      <Routes>
-        <Route path="/" element={<ProjectManage  userDetails={userDetails}/>}  />
-        <Route exact path="/home" element={<AdminHome userDetails={userDetails}/>} />
-        <Route path="/admin/appinfo" element={<Appinfo userDetails={userDetails}/>} />
-        <Route path="/admin/project" element={<Project userDetails={userDetails}/>} />
-        <Route path="/admin/project_manage" element={<ProjectManage userDetails={userDetails} />} />
-        <Route path="/register" element={<Register userDetails={userDetails}/>} />
-        <Route path="/password_reset" element={<PasswordReset userDetails={userDetails}/>} />
-        <Route path="/employee" element={<Employee/>} />
-        <Route path="/employee_manage" element={<EmployeeManage userDetails={userDetails}/>} />
-        <Route path="/master_table" element={<LabDesignationForm userDetails={userDetails}/>} />
-        <Route path="/master_table" element={<LabDesignationForm />} />
-        {/* <Route path="/register" element={<RegistrationForm />} /> */}
-        {/* <RegistrationList /> */}
-      </Routes>
+      <AdminNavigation>
+        <Routes>
+          <Route path="/" element={<ProjectManage  userDetails={userDetails}/>}  />
+          <Route exact path="/home" element={<AdminHome userDetails={userDetails}/>} />
+          <Route path="/admin/appinfo" element={<Appinfo userDetails={userDetails}/>} />
+          <Route path="/admin/project" element={<Project userDetails={userDetails}/>} />
+          <Route path="/admin/project_manage" element={<ProjectManage userDetails={userDetails} />} />
+          <Route path="/register" element={<Register userDetails={userDetails}/>} />
+          <Route path="/password_reset" element={<PasswordReset userDetails={userDetails}/>} />
+          <Route path="/employee" element={<Employee/>} />
+          <Route path="/employee_manage" element={<EmployeeManage userDetails={userDetails}/>} />
+          <Route path="/master_table" element={<LabDesignationForm userDetails={userDetails}/>} />
+          <Route path="/master_table" element={<LabDesignationForm />} />
+          {/* <Route path="/register" element={<RegistrationForm />} /> */}
+          {/* <RegistrationList /> */}
+        </Routes>
+      </AdminNavigation>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            theme: {
+              primary: 'green',
+              secondary: 'black',
+            },
+          },
+          error: {
+            duration: 4000,
+            theme: {
+              primary: 'red',
+              secondary: 'black',
+            },
+          },
+        }}
+      />
     </BrowserRouter>
   );
 }

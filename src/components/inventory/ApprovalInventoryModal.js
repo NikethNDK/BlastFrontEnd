@@ -1,4 +1,3 @@
-import React from 'react';
 import { Modal, Col, Row, Form, Button } from 'react-bootstrap';
 import { addRequestApi } from '../../services/AppinfoService';
 

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
-import LabNavigation1 from "../homeLab/LabNavigation1";
-// import ManagerNavigation from "../manager/ManagerNavigation";
-const ChangePassword = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
+import "./ChangePassword.css";
+
+const ChangePassword = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
   const [userName, setUserName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [message, setMessage] = useState(null);
@@ -35,103 +35,77 @@ const ChangePassword = ({ userDetails= { name: '', lab: '', designation: '' } })
   };
 
   return (
-    <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center" }}>
-      <div
-        style={{
-          backgroundColor: "#C5EA31",
-          height: "70px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <h1 style={{ color: "black", margin: 0 }}>Change Password</h1>
-      </div>
+    <div className="change-password-container">
+      
+      <div className="change-password-content">
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          width: '100%',
+          height: '100%',
+          backgroundColor:"#f2f5e6"
+        }}>
+          {/* Header Section */}
+          <div className="change-password-header">
+            <h1 className="change-password-title">CHANGE PASSWORD</h1>
+          </div>
 
-      <div
-        className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: "70vh", backgroundColor: "#f8f9fa" }}
-      >
-        <div
-          className="p-5 border rounded shadow-lg bg-white"
-          style={{ width: "40%", maxHeight: "90vh", overflowY: "auto" }}
-        >
-          <form
-            onSubmit={handleSubmit}
-            style={{ marginTop: "5%", textAlign: "left" }}
-          >
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                htmlFor="username"
-                style={{
-                  fontWeight: "bold",
-                  display: "block",
-                  marginBottom: "5px",
-                }}
-              >
-                Username
-              </label>
-              <input
-                type="text"
-                value={userName}
-                onChange={(e) => setUserName(e.target.value)}
-                required
-                style={{
-                  width: "300px",
-                  border: "1px solid lightgray",
-                  backgroundColor: "lightyellow",
-                  padding: "8px",
-                  borderRadius: "5px",
-                }}
-              />
+          {/* Form Section */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center',
+            flex: 1,
+            padding: '20px'
+          }}>
+            <div className="password-form-container">
+              <form onSubmit={handleSubmit}>
+                <div className="password-form-group">
+                  <label htmlFor="username">Username</label>
+                  <input
+                    type="text"
+                    id="username"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    placeholder="Enter username"
+                    required
+                  />
+                </div>
+
+                <div className="password-form-group">
+                  <label htmlFor="password">New Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="password-submit-button"
+                >
+                  {loading ? "Updating..." : "Change Password"}
+                </button>
+              </form>
+
+              {message && (
+                <div className="password-alert password-alert-success">
+                  {message}
+                </div>
+              )}
+              
+              {error && (
+                <div className="password-alert password-alert-error">
+                  {error}
+                </div>
+              )}
             </div>
-
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                htmlFor="password"
-                style={{
-                  fontWeight: "bold",
-                  display: "block",
-                  marginBottom: "5px",
-                }}
-              >
-                New Password
-              </label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                style={{
-                  width: "300px",
-                  border: "1px solid lightgray",
-                  backgroundColor: "lightyellow",
-                  padding: "8px",
-                  borderRadius: "5px",
-                }}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#0d6efd",
-                color: "white",
-                border: "none",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-            >
-              {loading ? "Updating..." : "Change Password"}
-            </button>
-          </form>
-
-          {message && (
-            <p style={{ color: "green", marginTop: "20px" }}>{message}</p>
-          )}
-          {error && <p style={{ color: "red", marginTop: "20px" }}>{error}</p>}
+          </div>
         </div>
       </div>
     </div>

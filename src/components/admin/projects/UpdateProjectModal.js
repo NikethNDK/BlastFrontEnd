@@ -1,7 +1,8 @@
 import React from 'react';
 import { Modal, Col, Row, Form, Button } from 'react-bootstrap';
 //import { updateChemicalApi } from '../services/AppinfoService';
-import { updateProjectApi } from '../../../services/AppinfoService'
+import { updateProjectApi } from '../../../services/AppinfoService';
+import toast from 'react-hot-toast';
 
 const UpdateProjectModal = (props) => {
     const handleSubmit = async (e) => {
@@ -15,11 +16,11 @@ const UpdateProjectModal = (props) => {
       
         try {
           const result = await updateProjectApi(props.project.project_code, projectData);
-          alert(result);
+          toast.success(result);
           props.setUpdated(true);
         } catch (error) {
           console.error('Failed to Update Project:', error);
-          alert(`Failed to Update Project: ${error.message}`);
+          toast.error(`Failed to Update Project: ${error.message}`);
         }
       };
 

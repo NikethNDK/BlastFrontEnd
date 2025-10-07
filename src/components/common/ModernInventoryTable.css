@@ -1,0 +1,344 @@
+/* Modern Inventory Table Styles */
+
+.modern-inventory-table {
+  margin-bottom: 2rem;
+}
+
+.modern-table-header {
+  border: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.modern-table-header-content {
+  background: linear-gradient(135deg, var(--lab-primary-50) 0%, var(--lab-secondary-50) 100%);
+  border: none;
+  padding: 1.5rem;
+}
+
+.modern-table-title-section {
+  margin-bottom: 0;
+}
+
+.modern-table-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--lab-neutral-800);
+  margin: 0 0 0.5rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modern-table-subtitle {
+  font-size: 0.875rem;
+  color: var(--lab-neutral-500);
+  margin: 0;
+}
+
+.modern-table-actions-header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.modern-table-add-btn {
+  background: linear-gradient(135deg, var(--lab-primary-500) 0%, var(--lab-primary-600) 100%);
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modern-table-add-btn:hover {
+  background: linear-gradient(135deg, var(--lab-primary-600) 0%, var(--lab-primary-700) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.modern-table-export-btn {
+  border: 2px solid var(--lab-primary-500);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.modern-table-export-btn:hover {
+  background: var(--lab-primary-500);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.modern-table-body {
+  padding: 0;
+}
+
+.modern-table-search {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.modern-table-search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--lab-neutral-400);
+  font-size: 1rem;
+  z-index: 2;
+}
+
+.modern-table-search-input {
+  padding-left: 3rem;
+  border: 2px solid var(--lab-neutral-200);
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.modern-table-search-input:focus {
+  outline: none;
+  border-color: var(--lab-primary-500);
+  box-shadow: 0 0 0 3px var(--lab-primary-100);
+}
+
+.modern-table-filters {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.modern-table-filter-btn {
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.modern-table-filter-btn:hover {
+  background: var(--lab-neutral-100);
+  border-color: var(--lab-neutral-300);
+}
+
+.modern-table-container {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--lab-neutral-200);
+}
+
+.modern-table {
+  margin: 0;
+  border: none;
+}
+
+.modern-table thead {
+  background: linear-gradient(135deg, var(--lab-primary-50) 0%, var(--lab-secondary-50) 100%);
+}
+
+.modern-table-header-cell {
+  border: none;
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--lab-neutral-700);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modern-table-header-cell:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.modern-table-header-cell.sortable {
+  cursor: pointer;
+}
+
+.modern-table-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.modern-table-sort-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.modern-table-sort-icon {
+  font-size: 0.75rem;
+  color: var(--lab-neutral-400);
+  transition: all 0.2s ease;
+}
+
+.modern-table-sort-icon.active {
+  color: var(--lab-primary-600);
+}
+
+.modern-table-row {
+  transition: all 0.2s ease;
+  border-bottom: 1px solid var(--lab-neutral-100);
+}
+
+.modern-table-row:hover {
+  background: var(--lab-primary-50);
+  transform: scale(1.01);
+}
+
+.modern-table-row td {
+  padding: 1rem;
+  border: none;
+  vertical-align: middle;
+}
+
+.modern-table-select-column {
+  width: 50px;
+  text-align: center;
+}
+
+.modern-table-actions-column {
+  width: 120px;
+  text-align: center;
+}
+
+.modern-table-actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.modern-table-action-btn {
+  padding: 0.375rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  border: 1px solid var(--lab-neutral-200);
+  background: white;
+  color: var(--lab-neutral-600);
+}
+
+.modern-table-action-btn:hover {
+  background: var(--lab-primary-50);
+  border-color: var(--lab-primary-300);
+  color: var(--lab-primary-600);
+  transform: translateY(-1px);
+}
+
+.modern-table-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: white;
+}
+
+.modern-table-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.modern-table-empty-icon {
+  color: var(--lab-neutral-300);
+  margin-bottom: 0.5rem;
+}
+
+.modern-table-empty-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--lab-neutral-600);
+  margin: 0;
+}
+
+.modern-table-empty-message {
+  font-size: 0.875rem;
+  color: var(--lab-neutral-500);
+  margin: 0;
+}
+
+.modern-table-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: white;
+  border-top: 1px solid var(--lab-neutral-200);
+}
+
+.modern-table-pagination-info {
+  font-size: 0.875rem;
+  color: var(--lab-neutral-500);
+}
+
+.modern-table-error {
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .modern-table-header-content {
+    padding: 1rem;
+  }
+  
+  .modern-table-title {
+    font-size: 1.25rem;
+  }
+  
+  .modern-table-actions-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: stretch;
+  }
+  
+  .modern-table-add-btn,
+  .modern-table-export-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .modern-table-header-cell {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .modern-table-row td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .modern-table-pagination {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-table-title-section {
+    margin-bottom: 1rem;
+  }
+  
+  .modern-table-actions-header {
+    margin-top: 1rem;
+  }
+  
+  .modern-table-container {
+    overflow-x: auto;
+  }
+  
+  .modern-table {
+    min-width: 600px;
+  }
+}

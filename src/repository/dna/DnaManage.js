@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { FiEye, FiCopy, FiDownload, FiTrash } from "react-icons/fi";
-import { Table, Button, Modal } from "react-bootstrap";
+import { Table, Button, Modal, Pagination } from "react-bootstrap";
 import { FcSearch } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 
-import Header from "../navigation/Header";
+import Header from "../../components/Lab1/homeLab/Header";
 import Navigation from "../navigation/Navigation";
 import { FileDownload } from "@mui/icons-material";
 import {
@@ -14,18 +14,38 @@ import {
 } from "../../services/AppinfoService";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import "./DnaManage.css";
 
 const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
-  const [partialNames, setPartialNames] = useState([]); // Initialize as an empty array
+  const [partialNames, setPartialNames] = useState([]);
   const [dnas, setDnas] = useState([]);
   const [filteredDnas, setFilteredDnas] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [modalShow, setModalShow] = useState(false);
   const [selectedPartialData, setSelectedPartialData] = useState(null);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10); // You can adjust this number
 
   const uniqueScientificNames = new Set(
     filteredDnas.map((dna) => dna.scientific_name)
   ).size;
+
+  // Calculate pagination values
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredDnas.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredDnas.length / itemsPerPage);
+
+  // Reset to page 1 when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filteredDnas.length]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   const handleExportToExcel = () => {
     if (!filteredDnas || filteredDnas.length === 0) {
@@ -33,7 +53,6 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
       return;
     }
 
-    // Format the table data for Excel
     const worksheet = XLSX.utils.json_to_sheet(
       filteredDnas.map(
         ({
@@ -75,7 +94,7 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
       try {
         const data = await getPartialApi();
         console.log(data);
-        setPartialNames(data); // Ensure it's an array
+        setPartialNames(data);
       } catch (error) {
         console.error("Error fetching partial names:", error);
       }
@@ -102,7 +121,6 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
         const lowerCaseQuery = searchQuery.toLowerCase();
 
         return (
-          // Always check reference_id
           (dna.reference_id &&
             dna.reference_id
               .toString()
@@ -113,7 +131,6 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
           ) &&
             dna.partial_name &&
             dna.partial_name.toLowerCase().includes(lowerCaseQuery)) ||
-          // Default behavior: filter by common_name or scientific_name
           (dna.common_name &&
             dna.common_name.toLowerCase().includes(lowerCaseQuery)) ||
           (dna.scientific_name &&
@@ -123,7 +140,7 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
 
       setFilteredDnas(filteredData);
     } else {
-      setFilteredDnas(dnas); // If no query, show all DNA entries
+      setFilteredDnas(dnas);
     }
   }, [searchQuery, dnas, partialNames]);
 
@@ -154,7 +171,7 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
   const deleteDnaRecord = async (reference_id) => {
     if (window.confirm("Are you sure you want to delete this record?")) {
       try {
-        await deleteDnaRecordAPI(reference_id); // Call the API function
+        await deleteDnaRecordAPI(reference_id);
         const updatedData = dnas.filter(
           (dna) => dna.reference_id !== reference_id
         );
@@ -166,260 +183,232 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
       }
     }
   };
+  
   const navigate = useNavigate();
+  
   return (
-    <div>
-      <Header />
-      <Navigation />
-      <div style={{ background: "#C5EA31", height: "53px" }} className="header">
-        <h2
-          style={{ textAlign: "center", paddingTop: "11px", marginLeft: "35%" }}
-        >
-          Overview
-        </h2>
+    <div className="dna-manage-container">
+      <header>
+        <Header />
+      </header>
+      <div className="dna-manage-content">
+        <Navigation userDetails={userDetails} />
+        <div className="dna-manage-main">
+          <div className="dna-manage-header">
+            <h2 className="dna-manage-title">
+              OVERVIEW
+            </h2>
+          </div>
 
-        {/* <button
-          onClick={() => navigate("/dna")}
-          className="btn btn-primary"
-          style={{ marginRight: "-30%" }}
-        >
-          Home
-        </button>
-        <button
-          onClick={() => navigate("/add_dna")}
-          className="btn btn-primary"
-          style={{ marginRight: "60px" }}
-        >
-          New
-        </button> */}
-      </div>
-      <div style={{ position: "absolute", left: "1350px", top: "100px",height:"100px" }}>
-          <p style={{ margin: 0,marginright:"100px" }}>User: {userDetails.name}</p>
-          <p style={{ margin: 0,marginright:"100px" }}>Lab: {userDetails.lab}</p>
-          <p style={{ margin: 0,marginright:"100px" }}>designation: {userDetails.designation}</p>
-        </div>
-      <div
-        className="searchBar"
-        style={{
-          paddingTop: "20px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <label
-          htmlFor="search"
-          style={{ marginRight: "8px", fontWeight: "bold" }}
-        >
-          Search:{" "}
-        </label>
-        <input
-          type="text"
-          value={searchQuery}
-          className="form-control"
-          placeholder="Scientific or Common name.."
-          style={{
-            width: 350,
-            border: "1px solid gray",
-            backgroundColor: "lightyellow",
-            marginRight: "1px",
-          }}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        {/* <button
-          className="btn btn-outline-secondary"
-          type="button"
-          style={{
-            position: "absolute",
-            transform: "translateY(-50%)",
-            transform: "translateX(485%)",
-            cursor: "pointer",
-            border: "none",
-            background: "none",
-          }}
-          onClick={() => setSearchQuery(searchQuery)}
-        >
-          <FcSearch />
-        </button> */}
-      </div>
-      <p></p>
-      <div style={{ display: "flex", marginLeft: "30%", gap: "20px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            marginTop: "10px",
-          }}
-        >
-          {partialNames && partialNames.length > 0 ? (
-            partialNames.map((name, index) => (
-              <button
-                key={index}
-                style={{
-                  color: "black",
-                  borderColor: "black",
-                  backgroundColor: "rgb(197, 234, 49)",
-                }}
-                className="btn btn-outline-primary m-1"
-                onClick={() => handlePartialNameClick(name.partial_name)} // Filters the data by partial name
+          <div className="dna-manage-search-bar">
+            <label
+              htmlFor="search"
+              className="search-label"
+            >
+              Search:{" "}
+            </label>
+            <input
+              type="text"
+              value={searchQuery}
+              className="form-control search-input"
+              placeholder="Scientific or Common name.."
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          <div className="dna-manage-controls">
+            {/* <div className="partial-names-container">
+              {partialNames && partialNames.length > 0 ? (
+                partialNames.map((name, index) => (
+                  <button
+                    key={index}
+                    className="btn btn-outline-primary partial-name-button"
+                    onClick={() => handlePartialNameClick(name.partial_name)}
+                  >
+                    {name.partial_name}
+                  </button>
+                ))
+              ) : (
+                <span className="no-partial-names-message">No partial names available</span>
+              )}
+            </div> */}
+            <div className="unique-names-counter">
+              Total Unique Scientific Names:{" "}
+              {new Set(filteredDnas.map((dna) => dna.scientific_name)).size}
+            </div>
+            <button
+              onClick={handleExportToExcel}
+              className="btn btn-success export-button"
+            >
+              <FileDownload />
+            </button>
+          </div>
+          
+          <div className="dna-manage-table-section">
+            <div className="table-container">
+              <Table
+                striped
+                bordered
+                hover
+                className="dna-data-table"
               >
-                {name.partial_name}
-              </button>
-            ))
-          ) : (
-            <span>No partial names available</span> // Display message when no partial names are found
-          )}
-        </div>
-        <div
-          style={{ textAlign: "center", fontWeight: "bold", marginTop: "20px" }}
-        >
-          Total Unique Scientific Names:{" "}
-          {new Set(filteredDnas.map((dna) => dna.scientific_name)).size}
-        </div>
-        <button
-          onClick={handleExportToExcel}
-          className="btn btn-success"
-          style={{ height: "40px", alignSelf: "center" }}
-        >
-          <FileDownload />
-        </button>
-      </div>
-      <p></p>
-      <div>
-        <div
-          style={{
-            margin: "auto",
-            width: "73%",
-            maxHeight: filteredDnas.length > 5 ? "195px" : "auto",
-            overflowY: filteredDnas.length > 5 ? "auto" : "visible",
-            border: "3px solid #ddd",
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <Table
-            striped
-            bordered
-            hover
-            style={{
-              fontSize: "14px",
-              width: "100%",
-              textAlign: "center",
-              overflowY: filteredDnas.length > 5 ? "auto" : "visible",
-            }}
-          >
-            <thead>
-              <tr>
-                <th style={{ fontSize: "12px", width: "5%" }}>S.no</th>
-                <th style={{ fontSize: "12px", width: "15%" }}>NCBI ID</th>
-                <th style={{ fontSize: "12px", width: "10%" }}>Reference id</th>
-                <th style={{ fontSize: "12px", width: "10%" }}>Gene name</th>
-                <th style={{ fontSize: "12px", width: "15%" }}>Common name</th>
-                <th style={{ fontSize: "12px", width: "15%" }}>
-                  Scientific name
-                </th>
-                <th style={{ fontSize: "12px", width: "10%" }}>Submitted By</th>
-                <th style={{ fontSize: "12px", width: "20%" }}>Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredDnas.map((dna) => (
-                <tr key={dna.id}>
-                  <td style={{ fontSize: "12px", textAlign: "center" }}>
-                    {dna.s_no}
-                  </td>
-                  <td style={{ fontSize: "12px", textAlign: "center" }}>
-                    {dna.ncbi_id}
-                  </td>
-                  <td style={{ fontSize: "12px", textAlign: "center" }}>
-                    {dna.reference_id}
-                  </td>
-                  <td style={{ fontSize: "12px", textAlign: "center" }}>
-                    {dna.partial_name}
-                  </td>
-                  <td style={{ fontSize: "12px", textAlign: "center" }}>
-                    {dna.common_name}
-                  </td>
-                  <td style={{ fontSize: "12px", textAlign: "center" }}>
-                    {dna.scientific_name}
-                  </td>
+                <thead>
+                  <tr>
+                    <th className="table-header table-header-sno">S.no</th>
+                    <th className="table-header table-header-ncbi">NCBI ID</th>
+                    <th className="table-header table-header-reference">Reference id</th>
+                    <th className="table-header table-header-gene">Gene name</th>
+                    <th className="table-header table-header-common">Common name</th>
+                    <th className="table-header table-header-scientific">
+                      Scientific name
+                    </th>
+                    <th className="table-header table-header-submitted">Submitted By</th>
+                    <th className="table-header table-header-details">Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentItems.map((dna) => (
+                    <tr key={dna.id} className="table-row">
+                      <td className="table-cell table-cell-sno">
+                        {dna.s_no}
+                      </td>
+                      <td className="table-cell table-cell-ncbi">
+                        {dna.ncbi_id}
+                      </td>
+                      <td className="table-cell table-cell-reference">
+                        {dna.reference_id}
+                      </td>
+                      <td className="table-cell table-cell-gene">
+                        {dna.partial_name}
+                      </td>
+                      <td className="table-cell table-cell-common">
+                        {dna.common_name}
+                      </td>
+                      <td className="table-cell table-cell-scientific">
+                        {dna.scientific_name}
+                      </td>
+                      <td className="table-cell table-cell-submitted">
+                        {dna.submittedBy_name}
+                      </td>
+                      <td className="table-cell table-cell-actions">
+                        <FiEye
+                          size={20}
+                          className="action-icon view-icon"
+                          onClick={() => handleView(dna.partial_data)}
+                          title="View"
+                        />
+                        <FiCopy
+                          size={20}
+                          className="action-icon copy-icon"
+                          onClick={() => handleCopy(dna.partial_data)}
+                          title="Copy"
+                        />
+                        <FiDownload
+                          size={20}
+                          className="action-icon download-icon"
+                          onClick={() => handleDownload(dna.partial_data)}
+                          title="Download"
+                        />
+                        <FiTrash
+                          size={20}
+                          className="action-icon delete-icon"
+                          onClick={() => deleteDnaRecord(dna.reference_id)}
+                          title="Delete"
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
 
-                  <td style={{ fontSize: "12px", textAlign: "center" }}>
-                    {dna.submittedBy_name}
-                  </td>
-                  <td style={{ textAlign: "center" }}>
-                    <FiEye
-                      size={20}
-                      style={{
-                        cursor: "pointer",
-                        margin: "0 5px",
-                        color: "black",
-                      }}
-                      onClick={() => handleView(dna.partial_data)}
-                      title="View"
-                    />
-                    <FiCopy
-                      size={20}
-                      style={{
-                        cursor: "pointer",
-                        margin: "0 5px",
-                        color: "grey",
-                      }}
-                      onClick={() => handleCopy(dna.partial_data)}
-                      title="Copy"
-                    />
-                    <FiDownload
-                      size={20}
-                      style={{
-                        cursor: "pointer",
-                        margin: "0 5px",
-                        color: "grey",
-                      }}
-                      onClick={() => handleDownload(dna.partial_data)}
-                      title="Download"
-                    />
-                    <FiTrash
-                      size={20}
-                      style={{
-                        cursor: "pointer",
-                        margin: "0 5px",
-                        color: "red",
-                      }}
-                      onClick={() => deleteDnaRecord(dna.reference_id)}
-                      title="Delete"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="pagination-container">
+                <Pagination className="custom-pagination">
+                  <Pagination.First 
+                    onClick={() => handlePageChange(1)} 
+                    disabled={currentPage === 1}
+                  />
+                  <Pagination.Prev 
+                    onClick={() => handlePageChange(currentPage - 1)} 
+                    disabled={currentPage === 1}
+                  />
+                  
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNumber = index + 1;
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      pageNumber === 1 ||
+                      pageNumber === totalPages ||
+                      (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                    ) {
+                      return (
+                        <Pagination.Item
+                          key={pageNumber}
+                          active={pageNumber === currentPage}
+                          onClick={() => handlePageChange(pageNumber)}
+                        >
+                          {pageNumber}
+                        </Pagination.Item>
+                      );
+                    } else if (
+                      pageNumber === currentPage - 2 ||
+                      pageNumber === currentPage + 2
+                    ) {
+                      return <Pagination.Ellipsis key={pageNumber} disabled />;
+                    }
+                    return null;
+                  })}
+                  
+                  <Pagination.Next 
+                    onClick={() => handlePageChange(currentPage + 1)} 
+                    disabled={currentPage === totalPages}
+                  />
+                  <Pagination.Last 
+                    onClick={() => handlePageChange(totalPages)} 
+                    disabled={currentPage === totalPages}
+                  />
+                </Pagination>
+                <div className="pagination-info">
+                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredDnas.length)} of {filteredDnas.length} entries
+                </div>
+              </div>
+            )}
 
-        <Modal show={modalShow} onHide={() => setModalShow(false)} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>Partial Data</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-              {selectedPartialData}
-            </pre>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="secondary"
-              onClick={() => handleCopy(selectedPartialData)}
+            <Modal 
+              show={modalShow} 
+              onHide={() => setModalShow(false)} 
+              centered
+              className="partial-data-modal"
             >
-              Copy
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => handleDownload(selectedPartialData)}
-            >
-              Download
-            </Button>
-          </Modal.Footer>
-        </Modal>
+              <Modal.Header closeButton>
+                <Modal.Title>Partial Data</Modal.Title>
+              </Modal.Header>
+              <Modal.Body className="modal-body-content">
+                <pre className="partial-data-content">
+                  {selectedPartialData}
+                </pre>
+              </Modal.Body>
+              <Modal.Footer className="modal-footer-actions">
+                <Button
+                  variant="secondary"
+                  onClick={() => handleCopy(selectedPartialData)}
+                  className="modal-copy-button"
+                >
+                  Copy
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => handleDownload(selectedPartialData)}
+                  className="modal-download-button"
+                >
+                  Download
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </div>
+        </div>
       </div>
     </div>
   );
