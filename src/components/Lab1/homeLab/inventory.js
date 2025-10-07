@@ -4,11 +4,11 @@ import {
   createEquipmentDetails,
 } from "../../../services/AppinfoService";
 import * as XLSX from "xlsx";
-import { FaBell, FaTimes } from "react-icons/fa";
+import { FaBell, FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { AiOutlineDownload } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import "./inventory.css"; // 👈 Link to the new CSS file
+import "./inventory.css";
 
 const MasterListTable = ({
   masterType,
@@ -25,6 +25,10 @@ const MasterListTable = ({
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Pagination States
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Filter States
   const [dateFilter, setDateFilter] = useState("");
@@ -49,6 +53,13 @@ const MasterListTable = ({
   const [showModal, setShowModal] = useState(false);
 
   const navigate = useNavigate();
+
+  // --- Pagination Calculations ---
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredData.slice(startIndex, endIndex);
 
   // --- Handlers ---
 
@@ -127,13 +138,35 @@ const MasterListTable = ({
 
   const handleUpdateClick = () => {
     setIsUpdateMode(true);
-    setSelectedItem(null); // Clear previous selection when entering update mode
+    setSelectedItem(null);
   };
 
   const handleRadioChange = (item) => {
     setSelectedItem(item);
     setShowModal(true);
     setIsUpdateMode(false);
+  };
+
+  // --- Pagination Handlers ---
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   // --- Effects ---
@@ -148,7 +181,6 @@ const MasterListTable = ({
           userLab: userDetails.lab
         });
         
-        // Fetch data based on the selected masterType (from HomeLab)
         const response = await fetchMasterListByType(
           masterType || "",
           userDetails.lab
@@ -161,7 +193,6 @@ const MasterListTable = ({
         console.log("📋 [INVENTORY TABLE] Combined data:", combinedData);
         console.log("📋 [INVENTORY TABLE] Data length:", combinedData.length);
 
-        // Log sample items for debugging
         combinedData.slice(0, 3).forEach((item, index) => {
           console.log(`📋 [INVENTORY TABLE] Sample item ${index + 1}:`, {
             item_code: item.item_code,
@@ -175,6 +206,7 @@ const MasterListTable = ({
 
         setData(combinedData);
         setFilteredData(combinedData);
+        setCurrentPage(1); // Reset to first page when new data loads
       } catch (err) {
         console.error("💥 [INVENTORY TABLE] Error fetching data:", err);
         setError(err.message);
@@ -184,7 +216,7 @@ const MasterListTable = ({
     };
 
     getData();
-  }, [masterType, userDetails.lab]); // Re-run when the filter button in HomeLab changes masterType
+  }, [masterType, userDetails.lab]);
 
   // 2. Local Expiry Notifications
   useEffect(() => {
@@ -200,7 +232,7 @@ const MasterListTable = ({
         }
         return false;
       })
-      .slice(0, 10); // Limit to top 10 notifications
+      .slice(0, 10);
 
     setNotifications(expiryNotifications);
   }, [data]);
@@ -272,6 +304,7 @@ const MasterListTable = ({
     );
 
     setFilteredData(filteredMasters);
+    setCurrentPage(1); // Reset to first page when filtering
   }, [
     data,
     entryNoFilter,
@@ -357,6 +390,28 @@ const MasterListTable = ({
         </div>
       )}
 
+      {/* --- Pagination Controls (Top) --- */}
+      <div className="pagination-controls top">
+        <div className="pagination-info">
+          Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} items
+        </div>
+        <div className="pagination-options">
+          <label className="items-per-page-label">
+            Items per page:
+            <select 
+              value={itemsPerPage} 
+              onChange={handleItemsPerPageChange}
+              className="items-per-page-select"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
       {/* --- Main Data Table --- */}
       <div className="table-wrapper">
         <table className="inventory-table">
@@ -391,8 +446,8 @@ const MasterListTable = ({
             </tr>
           </thead>
           <tbody>
-            {filteredData.length > 0 ? (
-              filteredData.map((item, index) => {
+            {currentItems.length > 0 ? (
+              currentItems.map((item, index) => {
                 const isLowStock = item.quantity_received < item.min_req_stock;
 
                 return (
@@ -432,6 +487,49 @@ const MasterListTable = ({
           </tbody>
         </table>
       </div>
+
+      {/* --- Pagination Controls (Bottom) --- */}
+      {totalPages > 1 && (
+        <div className="pagination-controls bottom">
+          <div className="pagination-navigation">
+            <button
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              className="pagination-btn prev-btn"
+            >
+              <FaChevronLeft size={14} />
+              Previous
+            </button>
+            
+            <div className="pagination-numbers">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`pagination-btn page-btn ${
+                    currentPage === page ? "active" : ""
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className="pagination-btn next-btn"
+            >
+              Next
+              <FaChevronRight size={14} />
+            </button>
+          </div>
+          
+          <div className="pagination-summary">
+            Page {currentPage} of {totalPages}
+          </div>
+        </div>
+      )}
 
       {/* --- Equipment Update Modal --- */}
       {showModal && selectedItem && (

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
+import toast from "react-hot-toast";
 import "./TransferredDataTable.css";
 import { AiOutlineDownload } from "react-icons/ai";
 import LabNavigation1 from "../homeLab/LabNavigation1";
@@ -51,7 +52,7 @@ const ReturnDataTable = ({
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
-      alert("No data to download!");
+      toast.error("No data to download!");
       return;
     }
 

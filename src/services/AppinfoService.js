@@ -784,7 +784,7 @@ export function addTempItemReceiveApi(receive) {
       receipt_date: currentDate,
       quantity_received: receive.quantity_received,
       po_number: receive.po_number,
-      batch_number: receive.batch_number,
+      batch_number: receive.batch_number, 
       remarks: receive.remarks,
       master_type: receive.master_type,
       min_req_stock: receive.min_req_stock,
@@ -1320,6 +1320,38 @@ export const fetchMasterListByType = async (masterType, lab = null) => {
     return response.data;
   } catch (error) {
     console.error("💥 [API] Error fetching master list:", error);
+    throw error;
+  }
+};
+
+export const fetchItemExpiryDates = async (itemCode) => {
+  try {
+    console.log("🌐 [API] fetchItemExpiryDates called with itemCode:", itemCode);
+    
+    const response = await axios.get(`${API_BASE_URL}/api/item-expiry-dates/`, {
+      params: { item_code: itemCode },
+    });
+    
+    console.log("🌐 [API] fetchItemExpiryDates response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("💥 [API] Error fetching expiry dates:", error);
+    throw error;
+  }
+};
+
+export const fetchItemLocations = async (itemCode) => {
+  try {
+    console.log("🌐 [API] fetchItemLocations called with itemCode:", itemCode);
+    
+    const response = await axios.get(`${API_BASE_URL}/api/item-locations/`, {
+      params: { item_code: itemCode },
+    });
+    
+    console.log("🌐 [API] fetchItemLocations response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("💥 [API] Error fetching locations:", error);
     throw error;
   }
 };

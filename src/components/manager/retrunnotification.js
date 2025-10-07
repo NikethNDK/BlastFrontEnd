@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
+import toast from "react-hot-toast";
 import { Button } from "react-bootstrap";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaCheck, FaTimes } from "react-icons/fa";
@@ -57,7 +58,7 @@ const ReturnDataTableNotification = ({
       );
 
       console.log(response.data);
-      alert(`Item return ${status} successfully!`);
+      toast.success(`Item return ${status} successfully!`);
 
       if (status === "Declined") {
         setData((prevData) =>
@@ -70,7 +71,7 @@ const ReturnDataTableNotification = ({
       }
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Failed to update item return status.");
+      toast.error("Failed to update item return status.");
     }
   };
 

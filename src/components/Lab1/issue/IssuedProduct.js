@@ -14,6 +14,8 @@ import {
   addTempItemIssueApi,
   addTempToIssueApi,
   getIssuesByResearcher,
+  fetchItemExpiryDates,
+  fetchItemLocations,
 } from "../../../services/AppinfoService";
 import "../../inventory/formBorder.css";
 import Select from "react-select";
@@ -45,10 +47,12 @@ const IssuedProduct = ({
   const [selectedSuppliers, setSelectedSuppliers] = useState(null);
   const [selectedManufacturer, setSelectedManufacturer] = useState(null);
   const [manufacturers, setManufacturers] = useState([]);
+  const [expiryDates, setExpiryDates] = useState([]);
+  const [selectedExpiryDate, setSelectedExpiryDate] = useState(null);
+  const [locations, setLocations] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState(null);
   const [suppliers, setSuppliers] = useState([]);
   const [selectedunits, setSelectedunits] = useState(null);
-  const [locations, setLocations] = useState([]);
-  const [selectedLocations, setSelectedLocations] = useState(null);
   const [expiryDate, setExpiryDate] = useState("");
   const [quantityIssued, setQuantityIssued] = useState(0);
   const [selectedItem, setSelectedItem] = useState({
@@ -63,6 +67,7 @@ const IssuedProduct = ({
     issuedTo: "",
     supplier: "",
     expiryDate: "",
+    location: "",
     masterType: "",
     itemCode: "",
     itemName: "",
@@ -85,7 +90,7 @@ const IssuedProduct = ({
     setSelectedItemCode(null);
     setSelectedItemName(null);
     setSelectedNames(null);
-    setSelectedLocations(null);
+    setSelectedLocation(null);
     setSelectedCodes(null);
     setSelectedProject("");
     setMasterType("");
@@ -156,11 +161,12 @@ const IssuedProduct = ({
   };
 
   useEffect(() => {
-    if (selectedItemCode && selectedProject && expiryDate) {
+    if (selectedItemCode && selectedProject && selectedExpiryDate && selectedLocation) {
       console.log("🔍 [QUANTITY FETCH] Starting quantity fetch with:", {
         selectedItemCode: selectedItemCode.label,
         selectedProject: selectedProject.value,
-        expiryDate,
+        selectedExpiryDate: selectedExpiryDate.value,
+        selectedLocation: selectedLocation.value,
         userLab: userDetails.lab
       });
 
@@ -172,34 +178,39 @@ const IssuedProduct = ({
           console.log("🔍 [QUANTITY FETCH] Looking for exact match with:", {
             targetItemCode: selectedItemCode.label,
             targetProjectCode: selectedProject.value,
-            targetExpiryDate: expiryDate
+            targetExpiryDate: selectedExpiryDate.value,
+            targetLocation: selectedLocation.value
           });
 
           const matchedItem = data.find(
             (item) => {
               const itemCodeMatch = String(item.item_code).toLowerCase() === String(selectedItemCode.label).toLowerCase();
               const projectMatch = String(item.project_code).toLowerCase() === String(selectedProject.value).toLowerCase();
-              const expiryMatch = String(item.expiry_date) === String(expiryDate);
+              const expiryMatch = String(item.expiry_date) === String(selectedExpiryDate.value);
+              const locationMatch = String(item.location).toLowerCase() === String(selectedLocation.value).toLowerCase();
               
               console.log("🔍 [QUANTITY FETCH] Checking item:", {
                 itemCode: item.item_code,
                 projectCode: item.project_code,
                 expiryDate: item.expiry_date,
+                location: item.location,
                 stock: item.stock,
                 quantity_received: item.quantity_received,
                 itemCodeMatch,
                 projectMatch,
                 expiryMatch,
-                isMatch: itemCodeMatch && projectMatch && expiryMatch,
+                locationMatch,
+                isMatch: itemCodeMatch && projectMatch && expiryMatch && locationMatch,
                 // Show the actual comparison values
                 comparison: {
                   itemCode: `${String(item.item_code).toLowerCase()} === ${String(selectedItemCode.label).toLowerCase()}`,
                   project: `${String(item.project_code).toLowerCase()} === ${String(selectedProject.value).toLowerCase()}`,
-                  expiry: `${String(item.expiry_date)} === ${String(expiryDate)}`
+                  expiry: `${String(item.expiry_date)} === ${String(selectedExpiryDate.value)}`,
+                  location: `${String(item.location).toLowerCase()} === ${String(selectedLocation.value).toLowerCase()}`
                 }
               });
               
-              return itemCodeMatch && projectMatch && expiryMatch;
+              return itemCodeMatch && projectMatch && expiryMatch && locationMatch;
             }
           );
 
@@ -221,9 +232,10 @@ const IssuedProduct = ({
           } else {
             console.log("❌ [QUANTITY FETCH] No exact match found, trying fallback matching...");
             
-            // Fallback 1: Try matching by item code only
+            // Fallback 1: Try matching by item code and location
             const itemCodeMatch = data.find(item => 
-              String(item.item_code).toLowerCase() === String(selectedItemCode.label).toLowerCase()
+              String(item.item_code).toLowerCase() === String(selectedItemCode.label).toLowerCase() &&
+              String(item.location).toLowerCase() === String(selectedLocation.value).toLowerCase()
             );
             
             if (itemCodeMatch) {
@@ -247,10 +259,11 @@ const IssuedProduct = ({
       console.log("⏭️ [QUANTITY FETCH] Skipping - missing required fields:", {
         selectedItemCode: !!selectedItemCode,
         selectedProject: !!selectedProject,
-        expiryDate: !!expiryDate
+        selectedExpiryDate: !!selectedExpiryDate,
+        selectedLocation: !!selectedLocation
       });
     }
-  }, [selectedItemCode, selectedProject, expiryDate, userDetails.lab]);
+  }, [selectedItemCode, selectedProject, selectedExpiryDate, selectedLocation, userDetails.lab]);
 
   useEffect(() => {
     if (!masterType) {
@@ -260,7 +273,8 @@ const IssuedProduct = ({
 
     console.log("🔍 [ITEM LIST FETCH] Starting item list fetch with:", {
       masterType,
-      userLab: userDetails.lab
+      userLab: userDetails.lab,
+      userDetails: userDetails
     });
 
     getTemptReceiveApi(userDetails.lab)
@@ -268,13 +282,18 @@ const IssuedProduct = ({
         console.log("📊 [ITEM LIST FETCH] Raw API response data:", data);
         console.log("📊 [ITEM LIST FETCH] Data length:", data.length);
 
+        // Log all unique master_types in the data
+        const uniqueMasterTypes = [...new Set(data.map(item => item.master_type))];
+        console.log("🔍 [ITEM LIST FETCH] Unique master_types in data:", uniqueMasterTypes);
+
         if (masterType) {
           const beforeFilter = data.length;
-          data = data.filter((item) => item.master_type === masterType);
+          data = data.filter((item) => item.master_type && item.master_type.toLowerCase() === masterType.toLowerCase());
           console.log("🔍 [ITEM LIST FETCH] After master type filter:", {
             beforeFilter,
             afterFilter: data.length,
-            masterType
+            masterType,
+            filteredItems: data.map(item => ({ item_code: item.item_code, master_type: item.master_type, location: item.location }))
           });
         }
 
@@ -354,15 +373,62 @@ const IssuedProduct = ({
     }
   }, [masterType, selectedNames, userDetails.lab]);
 
-  const handleItemCodeChange = (selectedOption) => {
+  const handleItemCodeChange = async (selectedOption) => {
     console.log("🔍 [ITEM SELECTION] Item code changed to:", selectedOption);
     setSelectedItemCode(selectedOption);
     const item = itemsCodes.find((item) => item.value === selectedOption.value);
     if (item) {
       console.log("🔍 [ITEM SELECTION] Found matching item:", item);
       setSelectedItemName({ value: item.value, label: item.itemName });
+      
+      // Fetch expiry dates for the selected item
+      try {
+        console.log("🔍 [EXPIRY] Fetching expiry dates for item:", item.label);
+        const response = await fetchItemExpiryDates(item.label);
+        console.log("🔍 [EXPIRY] Received expiry dates:", response.expiry_dates);
+        
+        // Convert to react-select format
+        const expiryOptions = response.expiry_dates.map(date => ({
+          value: date.value,
+          label: date.label,
+          raw_date: date.raw_date
+        }));
+        
+        setExpiryDates(expiryOptions);
+        setSelectedExpiryDate(null); // Reset selection
+      } catch (error) {
+        console.error("💥 [EXPIRY] Error fetching expiry dates:", error);
+        setExpiryDates([]);
+        setSelectedExpiryDate(null);
+        toast.error("Failed to fetch expiry dates for this item");
+      }
+
+      // Fetch locations for the selected item
+      try {
+        console.log("🔍 [LOCATION] Fetching locations for item:", item.label);
+        const response = await fetchItemLocations(item.label);
+        console.log("🔍 [LOCATION] Received locations:", response.locations);
+        
+        // Convert to react-select format
+        const locationOptions = response.locations.map(location => ({
+          value: location.value,
+          label: location.label
+        }));
+        
+        setLocations(locationOptions);
+        setSelectedLocation(null); // Reset selection
+      } catch (error) {
+        console.error("💥 [LOCATION] Error fetching locations:", error);
+        setLocations([]);
+        setSelectedLocation(null);
+        toast.error("Failed to fetch locations for this item");
+      }
     } else {
       console.log("❌ [ITEM SELECTION] No matching item found in itemsCodes");
+      setExpiryDates([]);
+      setSelectedExpiryDate(null);
+      setLocations([]);
+      setSelectedLocation(null);
     }
   };
 
@@ -389,7 +455,6 @@ const IssuedProduct = ({
     const requiredFields = [
       "quantityIssued",
       "project",
-      "expiryDate",
       "remarks",
       "issuedTo",
     ];
@@ -422,6 +487,16 @@ const IssuedProduct = ({
       hasError = true;
     }
 
+    if (!selectedExpiryDate) {
+      newErrors.expiryDate = "Please select an expiry date";
+      hasError = true;
+    }
+
+    if (!selectedLocation) {
+      newErrors.location = "Please select a location";
+      hasError = true;
+    }
+
     if (hasError) {
       setErrorMessages(newErrors);
       return;
@@ -439,6 +514,8 @@ const IssuedProduct = ({
       master_type: masterType || "",
       item_name: selectedItemName ? selectedItemName.label : "",
       item_code: selectedItemCode ? selectedItemCode.label : "",
+      expiry_date: selectedExpiryDate ? selectedExpiryDate.value : "",
+      location: selectedLocation ? selectedLocation.value : "",
     };
 
     // Submit data
@@ -730,33 +807,73 @@ const IssuedProduct = ({
                   <Col>
                     <Form.Group controlId="expiryDate">
                       <Form.Label>Expiry Date</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="expiryDate"
-                        required
-                        value={expiryDate}
-                        className="custom-border"
-                        min={new Date().toISOString().split("T")[0]}
-                        onChange={(e) => {
-                          setExpiryDate(e.target.value);
-
-                          if (errorMessages.expiryDate && e.target.value) {
+                      <Select
+                        options={expiryDates}
+                        value={selectedExpiryDate}
+                        onChange={(selectedOption) => {
+                          setSelectedExpiryDate(selectedOption);
+                          if (errorMessages.expiryDate && selectedOption) {
                             setErrorMessages((prev) => ({
                               ...prev,
                               expiryDate: "",
                             }));
                           }
                         }}
-                        style={{
-                          border: `1px solid ${
-                            errorMessages.expiryDate ? "red" : "black"
-                          }`,
+                        placeholder={expiryDates.length > 0 ? "Select Expiry Date" : "No expiry dates available"}
+                        isDisabled={expiryDates.length === 0}
+                        styles={{
+                          control: (provided) => ({
+                            ...provided,
+                            borderColor: errorMessages.expiryDate ? "red" : "black",
+                          }),
                         }}
                       />
                       {errorMessages.expiryDate && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
                           {errorMessages.expiryDate}
                         </span>
+                      )}
+                      {expiryDates.length === 0 && selectedItemCode && (
+                        <small className="text-muted">
+                          No expiry dates found for this item
+                        </small>
+                      )}
+                    </Form.Group>
+                  </Col>
+
+                  <Col>
+                    <Form.Group controlId="location">
+                      <Form.Label>Location</Form.Label>
+                      <Select
+                        options={locations}
+                        value={selectedLocation}
+                        onChange={(selectedOption) => {
+                          setSelectedLocation(selectedOption);
+                          if (errorMessages.location && selectedOption) {
+                            setErrorMessages((prev) => ({
+                              ...prev,
+                              location: "",
+                            }));
+                          }
+                        }}
+                        placeholder={locations.length > 0 ? "Select Location" : "No locations available"}
+                        isDisabled={locations.length === 0}
+                        styles={{
+                          control: (provided) => ({
+                            ...provided,
+                            borderColor: errorMessages.location ? "red" : "black",
+                          }),
+                        }}
+                      />
+                      {errorMessages.location && (
+                        <span style={{ color: "red", fontSize: "0.85rem" }}>
+                          {errorMessages.location}
+                        </span>
+                      )}
+                      {locations.length === 0 && selectedItemCode && (
+                        <small className="text-muted">
+                          No locations found for this item
+                        </small>
                       )}
                     </Form.Group>
                   </Col>

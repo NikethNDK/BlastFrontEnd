@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./TransferredDataTable.css"; // Use the new CSS file
 import * as XLSX from "xlsx";
+import toast from "react-hot-toast";
 import { Download } from "lucide-react";
 import { AiOutlineDownload } from "react-icons/ai";
 import { getmanagerEmployeeApi } from "../../../services/AppinfoService";
@@ -43,6 +44,8 @@ const TransferredDataTable = ({
       const response = await axios.get(
         "http://localhost:8000/api/inventoryReceive/"
       );
+      console.log("🔍 [FRONTEND] Fetched data:", response.data);
+      console.log("🔍 [FRONTEND] Sample item (entry 20):", response.data.find(item => item.entry_no === 20));
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -50,8 +53,11 @@ const TransferredDataTable = ({
   };
 
   const handleSelect = (id, item) => {
+    console.log("🔍 [FRONTEND] Selected item:", item);
+    console.log("🔍 [FRONTEND] Item stock:", item.stock);
+    console.log("🔍 [FRONTEND] Item quantity_received:", item.quantity_received);
     setSelectedItem(item);
-    setUpdatedQuantity(item.quantity_received);
+    setUpdatedQuantity(0); // Start with 0, let user input the return quantity
   };
 
   const openPopup = () => {
@@ -66,30 +72,63 @@ const TransferredDataTable = ({
   };
 
   const handleQuantityChange = (e) => {
-    let returnQuantity = parseInt(e.target.value, 10);
-
-    if (isNaN(returnQuantity)) {
+    const value = e.target.value;
+    
+    // Allow empty string for user to clear and retype
+    if (value === "") {
       setUpdatedQuantity("");
       return;
     }
-
-    if (
-      returnQuantity >= 0 &&
-      returnQuantity <= selectedItem.quantity_received
-    ) {
+    
+    const returnQuantity = parseInt(value, 10);
+    
+    // Only update if it's a valid number
+    if (!isNaN(returnQuantity)) {
       setUpdatedQuantity(returnQuantity);
     } else {
-      alert(`Enter a value between 0 and ${selectedItem.quantity_received}.`);
+      // If it's not a valid number, keep the current value
+      setUpdatedQuantity(updatedQuantity);
+    }
+  };
+
+  const handleQuantityBlur = (e) => {
+    const returnQuantity = parseInt(e.target.value, 10);
+    
+    if (isNaN(returnQuantity) || returnQuantity < 0) {
+      setUpdatedQuantity(0);
+      return;
+    }
+    
+    if (returnQuantity > selectedItem.quantity_received) {
+      toast.error(`Return quantity cannot exceed available stock (${selectedItem.quantity_received}).`);
+      setUpdatedQuantity(selectedItem.quantity_received);
     }
   };
 
   const handleUpdate = async () => {
     try {
       const returnQuantity = updatedQuantity;
-      const remainingQuantity = selectedItem.quantity_received - returnQuantity;
+      const remainingQuantity = selectedItem.stock - returnQuantity;
+
+      console.log("🔍 [FRONTEND] Return attempt:", {
+        returnQuantity,
+        selectedItem: selectedItem,
+        selectedManager,
+        remainingQuantity
+      });
 
       if (!selectedManager) {
-        alert("Please select a manager.");
+        toast.error("Please select a manager.");
+        return;
+      }
+
+      if (returnQuantity <= 0) {
+        toast.error("Return quantity must be greater than 0.");
+        return;
+      }
+
+      if (returnQuantity > selectedItem.quantity_received) {
+        toast.error(`Return quantity cannot exceed available stock (${selectedItem.quantity_received}).`);
         return;
       }
 
@@ -101,19 +140,23 @@ const TransferredDataTable = ({
         }
       );
 
-      alert("Quantity updated and return recorded!");
+      toast.success(`Return processed successfully! Removed ${returnQuantity} items from inventory.`);
       fetchData();
       setSelectedItem(null);
       closePopup();
     } catch (error) {
       console.error("Error updating quantity:", error);
-      alert("Failed to update quantity.");
+      if (error.response && error.response.data && error.response.data.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Failed to process return.");
+      }
     }
   };
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
-      alert("No data to download!");
+      toast.error("No data to download!");
       return;
     }
 
@@ -124,8 +167,8 @@ const TransferredDataTable = ({
         "Item Code": item.item_code,
         "Item Name": item.item_name,
         Price: item.price_unit,
-        "Quantity to be returned": item.quantity_received,
-        "Remaining Stock": item.stock,
+        "Available Stock": item.stock,
+        "Remaining Stock": item.quantity_received,
         "Batch Number": item.batch_number,
         Remarks: item.remarks,
         "Receipt Date": item.receipt_date,
@@ -163,8 +206,7 @@ const TransferredDataTable = ({
     { label: "Item Code", key: "item_code", className: "item-code-column" },
     { label: "Item Name", key: "item_name", className: "item-name-column" },
     { label: "Price", key: "price_unit", className: "price-column" },
-    { label: "Received Quantity", key: "quantity_received", className: "quantity-column" },
-    { label: "Remaining Stock", key: "stock", className: "stock-column"},
+    { label: "Remaining Stock", key: "quantity_received", className: "quantity-column"},
     { label: "Batch Number", key: "batch_number", className: "batch-column" },
     { label: "Remarks", key: "remarks", className: "remarks-column" },
     { label: "Receipt Date", key: "receipt_date", className: "date-column" },
@@ -250,7 +292,6 @@ const TransferredDataTable = ({
                     <td className="table-cell item-name-column">{item.item_name}</td>
                     <td className="table-cell price-column">{item.price_unit}</td>
                     <td className="table-cell quantity-column">{item.quantity_received}</td>
-                    <td className="table-cell stock-column">{item.stock}</td>
                     <td className="table-cell batch-column">{item.batch_number}</td>
                     <td className="table-cell remarks-column">{item.remarks}</td>
                     <td className="table-cell date-column">{item.receipt_date}</td>
@@ -289,6 +330,14 @@ const TransferredDataTable = ({
                 <strong>Item Code:</strong> {selectedItem.item_code}
               </p>
 
+              <p>
+                <strong>Available Stock (Can Return):</strong> {selectedItem.quantity_received}
+              </p>
+
+              {/* <p>
+                <strong>Total Received:</strong> {selectedItem.quantity_received}
+              </p> */}
+
               <div className="popup-form-group">
                 <label className="popup-form-label">Select Manager:</label>
                 <select
@@ -314,11 +363,12 @@ const TransferredDataTable = ({
                   min="0"
                   max={selectedItem.quantity_received}
                   onChange={handleQuantityChange}
+                  onBlur={handleQuantityBlur}
                 />
               </div>
 
               <div className="quantity-display">
-                <strong>Remaining Quantity:</strong>{" "}
+                <strong>Stock After Return:</strong>{" "}
                 {selectedItem.quantity_received - updatedQuantity}
               </div>
 
