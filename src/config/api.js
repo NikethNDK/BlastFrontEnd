@@ -1,5 +1,17 @@
 // API Configuration
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
+// Get server IP from environment or use default
+const getServerIP = () => {
+  // Try to get IP from environment variable
+  if (process.env.REACT_APP_SERVER_IP) {
+    return `http://${process.env.REACT_APP_SERVER_IP}:8000`;
+  }
+  
+  // For production, use the server's actual IP
+  // Replace 192.168.1.100 with your actual server IP
+  return 'http://192.168.1.100:8000';
+};
+
+const API_BASE_URL = getServerIP();
 
 export const API_ENDPOINTS = {
   // Authentication
