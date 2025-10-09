@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { 
   FaSignOutAlt,
   FaChartBar,
@@ -16,10 +16,9 @@ const ManagerNavigation = ({
   userDetails = { name: "", lab: "", designation: "" }
 }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const navigate = useNavigate();
 
   const handleLogout = () => {
-    window.location.href = '/Logout';
+    window.location.href = '/';
   };
 
   return (
