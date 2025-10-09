@@ -193,15 +193,6 @@ function Layout({ userDetails }) {
         />
         
         <div className={`lab-main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          {/* <ModernHeader
-            title={getPageTitle(location.pathname)}
-            subtitle={getPageSubtitle(location.pathname)}
-            userDetails={userDetails}
-            notifications={notifications}
-            onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-            onNotificationClick={handleNotificationClick}
-            onLogout={handleLogout}
-          /> */}
           
           <div className="lab-content-container">
             <Routes>
