@@ -1,6 +1,9 @@
 import axios from "axios";
 import { API_ENDPOINTS, API_BASE_URL } from "../config/api";
 
+// Base URL for all API calls
+export const BASE_URL = "http://127.0.0.1:8000";
+
 export function getAppinfo() {
   return axios
     .get(API_ENDPOINTS.APP_INFO)
@@ -9,7 +12,7 @@ export function getAppinfo() {
 
 export function deleteAppinfo(infocode) {
   return axios
-    .delete(`http://127.0.0.1:8000/delete_appinfo/${infocode}`, {
+    .delete(`${BASE_URL}/delete_appinfo/${infocode}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
@@ -25,7 +28,7 @@ export function deleteAppinfo(infocode) {
 
 export function addAppinfo(appinfo) {
   return axios
-    .post("http://127.0.0.1:8000/add_appinfo", {
+    .post(`${BASE_URL}/add_appinfo`, {
       infocode: null,
       infovalue: appinfo.infovalue,
       remarks: appinfo.remarks,
@@ -40,7 +43,7 @@ export function addAppinfo(appinfo) {
 
 export async function updateAppinfo(infoid, appinfo) {
   return axios
-    .put(`http://127.0.0.1:8000/update_appinfo/${infoid}`, {
+    .put(`${BASE_URL}/update_appinfo/${infoid}`, {
       infovalue: appinfo.infovalue,
       remarks: appinfo.remarks,
       created_on: appinfo.created_on,
@@ -56,13 +59,13 @@ export async function updateAppinfo(infoid, appinfo) {
 
 export function getMasterApi() {
   return axios
-    .get("http://127.0.0.1:8000/master/")
+    .get(`${BASE_URL}/master/`)
     .then((response) => response.data);
 }
 
 export function deleteChemicalApi(c_id) {
   return axios
-    .delete(`http://127.0.0.1:8000/delete_chemical/${c_id}`, {
+    .delete(`${BASE_URL}/delete_chemical/${c_id}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
@@ -80,7 +83,7 @@ export function addMasterApi(master) {
   const currentDate = new Date().toISOString().split("T")[0];
 
   return axios
-    .post("http://127.0.0.1:8000/add_master", {
+    .post(`${BASE_URL}/add_master`, {
       entry_no: master.entry_no,
       item_code: master.item_code,
       item_name: master.item_name,
@@ -110,7 +113,7 @@ export function addMasterApi(master) {
 export async function updateChemicalApi(cid, master) {
   try {
     const response = await axios.put(
-      `http://127.0.0.1:8000/update_master/${cid}`,
+      `${BASE_URL}/update_master/${cid}`,
       {
         entry_no: master.entry_no,
         item_code: master.item_code,
@@ -145,7 +148,7 @@ export async function updateChemicalApi(cid, master) {
 
 export function inactiveMasterApi(cid) {
   return axios
-    .patch(`http://127.0.0.1:8000/inactive_master/${cid}`)
+    .patch(`${BASE_URL}/inactive_master/${cid}`)
     .then((response) => response.data)
     .catch((error) => {
       console.error("Error updating Master:", error);
@@ -154,20 +157,20 @@ export function inactiveMasterApi(cid) {
 }
 
 export const getStockLevelApi = () => {
-  return fetch("http://127.0.0.1:8000/master/stockLevel");
+  return fetch(`${BASE_URL}/master/stockLevel`);
 };
 
 // --------------------------------Project Master------------------------------------------
 
 export function getProjectApi() {
   return axios
-    .get("http://127.0.0.1:8000/project/")
+    .get(`${BASE_URL}/project/`)
     .then((response) => response.data);
 }
 
 export function deleteProjectApi(project_code) {
   return axios
-    .delete(`http://127.0.0.1:8000/delete_project/${project_code}`, {
+    .delete(`${BASE_URL}/delete_project/${project_code}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
@@ -183,7 +186,7 @@ export function deleteProjectApi(project_code) {
 
 // export function addProjectApi(project) {
 //   return axios
-//     .post("http://127.0.0.1:8000/add_project", {
+//     .post("${BASE_URL}/add_project", {
 //       project_code: null,
 //       project_name: project.project_name,
 //     })
@@ -192,7 +195,7 @@ export function deleteProjectApi(project_code) {
 
 export function addProjectApi(project) {
   return axios
-    .post("http://127.0.0.1:8000/add_project", {
+    .post(`${BASE_URL}/add_project`, {
       project_code: project.project_code,
       project_name: project.project_name,
     })
@@ -200,7 +203,7 @@ export function addProjectApi(project) {
 }
 export async function updateProjectApi(proCode, project) {
   return axios
-    .put(`http://127.0.0.1:8000/update_project/${proCode}`, {
+    .put(`${BASE_URL}/update_project/${proCode}`, {
       project_name: project.project_name,
     })
     .then((response) => response.data);
@@ -208,7 +211,7 @@ export async function updateProjectApi(proCode, project) {
 
 export function inactiveProjectApi(project_code) {
   return axios
-    .patch(`http://127.0.0.1:8000/inactive_project/${project_code}`)
+    .patch(`${BASE_URL}/inactive_project/${project_code}`)
     .then((response) => response.data)
     .catch((error) => {
       console.error("Error updating project:", error);
@@ -220,13 +223,13 @@ export function inactiveProjectApi(project_code) {
 
 export function getInventoryApi() {
   return axios
-    .get("http://127.0.0.1:8000/inventory")
+    .get(`${BASE_URL}/inventory`)
     .then((response) => response.data);
 }
 
 export function deleteInventoryApi(enNo) {
   return axios
-    .delete(`http://127.0.0.1:8000/delete_inventory/${enNo}`, {
+    .delete(`${BASE_URL}/delete_inventory/${enNo}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
@@ -242,7 +245,7 @@ export function deleteInventoryApi(enNo) {
 
 export function addInventoryApi(inventory) {
   return axios
-    .post("http://127.0.0.1:8000/add_inventory", {
+    .post(`${BASE_URL}/add_inventory`, {
       entry_no: null,
       item_code: inventory.item_code,
       item_name: inventory.item_name,
@@ -273,7 +276,7 @@ export function addInventoryApi(inventory) {
 
 export async function updateInventoryApi(enNo, inventory) {
   return axios
-    .put(`http://127.0.0.1:8000/update_inventory/${enNo}`, {
+    .put(`${BASE_URL}/update_inventory/${enNo}`, {
       item_code: inventory.item_code,
       item_name: inventory.item_name,
       tran_type_IR: inventory.tran_type_IR,
@@ -300,7 +303,7 @@ export async function updateInventoryApi(enNo, inventory) {
 
 export async function loginUserApi(credentials) {
   try {
-    const response = await axios.post(`${API_BASE_URL}/login-view/`, credentials);
+    const response = await axios.post(`${BASE_URL}/login-view/`, credentials);
     return response.data;
   } catch (error) {
     console.error("Error logging in:", error);
@@ -310,7 +313,7 @@ export async function loginUserApi(credentials) {
 
 export async function registerUserApi(userInfo) {
   try {
-    const response = await axios.post(`${API_BASE_URL}/register/`, userInfo);
+    const response = await axios.post(`${BASE_URL}/register/`, userInfo);
     return response.data;
   } catch (error) {
     console.error("Error registering user:", error);
@@ -322,13 +325,13 @@ export async function registerUserApi(userInfo) {
 
 export function getRequestApi() {
   return axios
-    .get("http://127.0.0.1:8000/request")
+    .get(`${BASE_URL}/request`)
     .then((response) => response.data);
 }
 
 export function deleteRequestApi(id) {
   return axios
-    .delete(`http://127.0.0.1:8000/delete_request/${id}`, {
+    .delete(`${BASE_URL}/delete_request/${id}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
@@ -344,7 +347,7 @@ export function deleteRequestApi(id) {
 
 export function addRequestApi(request) {
   return axios
-    .post("http://127.0.0.1:8000/add_request", {
+    .post(`${BASE_URL}/add_request`, {
       id: null,
       ItemCode: request.ItemCode,
       ItemType: request.ItemType,
@@ -360,7 +363,7 @@ export function addRequestApi(request) {
 
 export async function updateRequestApi(id, request) {
   return axios
-    .put(`http://127.0.0.1:8000/update_request/${id}`, {
+    .put(`${BASE_URL}/update_request/${id}`, {
       ItemCode: request.ItemCode,
       ItemType: request.ItemType,
       ItemName: request.ItemName,
@@ -377,14 +380,14 @@ export async function updateRequestApi(id, request) {
 
 export function getIssueApi() {
   return axios
-    .get("http://127.0.0.1:8000/issues")
+    .get(`${BASE_URL}/issues`)
     .then((response) => response.data);
 }
 
 export function addIssueApi(researcher) {
   const currentDate = new Date().toISOString().slice(0, 10);
   return axios
-    .post("http://127.0.0.1:8000/add_issue", {
+    .post(`${BASE_URL}/add_issue`, {
       id: null,
       researcher_name: researcher.researcher_name,
       issues_task: researcher.issues_task,
@@ -399,13 +402,13 @@ export function addIssueApi(researcher) {
 
 export function getLoginApi() {
   return axios
-    .get("http://127.0.0.1:8000/view_login")
+    .get(`${BASE_URL}/view_login`)
     .then((response) => response.data);
 }
 
 export function addLoginApi(log) {
   return axios
-    .post("http://127.0.0.1:8000/add_login/", {
+    .post(`${BASE_URL}/add_login/`, {
       id: null,
       user_name: log.user_name,
       password: log.password,
@@ -418,7 +421,7 @@ export function addLoginApi(log) {
 
 export async function updateLoginApi(id, log) {
   return axios
-    .put(`http://127.0.0.1:8000/update_login/${id}`, {
+    .put(`${BASE_URL}/update_login/${id}`, {
       user_name: log.user_name,
       password: log.password,
       role: log.role,
@@ -430,13 +433,13 @@ export async function updateLoginApi(id, log) {
 
 export function getEmployeeApi() {
   return axios
-    .get("http://127.0.0.1:8000/emp/")
+    .get(`${BASE_URL}/emp/`)
     .then((response) => response.data);
 }
 
 export function deleteEmployeeApi(emp_id) {
   return axios
-    .delete(`http://127.0.0.1:8000/delete_emp/${emp_id}`, {
+    .delete(`${BASE_URL}/delete_emp/${emp_id}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
@@ -452,7 +455,7 @@ export function deleteEmployeeApi(emp_id) {
 
 export function addEmployeeApi(employee) {
   return axios
-    .post("http://127.0.0.1:8000/add_emp", {
+    .post(`${BASE_URL}/add_emp`, {
       // emp_id: employee.username,
       emp_id: employee.emp_id,
       role: employee.role,
@@ -468,7 +471,7 @@ export function addEmployeeApi(employee) {
 }
 export async function updateEmployeeApi(emp_id, employee) {
   return axios
-    .put(`http://127.0.0.1:8000/update_emp/${emp_id}`, {
+    .put(`${BASE_URL}/update_emp/${emp_id}`, {
       emp_name: employee.emp_name,
       designation: employee.designation,
       project_code: employee.project_code,
@@ -478,7 +481,7 @@ export async function updateEmployeeApi(emp_id, employee) {
 
 // export function inactiveEmployeeApi(emp_id) {
 //   return axios
-//     .patch(`http://127.0.0.1:8000/inactive_emp/${emp_id}`)
+//     .patch(`${BASE_URL}/inactive_emp/${emp_id}`)
 //     .then((response) => response.data)
 //     .catch((error) => {
 //       console.error("Error updating Master:", error);
@@ -488,7 +491,7 @@ export async function updateEmployeeApi(emp_id, employee) {
 
 // export function inactiveEmployeeApi(emp_id) {
 //   return axios
-//     .patch(`http://127.0.0.1:8000/inactive_emp/${emp_id}`, {
+//     .patch(`${BASE_URL}/inactive_emp/${emp_id}`, {
 //       deleted: 1,
 //       is_active: false,
 //     })
@@ -501,7 +504,7 @@ export async function updateEmployeeApi(emp_id, employee) {
 
 export const inactiveEmployeeApi = async (emp_id) => {
   try {
-    await axios.post(`http://127.0.0.1:8000/inactive_emp/${emp_id}`);
+    await axios.post(`${BASE_URL}/inactive_emp/${emp_id}`);
     alert("Employee deactivated successfully and cannot log in again.");
     // Optionally update UI state here
   } catch (error) {
@@ -511,7 +514,7 @@ export const inactiveEmployeeApi = async (emp_id) => {
 
 export function addEmpRegApi(emp) {
   return axios
-    .post("http://127.0.0.1:8000/add_empReg", {
+    .post(`${BASE_URL}/add_empReg`, {
       emp_name: emp.user_name,
       designation: emp.role,
       role: emp.role, // Ensure this is included
@@ -525,14 +528,14 @@ export function addEmpRegApi(emp) {
 
 // export function getResEmployeeApi() {
 //   return axios
-//     .get("http://127.0.0.1:8000/researcherEmpName")
+//     .get("${BASE_URL}/researcherEmpName")
 
 //     .then((response) => response.data);
 // }
 
 export const getResEmployeeApi = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/researcherEmpName/`);
+    const response = await axios.get(`${BASE_URL}/researcherEmpName/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching researcher names:", error);
@@ -544,7 +547,7 @@ export const getResEmployeeApi = async () => {
 
 export function getStatusApi() {
   return axios
-    .get("http://127.0.0.1:8000/view_status")
+    .get(`${BASE_URL}/view_status`)
     .then((response) => response.data);
 }
 
@@ -557,7 +560,7 @@ export function addItemReturnApi(i_return) {
   const isoDate = currentDate.toISOString();
 
   return axios
-    .post("http://127.0.0.1:8000/add_itemreturn", {
+    .post(`${BASE_URL}/add_itemreturn`, {
       entry_no: null,
       c_id: i_return.c_id,
       receipt_date: isoDate,
@@ -572,7 +575,7 @@ export function addProductReqApi(product) {
   const currentDate = new Date().toISOString().split("T")[0];
 
   return axios
-    .post("http://127.0.0.1:8000/addProduct_request", {
+    .post(`${BASE_URL}/addProduct_request`, {
       id: null,
       ItemCode: null,
       ItemType: null,
@@ -588,13 +591,13 @@ export function addProductReqApi(product) {
 
 export function getProductReqApi() {
   return axios
-    .get("http://127.0.0.1:8000/viewProduct_request")
+    .get(`${BASE_URL}/viewProduct_request`)
     .then((response) => response.data);
 }
 
 export async function updateProductApi(enNo, product) {
   return axios
-    .put(`http://127.0.0.1:8000/updateProduct_request/${enNo}`, {
+    .put(`${BASE_URL}/updateProduct_request/${enNo}`, {
       ItemCode: product.ItemCode,
       ItemType: product.ItemType,
       ItemName: product.ItemName,
@@ -611,7 +614,7 @@ export async function updateProductApi(enNo, product) {
 
 export function getViewEntryApi() {
   return axios
-    .get("http://127.0.0.1:8000/view_entry")
+    .get(`${BASE_URL}/view_entry`)
     .then((response) => response.data);
 }
 
@@ -619,7 +622,7 @@ export function getViewEntryApi() {
 
 export function getDistinctRoleApi() {
   return axios
-    .get("http://127.0.0.1:8000/view_distinct_role/")
+    .get(`${BASE_URL}/view_distinct_role/`)
     .then((response) => response.data);
 }
 
@@ -627,7 +630,7 @@ export function getDistinctRoleApi() {
 
 export function addLabMasterApi(lab) {
   return axios
-    .post("http://127.0.0.1:8000/master_inventory/create/", {
+    .post(`${BASE_URL}/master_inventory/create/`, {
       c_id: null,
       master_type: lab.master_type,
       item_code: lab.item_code,
@@ -647,7 +650,7 @@ export function addLabMasterApi(lab) {
 
 export async function updateLAbMasterApi(c_id, master) {
   return axios
-    .put(`http://127.0.0.1:8000/master_inventory/update/${c_id}/`, {
+    .put(`${BASE_URL}/master_inventory/update/${c_id}/`, {
       master_type: master.master_type,
       item_code: master.item_code,
       item_name: master.item_name,
@@ -664,35 +667,35 @@ export async function updateLAbMasterApi(c_id, master) {
 
 export function getLabMasterApi() {
   return axios
-    .get("http://127.0.0.1:8000/masters/")
+    .get(`${BASE_URL}/masters/`)
     .then((response) => response.data);
 }
 
 export function getMasterChemicalApi() {
   return axios
-    .get("http://127.0.0.1:8000/masters/chemical")
+    .get(`${BASE_URL}/masters/chemical`)
     .then((response) => response.data);
 }
 
 export function getMasterLabwareApi() {
   return axios
-    .get("http://127.0.0.1:8000/masters/labware")
+    .get(`${BASE_URL}/masters/labware`)
     .then((response) => response.data);
 }
 export function getMasterEquipmentApi() {
   return axios
-    .get("http://127.0.0.1:8000/masters/equipment")
+    .get(`${BASE_URL}/masters/equipment`)
     .then((response) => response.data);
 }
 export function getChemicalDescApi() {
   return axios
-    .get("http://127.0.0.1:8000/master/chemical/desc/")
+    .get(`${BASE_URL}/master/chemical/desc/`)
     .then((response) => response.data);
 }
 
 export function getLabwareDescApi() {
   return axios
-    .get("http://127.0.0.1:8000/master/labware/desc/")
+    .get(`${BASE_URL}/master/labware/desc/`)
     .then((response) => response.data);
 }
 
@@ -700,7 +703,7 @@ export function getLabwareDescApi() {
 
 export function addTempToReceiveApi() {
   return axios
-    .get("http://127.0.0.1:8000/add_itemreceive")
+    .get(`${BASE_URL}/add_itemreceive`)
     .then((response) => response.data)
     .catch((error) => {
       throw error; // Rethrow the error to handle it in the caller function
@@ -709,7 +712,7 @@ export function addTempToReceiveApi() {
 
 export function addTempToIssueApi() {
   return axios
-    .post("http://127.0.0.1:8000/add_itemissue")
+    .post(`${BASE_URL}/add_itemissue`)
     .then((response) => response.data)
     .catch((error) => {
       throw error; // Rethrow the error to handle it in the caller function
@@ -718,27 +721,27 @@ export function addTempToIssueApi() {
 
 export function getTempReceiveApi() {
   return axios
-    .get("http://127.0.0.1:8000/temp_receive")
+    .get(`${BASE_URL}/temp_receive`)
     .then((response) => response.data);
 }
 
 export function getTempIssueApi() {
   return (
     axios
-      // .get("http://127.0.0.1:8000/get-issue-items/")
-      .get(`${API_BASE_URL}/get-issue-items?status=LAB-OPEN`)
+      // .get("${BASE_URL}/get-issue-items/")
+      .get(`${BASE_URL}/get-issue-items?status=LAB-OPEN`)
       .then((response) => response.data)
   );
 }
 export function getTempReturnApi() {
   return axios
-    .get("http://127.0.0.1:8000/temp_return")
+    .get(`${BASE_URL}/temp_return`)
     .then((response) => response.data);
 }
 
 export function addItemReceiveApi(data) {
   return axios
-    .post("http://127.0.0.1:8000/add_itemreceive1", data)
+    .post(`${BASE_URL}/add_itemreceive1`, data)
     .then((response) => response.data)
     .catch((error) => {
       throw error; // Rethrow the error to handle it in the caller function
@@ -747,7 +750,7 @@ export function addItemReceiveApi(data) {
 
 export function addItemIssueApi(data) {
   return axios
-    .post("http://127.0.0.1:8000/add_itemissue1", data)
+    .post(`${BASE_URL}/add_itemissue1`, data)
     .then((response) => response.data)
     .catch((error) => {
       throw error; // Rethrow the error to handle it in the caller function
@@ -758,14 +761,14 @@ export function addItemIssueApi(data) {
 
 export function getItemReceiveApi() {
   return axios
-    .get("http://127.0.0.1:8000/itemreceive/")
+    .get(`${BASE_URL}/itemreceive/`)
     .then((response) => response.data);
 }
 
 export function addTempItemReceiveApi(receive) {
   const currentDate = new Date().toISOString();
   return axios
-    .post("http://127.0.0.1:8000/add_temp_receive_item", {
+    .post(`${BASE_URL}/add_temp_receive_item`, {
       entry_no: null,
       bill_no: receive.bill_no,
       c_id: receive.c_id,
@@ -798,7 +801,7 @@ export function addTempItemReceiveApi(receive) {
 
 export function getItemIssueApi() {
   return axios
-    .get("http://127.0.0.1:8000/api/issue_data/")
+    .get(`${BASE_URL}/api/issue_data/`)
     .then((response) => response.data);
 }
 
@@ -806,7 +809,7 @@ export function addTempItemIssueApi(receive) {
   const currentDate = new Date().toISOString();
   console.log("-----------" + receive);
   return axios
-    .post("http://127.0.0.1:8000/add_issue_item", {
+    .post(`${BASE_URL}/add_issue_item`, {
       entry_no: null,
       bill_no: receive.bill_no,
       c_id: receive.c_id,
@@ -835,7 +838,7 @@ export function addTempItemReturnApi(receive) {
   const currentDate = new Date().toISOString();
 
   return axios
-    .post("http://127.0.0.1:8000/add_temp_return_item", {
+    .post(`${BASE_URL}/add_temp_return_item`, {
       entry_no: null,
       bill_no: receive.bill_no,
       c_id: receive.c_id,
@@ -848,7 +851,7 @@ export function addTempItemReturnApi(receive) {
 // -----------------------------Add Master table----------------------
 export const addLabApi = async (labName) => {
   try {
-    const response = await axios.post(`http://127.0.0.1:8000/lab-add/`, {
+    const response = await axios.post(`${BASE_URL}/lab-add/`, {
       name: labName,
     });
     return response.data;
@@ -861,7 +864,7 @@ export const addLabApi = async (labName) => {
 export const addDesignationApi = async (designationName) => {
   try {
     const response = await axios.post(
-      `http://127.0.0.1:8000/designations-add/`,
+      `${BASE_URL}/designations-add/`,
       { title: designationName }
     );
     return response.data;
@@ -872,7 +875,7 @@ export const addDesignationApi = async (designationName) => {
 
 export const fetchLabDataApi = async () => {
   try {
-    const response = await axios.get(`http://127.0.0.1:8000/labs/`);
+    const response = await axios.get(`${BASE_URL}/labs/`);
     return response.data; // Assuming the API returns an array of lab data
   } catch (error) {
     console.error("Error fetching lab data:", error);
@@ -880,11 +883,11 @@ export const fetchLabDataApi = async () => {
   }
 };
 export const getLabsApi = () => {
-  return axios.get("http://127.0.0.1:8000/labs/"); // Replace with your actual API endpoint
+  return axios.get(`${BASE_URL}/labs/`); // Replace with your actual API endpoint
 };
 
 export const getDesignationsApi = () => {
-  return axios.get("http://127.0.0.1:8000/designations/"); // Replace with your actual API endpoint
+  return axios.get(`${BASE_URL}/designations/`); // Replace with your actual API endpoint
 };
 
 // API to add a lab
@@ -893,7 +896,7 @@ export const getDesignationsApi = () => {
 export const deleteLabApi = async (labId) => {
   try {
     const response = await axios.delete(
-      `${API_BASE_URL}/labs/${labId}/delete/`
+      `${BASE_URL}/labs/${labId}/delete/`
     );
     return response.data;
   } catch (error) {
@@ -906,7 +909,7 @@ export const deleteLabApi = async (labId) => {
 export const deleteDesignationApi = async (designationId) => {
   try {
     const response = await axios.delete(
-      `${API_BASE_URL}/designations/${designationId}/delete/`
+      `${BASE_URL}/designations/${designationId}/delete/`
     );
     return response.data;
   } catch (error) {
@@ -918,7 +921,7 @@ export const deleteDesignationApi = async (designationId) => {
 
 export const updateLabApi = async (labId, labName) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}labs/${labId}/`, {
+    const response = await axios.put(`${BASE_URL}labs/${labId}/`, {
       name: labName,
     });
     return response.data;
@@ -931,7 +934,7 @@ export const updateLabApi = async (labId, labName) => {
 export const updateDesignationApi = async (designationId, designationName) => {
   try {
     const response = await axios.put(
-      `${API_BASE_URL}designations/${designationId}/`,
+      `${BASE_URL}designations/${designationId}/`,
       {
         name: designationName,
       }
@@ -946,7 +949,7 @@ export const updateDesignationApi = async (designationId, designationName) => {
 
 // const fetchRole = async (roleId) => {
 //   try {
-//     const response = await axios.get(`${API_BASE_URL}/roles/${roleId}/`);
+//     const response = await axios.get(`${BASE_URL}/roles/${roleId}/`);
 //     console.log(response.data); // Handle the role data
 //   } catch (error) {
 //     console.error(error.response?.data || "An error occurred");
@@ -979,7 +982,7 @@ export const deleteRegistration = async (id) => {
 };
 // export const fetchUsernames = async (selectedLab, selectedRole) => {
 //   try {
-//     const response = await axios.get("http://127.0.0.1:8000/usernames/");
+//     const response = await axios.get("${BASE_URL}/usernames/");
 
 //     // Filter users based on selected lab and role
 //     const filteredUsernames = response.data.filter(
@@ -995,7 +998,7 @@ export const deleteRegistration = async (id) => {
 
 export const fetchUsernames = async (selectedLab, selectedRole) => {
   try {
-    const response = await axios.get("http://127.0.0.1:8000/usernames/");
+    const response = await axios.get(`${BASE_URL}/usernames/`);
 
     // Filter users based on selected lab and role
     const filteredUsernames = response.data.filter(
@@ -1004,19 +1007,19 @@ export const fetchUsernames = async (selectedLab, selectedRole) => {
 
     return filteredUsernames.map((user) => user.username);
   } catch (error) {
-    console.error("Error fetching usernames:", error);
+    console.error(`Error fetching usernames:`, error);
     return [];
   }
 };
 
 export const createUnit = async (unitName) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/unit/`, {
+    const response = await axios.post(`${BASE_URL}/unit/`, {
       unit_measure: unitName,
     });
     return response.data;
   } catch (error) {
-    console.error("Error creating unit:", error);
+    console.error(`Error creating unit:`, error);
     throw error;
   }
 };
@@ -1024,7 +1027,7 @@ export const createUnit = async (unitName) => {
 // Create Location Code
 // export const createLocationCode = async (locationCode) => {
 //   try {
-//     const response = await axios.post(`${API_BASE_URL}/location-code/`, {
+//     const response = await axios.post(`${BASE_URL}/location-code/`, {
 //       location: locationCode,
 //     });
 //     return response.data;
@@ -1036,7 +1039,7 @@ export const createUnit = async (unitName) => {
 export const createLocationCode = async (locationCode, username) => {
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/location-code/?username=${username}`,
+      `${BASE_URL}/location-code/?username=${username}`,
       {
         location: locationCode,
       }
@@ -1051,7 +1054,7 @@ export const createLocationCode = async (locationCode, username) => {
 //masterType
 export const createMasterType = async (masterype) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/api/master_type/`, {
+    const response = await axios.post(`${BASE_URL}/api/master_type/`, {
       name: masterype,
     });
     return response.data;
@@ -1063,7 +1066,7 @@ export const createMasterType = async (masterype) => {
 // Create Manufacturer
 // export const createManufacturer = async (manufacturerName) => {
 //   try {
-//     const response = await axios.post(`${API_BASE_URL}/manufacturer/`, {
+//     const response = await axios.post(`${BASE_URL}/manufacturer/`, {
 //       manufacturer: manufacturerName,
 //     });
 //     return response.data;
@@ -1076,7 +1079,7 @@ export const createMasterType = async (masterype) => {
 export const createManufacturer = async (manufacturerName, username) => {
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/manufacturer/?username=${username}`,
+      `${BASE_URL}/manufacturer/?username=${username}`,
       {
         manufacturer: manufacturerName,
       }
@@ -1092,7 +1095,7 @@ export const createManufacturer = async (manufacturerName, username) => {
 export const createSupplier = async (supplierName, username) => {
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/supplier/?username=${username}`,
+      `${BASE_URL}/supplier/?username=${username}`,
       {
         supplier: supplierName,
       }
@@ -1106,7 +1109,7 @@ export const createSupplier = async (supplierName, username) => {
 // Create Supplier
 // export const createSupplier = async (supplierName) => {
 //   try {
-//     const response = await axios.post(`${API_BASE_URL}/supplier/`, {
+//     const response = await axios.post(`${BASE_URL}/supplier/`, {
 //       supplier: supplierName,
 //     });
 //     return response.data;
@@ -1117,7 +1120,7 @@ export const createSupplier = async (supplierName, username) => {
 // };
 export const getMastertyApi = async () => {
   try {
-    const response = await axios.get("http://127.0.0.1:8000/master-types/");
+    const response = await axios.get(`${BASE_URL}/master-types/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching Master:", error);
@@ -1127,7 +1130,7 @@ export const getMastertyApi = async () => {
 
 // export const getSuppliersApi = async () => {
 //   try {
-//     const response = await axios.get("http://127.0.0.1:8000/suppliers/");
+//     const response = await axios.get("${BASE_URL}/suppliers/");
 //     return response.data;
 //   } catch (error) {
 //     console.error("Error fetching suppliers:", error);
@@ -1138,7 +1141,7 @@ export const getMastertyApi = async () => {
 export const getSuppliersApi = async (username) => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/suppliers/?username=${username}`
+      `${BASE_URL}/suppliers/?username=${username}`
     );
     return response.data;
   } catch (error) {
@@ -1149,7 +1152,7 @@ export const getSuppliersApi = async (username) => {
 
 export const getUnitsApi = async () => {
   try {
-    const response = await axios.get("http://127.0.0.1:8000/units/");
+    const response = await axios.get(`${BASE_URL}/units/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching units:", error);
@@ -1159,7 +1162,7 @@ export const getUnitsApi = async () => {
 
 // export const getLocationsApi = async () => {
 //   try {
-//     const response = await axios.get("http://127.0.0.1:8000/locations-code/");
+//     const response = await axios.get("${BASE_URL}/locations-code/");
 //     return response.data;
 //   } catch (error) {
 //     console.error("Error fetching locations:", error);
@@ -1170,7 +1173,7 @@ export const getUnitsApi = async () => {
 export const getLocationsApi = async (username) => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/locations-code/?username=${username}`
+      `${BASE_URL}/locations-code/?username=${username}`
     );
     return response.data;
   } catch (error) {
@@ -1181,7 +1184,7 @@ export const getLocationsApi = async (username) => {
 
 // export const getManufacturersApi = async () => {
 //   try {
-//     const response = await axios.get("http://127.0.0.1:8000/manufacturers/");
+//     const response = await axios.get("${BASE_URL}/manufacturers/");
 //     return response.data; // Assuming the response is an array of manufacturers
 //   } catch (error) {
 //     console.error("Error fetching manufacturers:", error);
@@ -1194,7 +1197,7 @@ export const getLocationsApi = async (username) => {
 export const getManufacturersApi = async (username) => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/manufacturers/?username=${username}`
+      `${BASE_URL}/manufacturers/?username=${username}`
     );
     return response.data; // Assuming the response is an array of manufacturers
   } catch (error) {
@@ -1206,7 +1209,7 @@ export const getManufacturersApi = async (username) => {
 export const deleteTempIssueApi = async (entry_no) => {
   try {
     const response = await axios.delete(
-      `http://127.0.0.1:8000/temp_issue/delete/${entry_no}/`
+      `${BASE_URL}/temp_issue/delete/${entry_no}/`
     );
 
     return response.data;
@@ -1220,7 +1223,7 @@ export const deleteTempIssueApi = async (entry_no) => {
 
 export function updateTempIssueApi(entry_no, updatedData) {
   return axios
-    .put(`http://127.0.0.1:8000/temp_issue/update/${entry_no}/`, updatedData) // Use entry_no instead of bill_no
+    .put(`${BASE_URL}/temp_issue/update/${entry_no}/`, updatedData) // Use entry_no instead of bill_no
 
     .then((response) => response.data)
     .catch((error) => {
@@ -1231,7 +1234,7 @@ export function updateTempIssueApi(entry_no, updatedData) {
 
 export function updateTempReceiveApi(billNo, updatedData) {
   return axios
-    .put(`http://127.0.0.1:8000/temp-receive/update/${billNo}/`, updatedData)
+    .put(`${BASE_URL}/temp-receive/update/${billNo}/`, updatedData)
     .then((response) => response.data)
     .catch((error) => {
       console.error("Error updating item:", error);
@@ -1242,7 +1245,7 @@ export function updateTempReceiveApi(billNo, updatedData) {
 /** ❌ DELETE: Delete a temp receive record */
 export function deleteTempReceiveApi(billNo) {
   return axios
-    .delete(`http://127.0.0.1:8000/temp-receive/delete/${billNo}/`)
+    .delete(`${BASE_URL}/temp-receive/delete/${billNo}/`)
     .then((response) => response.data)
     .catch((error) => {
       console.error("Error deleting item:", error);
@@ -1252,7 +1255,7 @@ export function deleteTempReceiveApi(billNo) {
 
 export const getIssuesByResearcher = async (researcherName) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/get_issues_by_researcher/`, {
+    const response = await axios.get(`${BASE_URL}/get_issues_by_researcher/`, {
       params: { issued_to: researcherName }, // Ensure correct researcher is passed
     });
     return response.data;
@@ -1266,7 +1269,7 @@ export function addIssueResearcherApi(receive) {
   const currentDate = new Date().toISOString();
 
   return axios
-    .post("http://127.0.0.1:8000/add_issue_item", {
+    .post(`${BASE_URL}/add_issue_item`, {
       entry_no: null,
       // bill_no: receive.bill_no,
       c_id: receive.c_id,
@@ -1293,13 +1296,13 @@ export function addIssueResearcherApi(receive) {
 
 export function getmanagerEmployeeApi(userDetails) {
   return axios
-    .get(`http://127.0.0.1:8000/managerEmpName/?lab=${userDetails}`)
+    .get(`${BASE_URL}/managerEmpName/?lab=${userDetails}`)
     .then((response) => response.data);
 }
 
 export function getLabassistantEmployeeApi() {
   return axios
-    .get("http://127.0.0.1:8000/lab-assistants/")
+    .get(`${BASE_URL}/lab-assistants/`)
     .then((response) => response.data);
 }
 export const fetchMasterListByType = async (masterType, lab = null) => {
@@ -1310,9 +1313,9 @@ export const fetchMasterListByType = async (masterType, lab = null) => {
     }
     
     console.log("🌐 [API] fetchMasterListByType called with:", { masterType, lab, params });
-    console.log("🌐 [API] Making request to:", `${API_BASE_URL}/api/master-list-by-type/`);
+    console.log("🌐 [API] Making request to:", `${BASE_URL}/api/master-list-by-type/`);
     
-    const response = await axios.get(`${API_BASE_URL}/api/master-list-by-type/`, {
+    const response = await axios.get(`${BASE_URL}/api/master-list-by-type/`, {
       params: params,
     });
     
@@ -1328,7 +1331,7 @@ export const fetchItemExpiryDates = async (itemCode) => {
   try {
     console.log("🌐 [API] fetchItemExpiryDates called with itemCode:", itemCode);
     
-    const response = await axios.get(`${API_BASE_URL}/api/item-expiry-dates/`, {
+    const response = await axios.get(`${BASE_URL}/api/item-expiry-dates/`, {
       params: { item_code: itemCode },
     });
     
@@ -1344,7 +1347,7 @@ export const fetchItemLocations = async (itemCode) => {
   try {
     console.log("🌐 [API] fetchItemLocations called with itemCode:", itemCode);
     
-    const response = await axios.get(`${API_BASE_URL}/api/item-locations/`, {
+    const response = await axios.get(`${BASE_URL}/api/item-locations/`, {
       params: { item_code: itemCode },
     });
     
@@ -1362,10 +1365,10 @@ export function getTemptReceiveApi(lab = null) {
   }
   
   console.log("🌐 [API] getTemptReceiveApi called with:", { lab, params });
-  console.log("🌐 [API] Making request to:", "http://127.0.0.1:8000/api/inventoryReceive/");
+  console.log("🌐 [API] Making request to:", `${BASE_URL}/api/inventoryReceive/`);
   
   return axios
-    .get("http://127.0.0.1:8000/api/inventoryReceive/", { params })
+    .get(`${BASE_URL}/api/inventoryReceive/`, { params })
     .then((response) => {
       console.log("🌐 [API] getTemptReceiveApi response:", response.data);
       return response.data;
@@ -1379,7 +1382,7 @@ export function getTemptReceiveApi(lab = null) {
 export const createEquipmentDetails = async (equipmentData) => {
   try {
     const response = await axios.post(
-      `http://127.0.0.1:8000/equipment-details/`,
+      `${BASE_URL}/equipment-details/`,
       equipmentData,
       {
         headers: {
@@ -1399,17 +1402,17 @@ export const createEquipmentDetails = async (equipmentData) => {
 
 // DNA & Repository
 
-// API_BASE_URL is now imported from config/api.js
+// BASE_URL is now imported from config/api.js
 
 export function getDnaApi() {
-  return axios.get(`${API_BASE_URL}/dna`).then((response) => response.data);
+  return axios.get(`${BASE_URL}/dna`).then((response) => response.data);
 }
 
 export function addDnaApi(dna) {
   const currentDate = new Date().toISOString().split("T")[0];
 
   return axios
-    .post(`${API_BASE_URL}/add_dna`, {
+    .post(`${BASE_URL}/add_dna`, {
       s_no: null,
       ncbi_id: dna.ncbi_id,
       class_name: dna.class_name,
@@ -1429,7 +1432,7 @@ export function addDnaApi(dna) {
 
 export const getPartialApi = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/partials/`);
+    const response = await axios.get(`${BASE_URL}/partials/`);
     return response.data; // This should return the array of partial names
   } catch (error) {
     console.error("Error fetching partial names:", error);
@@ -1439,7 +1442,7 @@ export const getPartialApi = async () => {
 
 export function addPartialApi(partial) {
   return axios
-    .post(`${API_BASE_URL}/partial/`, {
+    .post(`${BASE_URL}/partial/`, {
       code: null,
       partial_name: partial.partial_name,
     })
@@ -1452,7 +1455,7 @@ export function addPartialApi(partial) {
 
 //   try {
 //     const response = await axios.post(
-//       `${API_BASE_URL}/upload_and_compare`,
+//       `${BASE_URL}/upload_and_compare`,
 //       formData,
 //       {
 //         headers: {
@@ -1482,7 +1485,7 @@ export const uploadAndCompareFile = async (file) => {
 
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/upload_and_compare`,
+      `${BASE_URL}/upload_and_compare`,
       formData,
       {
         headers: {
@@ -1512,7 +1515,7 @@ export const uploadAndCompareFile = async (file) => {
 
 export const fetchDnaData = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/dna`);
+    const response = await axios.get(`${BASE_URL}/dna`);
     return response.data;
   } catch (error) {
     console.error("Error fetching DNA data:", error);
@@ -1523,7 +1526,7 @@ export const fetchDnaData = async () => {
 export const deleteDnaRecord = async (reference_id) => {
   try {
     const response = await axios.delete(
-      `${API_BASE_URL}/delete-dna/${reference_id}/`
+      `${BASE_URL}/delete-dna/${reference_id}/`
     );
     return response.data;
   } catch (error) {
@@ -1536,7 +1539,7 @@ export const runBlast = async (file) => {
   formData.append("queryFile", file);
 
   try {
-    const response = await fetch(`${API_BASE_URL}/run_blast/`, {
+    const response = await fetch(`${BASE_URL}/run_blast/`, {
       // Update to correct backend URL
       method: "POST",
       body: formData,
@@ -1559,7 +1562,7 @@ export const runBlast = async (file) => {
 export const downloadSequences = async () => {
   try {
     const response = await axios({
-      url: `${API_BASE_URL}/download-sequences/`,
+      url: `${BASE_URL}/download-sequences/`,
       method: "GET",
       responseType: "blob",
     });
@@ -1581,7 +1584,7 @@ export const downloadSequences = async () => {
 export const copySequence = async (reference_id) => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/copy-sequence/${reference_id}/`
+      `${BASE_URL}/copy-sequence/${reference_id}/`
     );
     return response.data;
   } catch (error) {
@@ -1596,7 +1599,7 @@ export const copySequence = async (reference_id) => {
 export const downloadSequenceByReference = async (reference_id) => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/download-sequence/ref/${reference_id}/`,
+      `${BASE_URL}/download-sequence/ref/${reference_id}/`,
       {
         responseType: "blob", // Important for handling file downloads
       }
@@ -1618,7 +1621,7 @@ export const downloadSequenceByReference = async (reference_id) => {
 
 export const updateItemStatus = async (entry_no, status) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/update-item-status/`, {
+    const response = await axios.post(`${BASE_URL}/update-item-status/`, {
       entry_no: entry_no,
       status: status,
     });
@@ -1632,7 +1635,7 @@ export const updateItemStatus = async (entry_no, status) => {
 
 // export const getUpdatedIssueApi = async () => {
 //   try {
-//     const response = await axios.get(`${API_BASE_URL}/pending-issues/`);
+//     const response = await axios.get(`${BASE_URL}/pending-issues/`);
 //     return response.data;
 //   } catch (error) {
 //     console.error("Error fetching pending issues:", error);
@@ -1643,8 +1646,8 @@ export const updateItemStatus = async (entry_no, status) => {
 export const getIssueItems = async () => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/get-issue-items?status=RCH-OPEN`
-      // `${API_BASE_URL}/get-issue-items`
+      `${BASE_URL}/get-issue-items?status=RCH-OPEN`
+      // `${BASE_URL}/get-issue-items`
     );
     return response.data; // Returning response data
   } catch (error) {
@@ -1657,7 +1660,7 @@ export const revertStock = async (entry_no) => {
   try {
     console.log("Sending request to revertStock with:", { entry_no });
 
-    const response = await axios.post(`${API_BASE_URL}/revert-stock/`, {
+    const response = await axios.post(`${BASE_URL}/revert-stock/`, {
       entry_no: entry_no,
     });
 
@@ -1677,7 +1680,7 @@ export const revertStock = async (entry_no) => {
 export const getItemReturnsForManager = async (managerId) => {
   try {
     console.log("Fetching data for managerId:", managerId);
-    const response = await axios.get(`${API_BASE_URL}/item_returns/${managerId}/`);
+    const response = await axios.get(`${BASE_URL}/item_returns/${managerId}/`);
     console.log("Response data from API:", response.data);
     return response.data; // Return the fetched data
   } catch (error) {

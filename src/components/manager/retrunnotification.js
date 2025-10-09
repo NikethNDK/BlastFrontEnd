@@ -7,6 +7,7 @@ import { AiOutlineDownload } from "react-icons/ai";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { getItemReturnsForManager } from "../../services/AppinfoService";
 import ManagerNavigation from "../manager/ManagerNavigation";
+import { BASE_URL } from "../../services/AppinfoService";
 
 const ReturnDataTableNotification = ({
   managerId,
@@ -53,7 +54,7 @@ const ReturnDataTableNotification = ({
   const handleStatusUpdate = async (entryNo, status) => {
     try {
       const response = await axios.put(
-        `http://localhost:8000/item_return/approve/${entryNo}/`,
+        `${BASE_URL}/item_return/approve/${entryNo}/`,
         { status }
       );
 

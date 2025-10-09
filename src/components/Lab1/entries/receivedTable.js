@@ -6,6 +6,7 @@ import { Download } from "lucide-react";
 import { AiOutlineDownload } from "react-icons/ai";
 import LabNavigation1 from "../homeLab/LabNavigation1";
 import toast from "react-hot-toast";
+import { BASE_URL } from "../../../services/AppinfoService";
 
 const ReceivedDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -27,7 +28,7 @@ const ReceivedDataTable = ({
   const fetchData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/transfer_data/"
+        `${BASE_URL}/api/transfer_data/`
       );
       setData(response.data);
     } catch (error) {

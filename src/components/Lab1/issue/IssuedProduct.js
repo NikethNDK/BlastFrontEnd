@@ -21,6 +21,7 @@ import "../../inventory/formBorder.css";
 import Select from "react-select";
 import TempIssueTable from "./TempIssueTable";
 import LabNavigation1 from "../homeLab/LabNavigation1";
+import { BASE_URL } from "../../../services/AppinfoService";
 
 const IssuedProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -32,7 +33,7 @@ const IssuedProduct = ({
   const [itemsCodes, setItemsCodes] = useState([]);
   const [itemsNames, setItemsNames] = useState([]);
   const [selectedItemCode, setSelectedItemCode] = useState(null);
-  const [selectedItemDetails, setSelectedItemDetails] = useState(null);
+  const [selectedItemDetails, setSelectedItemDetails] = useState(null); 
   const [selectedItemName, setSelectedItemName] = useState(null);
   const [projectCodes, setProjectCodes] = useState([]);
   const [projectNames, setProjectNames] = useState([]);
@@ -539,7 +540,7 @@ const IssuedProduct = ({
   const handleTransferData = async () => {
     try {
       console.log("🔄 [TRANSFER] Starting data transfer...");
-      const response = await fetch("http://localhost:8000/transfer/issue/", {
+      const response = await fetch(`${BASE_URL}/transfer/issue/`, {
         method: "POST",
       });
 

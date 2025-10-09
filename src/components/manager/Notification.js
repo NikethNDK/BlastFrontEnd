@@ -4,6 +4,7 @@ import { FaCheck, FaTimes } from "react-icons/fa";
 import { getIssueItems } from "../../services/AppinfoService";
 import AdminApprovalModal from "./AdminApproval";
 import ManagerNavigation from "../manager/ManagerNavigation";
+import { BASE_URL } from "../../services/AppinfoService";
 
 const Notification = ({
   no,
@@ -63,7 +64,7 @@ const Notification = ({
       };
 
       const response = await fetch(
-        `http://localhost:8000/update-issue-items/`,
+        `${BASE_URL}/update-issue-items/`,
         {
           method: "PUT",
           headers: {
@@ -97,7 +98,7 @@ const Notification = ({
       };
 
       const response = await fetch(
-        `http://localhost:8000/update-issue-items/`,
+        `${BASE_URL}/update-issue-items/`,
         {
           method: "PUT",
           headers: {

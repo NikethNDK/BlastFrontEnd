@@ -11,6 +11,7 @@ import "../../inventory/formBorder.css";
 import Select from "react-select";
 import TempReceiveTable from "./TempReceiveTable";
 import axios from "axios";
+import { BASE_URL } from "../../../services/AppinfoService";
 
 const ReceivedProduct = () => {
   const [message, setMessage] = useState("");
@@ -223,7 +224,7 @@ const ReceivedProduct = () => {
 
   const handleTransferData = async () => {
     try {
-      const response = await fetch("http://localhost:8000/transfer/receive/", {
+      const response = await fetch(`${BASE_URL}/transfer/receive/`, {
         method: "POST",
       });
 

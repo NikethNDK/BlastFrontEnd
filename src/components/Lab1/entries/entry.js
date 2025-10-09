@@ -7,6 +7,7 @@ import { Download } from "lucide-react";
 import { AiOutlineDownload } from "react-icons/ai";
 import { getmanagerEmployeeApi } from "../../../services/AppinfoService";
 import LabNavigation1 from "../homeLab/LabNavigation1";
+import { BASE_URL } from "../../../services/AppinfoService";
 
 const TransferredDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -42,7 +43,7 @@ const TransferredDataTable = ({
   const fetchData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8000/api/inventoryReceive/"
+        `${BASE_URL}/api/inventoryReceive/`
       );
       console.log("🔍 [FRONTEND] Fetched data:", response.data);
       console.log("🔍 [FRONTEND] Sample item (entry 20):", response.data.find(item => item.entry_no === 20));
@@ -133,7 +134,7 @@ const TransferredDataTable = ({
       }
 
       await axios.put(
-        `http://localhost:8000/update_transfer/${selectedItem.entry_no}/`,
+        `${BASE_URL}/update_transfer/${selectedItem.entry_no}/`,
         {
           quantity_returned: returnQuantity,
           manager_username: selectedManager,

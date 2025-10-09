@@ -43,6 +43,8 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "reactstrap";
+import { BASE_URL } from "../../../services/AppinfoService";
+
 const LabNavigatio = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
@@ -53,7 +55,7 @@ const LabNavigatio = ({
   const fetchDeclinedItems = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8000/get-issue-items/?status=LAB-OPEN"
+        `${BASE_URL}/get-issue-items/?status=LAB-OPEN`
       );
       const data = await response.json();
       if (data) {
@@ -79,7 +81,7 @@ const LabNavigatio = ({
       };
 
       const response = await fetch(
-        `http://localhost:8000/update-issue-items/`,
+        `${BASE_URL}/update-issue-items/`,
         {
           method: "PUT",
           headers: {

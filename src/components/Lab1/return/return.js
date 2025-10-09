@@ -5,6 +5,7 @@ import { addItemIssueApi, getMasterApi, getProjectApi, getResEmployeeApi, addTem
 import '../../inventory/formBorder.css';
 import Select from 'react-select';
 import TempIssueTable from './TempReturnTable';
+import { BASE_URL } from "../../../services/AppinfoService";
 
 const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
     const [message, setMessage] = useState('');
@@ -124,7 +125,7 @@ const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) 
 
     const handleTransferData = async () => {
         try {
-          const response = await fetch('http://localhost:8000/transfer/return/', {
+          const response = await fetch(`${BASE_URL}/transfer/return/`, {
             method: 'POST',
           });
     

@@ -19,6 +19,7 @@ import {
 } from 'reactstrap';
 import Header from '../Lab1/homeLab/Header';
 import "../../blast/BlastSidebar.css"
+import { BASE_URL } from "../../services/AppinfoService";
 
 const UserAvatarIcon = FaUserCircle;
 
@@ -39,7 +40,7 @@ const ResearcherNavigation = ({
   const fetchDeclinedItems = async () => {
     try {
       const response = await fetch(
-        "http://localhost:8000/get-issue-items/?status=MGR-DCL"
+        `${BASE_URL}/get-issue-items/?status=MGR-DCL`
       );
       const data = await response.json();
       if (data) {
@@ -67,7 +68,7 @@ const ResearcherNavigation = ({
       };
 
       const response = await fetch(
-        `http://localhost:8000/update-issue-items/`,
+        `${BASE_URL}/update-issue-items/`,
         {
           method: "PUT",
           headers: {

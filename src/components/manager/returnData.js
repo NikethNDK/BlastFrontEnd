@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { AiOutlineDownload } from "react-icons/ai";
+import { BASE_URL } from "../../services/AppinfoService";
 
 const ReturnDataTable = () => {
   const [data, setData] = useState([]);
@@ -13,7 +14,7 @@ const ReturnDataTable = () => {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/item_return/");
+      const response = await axios.get(`${BASE_URL}/item_return/`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);

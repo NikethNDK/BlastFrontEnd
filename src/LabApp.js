@@ -26,6 +26,7 @@ import ReturnDataTable from "./components/Lab1/entries/return";
 import ChangePassword from "./components/Lab1/homeLab/ChangePassword";
 import JoinLab from "./lab_jump";
 import EquipmentList from "./components/Lab1/homeLab/equipmentList";
+import { BASE_URL } from "./services/AppinfoService";
 
 function Layout({ userDetails }) {
   const location = useLocation();
@@ -42,7 +43,7 @@ function Layout({ userDetails }) {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch("http://localhost:8000/get-issue-items/?status=LAB-OPEN");
+        const response = await fetch(`${BASE_URL}/get-issue-items/?status=LAB-OPEN`);
         const data = await response.json();
         if (data) {
           setNotifications(data);
@@ -97,7 +98,7 @@ function Layout({ userDetails }) {
         status: "LAB-OPEN",
       };
 
-      const response = await fetch("http://localhost:8000/update-issue-items/", {
+      const response = await fetch(`${BASE_URL}/update-issue-items/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

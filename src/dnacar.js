@@ -24,6 +24,7 @@ import EquipmentList from "./components/Lab1/homeLab/equipmentList";
 import "./styles/lab-design-system.css";
 import Header from "./components/Lab1/homeLab/Header";
 import ModernSidebar from "./components/common/ModernSidebar";
+import { BASE_URL } from "./services/AppinfoService";
 
 function Layout({ userDetails }) {
   const [notifications, setNotifications] = useState([]);
@@ -42,7 +43,7 @@ function Layout({ userDetails }) {
         status: "LAB-OPEN",
       };
 
-      const response = await fetch("http://localhost:8000/update-issue-items/", {
+      const response = await fetch(`${BASE_URL}/update-issue-items/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

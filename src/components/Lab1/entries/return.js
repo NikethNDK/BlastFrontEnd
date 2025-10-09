@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import "./TransferredDataTable.css";
 import { AiOutlineDownload } from "react-icons/ai";
 import LabNavigation1 from "../homeLab/LabNavigation1";
+import { BASE_URL } from "../../../services/AppinfoService";
 
 const ReturnDataTable = ({ 
   userDetails = { name: '', lab: '', designation: '' } 
@@ -20,7 +21,7 @@ const ReturnDataTable = ({
 
   const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/item_return/");
+      const response = await axios.get(`${BASE_URL}/item_return/`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
