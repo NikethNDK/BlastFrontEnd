@@ -62,7 +62,7 @@ function Layout({ userId, userDetails }) {
   );
 }
 
-function ManagerApp({ userId, userDetails = { userDetails } }) {
+function ManagerApp({ userId, userDetails = {} }) {
   return (
     <BrowserRouter>
       <Layout userId={userId} userDetails={userDetails} />

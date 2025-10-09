@@ -88,9 +88,9 @@ function Login() {
               if (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab))) {
                 return <ManagerApp userId={userId} userDetails={userDetails}/>;
               } 
-              // else {
-              //   return <ManagerAccessApp userId={userId} userDetails={userDetails}/>;
-              // }
+              else {
+                return <ManagerAccessApp userId={userId} userDetails={userDetails}/>;
+              }
             case "Lab Assistant":
               if (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab))) {
                 return <LabApp userDetails={userDetails}/>;
