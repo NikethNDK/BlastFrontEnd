@@ -143,45 +143,46 @@ const ReceivedFilter = ({ setReceivedCount }) => {
     return "";
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:8000/itemreceive/");
-        const { new_data, all_data } = response.data;
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:8000/itemreceive/");
+      const { new_data, all_data } = response.data;
 
-        setReceive(all_data);
+      setReceive(all_data);
 
-        const freshEntries = new_data.filter(
-          (item) => !seenEntryNos.current.has(item.entry_no)
+      const freshEntries = new_data.filter(
+        (item) => !seenEntryNos.current.has(item.entry_no)
+      );
+
+      if (freshEntries.length > 0) {
+        setReceivedCount(freshEntries.length);
+        
+        // Create new entry set with only fresh entries
+        const newEntrySet = new Set(
+          freshEntries.map((item) => String(item.entry_no))
         );
-
-        if (freshEntries.length > 0) {
-          setReceivedCount(freshEntries.length);
-          freshEntries.forEach((item) =>
-            seenEntryNos.current.add(item.entry_no)
-          );
-        }
-
-        const newEntrySet = new Set([
-          ...newEntries,
-          ...freshEntries.map((item) => String(item.entry_no)),
-        ]);
         setNewEntries(newEntrySet);
 
-        setTimeout(() => {
-          const updated = new Set(newEntrySet);
-          freshEntries.forEach((item) => updated.delete(String(item.entry_no)));
-          setNewEntries(updated);
-        }, 100000);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+        // Add to seen entries
+        freshEntries.forEach((item) =>
+          seenEntryNos.current.add(item.entry_no)
+        );
 
-    fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
-  }, [setReceivedCount, newEntries]);
+        // Clear highlights after 100 seconds
+        setTimeout(() => {
+          setNewEntries(new Set());
+        }, 100000);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  fetchData();
+  const interval = setInterval(fetchData, 10000);
+  return () => clearInterval(interval);
+}, [setReceivedCount]);
 
   return (
     <div style={{ marginTop: "1px", width: "100%" }}>
