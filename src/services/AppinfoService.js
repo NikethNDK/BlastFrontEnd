@@ -2,7 +2,7 @@ import axios from "axios";
 import { API_ENDPOINTS, API_BASE_URL } from "../config/api";
 
 // Base URL for all API calls
-export const BASE_URL = "http://10.0.0.20:8000";
+export const BASE_URL = "http://127.0.0.1:8000";
 
 export function getAppinfo() {
   return axios

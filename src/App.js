@@ -51,7 +51,7 @@ function App() {
         <Route path="/add_blast" element={<Comparision />} />
       </Routes>
       <Toaster 
-        position="top-right"
+        position="top-center"
         toastOptions={{
           duration: 4000,
           style: {

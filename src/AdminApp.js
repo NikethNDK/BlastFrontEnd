@@ -38,7 +38,7 @@ function AdminApp({ userDetails = { name: '', lab: '', designation: '' } }) {
         </Routes>
       </AdminNavigation>
       <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
           duration: 4000,
           style: {

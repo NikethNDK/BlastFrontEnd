@@ -58,18 +58,33 @@ const LabDesignationForm = ({
 
   const handleSubmit = async () => {
     try {
+      // Trim spaces and make comparison case-insensitive
+      const newValue = inputValue.trim().toLowerCase();
+  
+      // Check if the value already exists in the list
+      const isDuplicate = dataList.some(
+        (item) => item.name?.toLowerCase() === newValue
+      );
+  
+      if (isDuplicate) {
+        toast.error(`${selectedOption} already exists!`);
+        setOpenSnackbar(true);
+        return; // Stop execution — don’t add duplicate
+      }
+  
+      // Proceed with API call if not duplicate
       if (selectedOption === "Lab") {
         await addLabApi(inputValue);
       } else if (selectedOption === "Designation") {
         await addDesignationApi(inputValue);
       }
-
-      toast.success("Data saved successfully!");
+  
+      toast.success(`${selectedOption} added successfully!`);
       setOpenSnackbar(true);
       setInputValue("");
-      fetchData(); // Refresh the table after saving
+      fetchData(); // Refresh list after adding
     } catch (error) {
-      toast.error("Fill the field !");
+      toast.error("Fill the field!");
       setOpenSnackbar(true);
     }
   };

@@ -119,17 +119,14 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
     if (searchQuery) {
       const filteredData = dnas.filter((dna) => {
         const lowerCaseQuery = searchQuery.toLowerCase();
-
+  
         return (
           (dna.reference_id &&
             dna.reference_id
               .toString()
               .toLowerCase()
               .includes(lowerCaseQuery)) ||
-          (partialNames.some(
-            (partial) => partial.partial_name === searchQuery
-          ) &&
-            dna.partial_name &&
+          (dna.partial_name &&
             dna.partial_name.toLowerCase().includes(lowerCaseQuery)) ||
           (dna.common_name &&
             dna.common_name.toLowerCase().includes(lowerCaseQuery)) ||
@@ -137,12 +134,12 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
             dna.scientific_name.toLowerCase().includes(lowerCaseQuery))
         );
       });
-
+  
       setFilteredDnas(filteredData);
     } else {
       setFilteredDnas(dnas);
     }
-  }, [searchQuery, dnas, partialNames]);
+  }, [searchQuery, dnas]);
 
   const handlePartialNameClick = (name) => {
     setSearchQuery(name);
@@ -185,6 +182,8 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
   };
   
   const navigate = useNavigate();
+
+  console.log("dnas", dnas);
   
   return (
     <div className="dna-manage-container">
@@ -211,27 +210,12 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
               type="text"
               value={searchQuery}
               className="form-control search-input"
-              placeholder="Scientific or Common name.."
+              placeholder="Gene Name or Scientific or Common name.."
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           
           <div className="dna-manage-controls">
-            {/* <div className="partial-names-container">
-              {partialNames && partialNames.length > 0 ? (
-                partialNames.map((name, index) => (
-                  <button
-                    key={index}
-                    className="btn btn-outline-primary partial-name-button"
-                    onClick={() => handlePartialNameClick(name.partial_name)}
-                  >
-                    {name.partial_name}
-                  </button>
-                ))
-              ) : (
-                <span className="no-partial-names-message">No partial names available</span>
-              )}
-            </div> */}
             <div className="unique-names-counter">
               Total Unique Scientific Names:{" "}
               {new Set(filteredDnas.map((dna) => dna.scientific_name)).size}

@@ -4,6 +4,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  overflow-y: auto; /* Changed from hidden to auto */
 }
 
 .register-wrapper {
@@ -16,7 +19,7 @@
   border: 1px solid #dee2e6;
   border-radius: 0.5rem;
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible */
 }
 
 /* Header Section */
@@ -46,7 +49,8 @@
 }
 
 .form-group-register {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem; /* Increased for better spacing */
+  position: relative; /* Added for proper z-index stacking */
 }
 
 .form-label-register {
@@ -81,7 +85,7 @@
 .form-select-register:focus {
   outline: 0;
   border-color: #c5ea31;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(197, 234, 49, 0.25);
 }
 
 .form-input-register::placeholder {
@@ -154,7 +158,7 @@
   background-color: #eff7d2;
   border-color: #eff7d2;
   transform: translateY(-1px);
-  box-shadow: 0 0.25rem 0.5rem #eff7d2;
+  box-shadow: 0 0.25rem 0.5rem rgba(197, 234, 49, 0.3);
 }
 
 .register-btn:active {
@@ -163,10 +167,15 @@
 
 .register-btn:focus {
   outline: 0;
-  box-shadow: 0 0 0 0.2rem #c5ea31;
+  box-shadow: 0 0 0 0.2rem rgba(197, 234, 49, 0.5);
 }
 
-/* React Select Custom Styling */
+/* React Select Custom Styling - FIXED */
+.basic-multi-select {
+  position: relative;
+  z-index: 10; /* Added z-index */
+}
+
 .basic-multi-select .select__control {
   min-height: 38px;
   font-size: 0.875rem;
@@ -179,6 +188,15 @@
 .basic-multi-select .select__control--is-focused {
   border-color: #80bdff;
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.basic-multi-select .select__menu {
+  z-index: 100; /* Ensures dropdown appears above other elements */
+  max-height: 300px; /* Added max height */
+}
+
+.basic-multi-select .select__menu-list {
+  max-height: 250px; /* Added max height for scrollable list */
 }
 
 .basic-multi-select .select__placeholder {

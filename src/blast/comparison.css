@@ -236,7 +236,8 @@
     margin-top: 25px;
     border: 2px solid var(--color-border-strong); /* Stronger outer border */
     border-radius: 10px; /* Slightly more rounded corners */
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: auto;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* More pronounced shadow for depth */
     background-color: white;
 }
@@ -253,6 +254,7 @@
     font-size: var(--font-size-base);
     table-layout: auto;
     min-width: 1200px;
+    min-width: 1400px;
 }
 
 /* --- Table Header (More Attractive & Readable) --- */
@@ -288,17 +290,17 @@
     padding: 10px 8px;
     border: 1px solid #e9e9e9; /* Light inner borders for less distraction */
     font-size: var(--font-size-base);
-    white-space: nowrap; 
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 120px;
-    height: 45px; /* Increase row height for comfort */
+    white-space: normal; 
+    overflow: visible !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    min-height: 45px !important; /* Increase row height for comfort */
     color: var(--color-text-dark); /* Ensure text is dark and highly readable */
 }
 
 /* Specific styling for long text columns (Taxonomy) */
 .taxonomy-cell {
-    max-width: 220px;
     white-space: normal;
     text-align: left;
     padding-left: 15px; /* Extra padding for titles */
@@ -309,7 +311,6 @@
     text-align: right;
     font-family: 'Georgia', serif; /* Use a classic serif font for numbers */
     font-weight: 600;
-    max-width: 100px;
     color: #34495e; /* Slightly different color for numeric data */
 }
 

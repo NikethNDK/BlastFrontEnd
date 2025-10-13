@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/blast.css";
+// import "../styles/blast.css";
 import { FiEye, FiCopy, FiDownload, FiTrash } from "react-icons/fi";
 import leftLogo from "../assets/elephant.png";
 import rightLogo from "../assets/logo.jpg";
@@ -237,6 +237,7 @@ const Blast = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
                     {/* Headers are static and don't require inline filters */}
                     <th className="table-header">Query ID</th>
                     <th className="table-header">AIWC Reference ID</th>
+                    <th className="table-header">Gene Name</th>
                     <th className="table-header">Identity (%)</th>
                     <th className="table-header">Query Coverage (%)</th>
                     <th className="table-header">Length</th>
@@ -261,6 +262,7 @@ const Blast = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
                         {/* Example structure assuming 'row' is an array [queryId, refId, identity, ...] */}
                         <td className="table-cell">{row[0]}</td> 
                         <td className="table-cell">{row[1]}</td> 
+                        <td className="table-cell">{row[0].split('_').pop()}</td> 
                         <td className="table-cell number-cell">{row[2]}</td>
                         <td className="table-cell number-cell">{row[3]}</td>
                         <td className="table-cell number-cell">{row[4]}</td>

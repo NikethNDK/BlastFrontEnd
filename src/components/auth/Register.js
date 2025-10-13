@@ -258,6 +258,8 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                 className="basic-multi-select"
                 classNamePrefix="select"
                 placeholder="Select labs..."
+                menuPosition="fixed"
+                menuPlacement="auto"
               />
             </div>
 

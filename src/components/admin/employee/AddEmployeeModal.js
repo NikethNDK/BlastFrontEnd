@@ -85,6 +85,11 @@ const AssignProjectModal = (props) => {
       .then(() => {
         toast.success("Employee added successfully");
         props.setUpdated(true);
+        props.onHide();
+        setEmpId("");
+        setSelectedLab("");
+        setSelectedRole("");
+        setSelectedProjects([]);
       })
       .catch((error) => {
         console.error("Employee ID already exist", error);

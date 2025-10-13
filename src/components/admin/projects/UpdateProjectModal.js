@@ -5,6 +5,7 @@ import { updateProjectApi } from '../../../services/AppinfoService';
 import toast from 'react-hot-toast';
 
 const UpdateProjectModal = (props) => {
+    console.log('props', props);
     const handleSubmit = async (e) => {
         e.preventDefault();
       
@@ -15,7 +16,7 @@ const UpdateProjectModal = (props) => {
         };
       
         try {
-          const result = await updateProjectApi(props.project.project_code, projectData);
+          const result = await updateProjectApi(props.editProjects.project_code, projectData);
           toast.success(result);
           props.setUpdated(true);
         } catch (error) {
@@ -46,7 +47,7 @@ const UpdateProjectModal = (props) => {
                                 <Form onSubmit={handleSubmit}>
                  <Form.Group controlId="projectName">
                   <Form.Label>Project Name.</Form.Label>
-                  <Form.Control type="text" name="projectName" required defaultValue={props.project?.project_name || ''} placeholder="" style={{ border: '1px solid black' }} />
+                  <Form.Control type="text" name="projectName" required defaultValue={props.editProjects?.project_name || ''} placeholder="" style={{ border: '1px solid black' }} />
                 </Form.Group>
                 <Form.Group>
                   <p></p>

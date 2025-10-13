@@ -34,6 +34,16 @@ const AddProduct = ({
 
   const [errorMessages, setErrorMessages] = useState({});
 
+  // Function to fetch master types
+  const fetchMasterTypes = async () => {
+    try {
+      const data = await getMastertyApi();
+      setMasterTypes(data);
+    } catch (error) {
+      console.error("Error fetching Master Types:", error);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!selectedCategory || !inputValue) {
       toast.error("Please select a category and enter a value.");
@@ -49,6 +59,8 @@ const AddProduct = ({
         await createSupplier(inputValue, userDetails.name);
       } else if (selectedCategory === "Master") {
         await createMasterType(inputValue);
+        // Refresh master types list after adding new master type
+        await fetchMasterTypes();
       }
 
       setData((prev) => ({
@@ -114,14 +126,6 @@ const AddProduct = ({
   };
 
   useEffect(() => {
-    const fetchMasterTypes = async () => {
-      try {
-        const data = await getMastertyApi();
-        setMasterTypes(data);
-      } catch (error) {
-        console.error("Error fetching Master Types:", error);
-      }
-    };
     fetchMasterTypes();
   }, []);
 

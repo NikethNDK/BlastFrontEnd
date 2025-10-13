@@ -6,25 +6,6 @@ import toast from "react-hot-toast";
 
 const AddProjectModal = (props) => {
   const [showModal, setShowModal] = useState(false);
-  //   const handleSubmit = (e) => {
-  //     e.preventDefault();
-
-  //     const formData = new FormData(e.target);
-
-  //     const projectData = {
-  //       project_name: formData.get("projectName"),
-  //     };
-
-  //     addProjectApi(projectData)
-  //       .then((result) => {
-  //         window.alert("Data added successfully");
-  //         props.setUpdated(true);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Failed to Add Project Data", error); // Log the error to the console
-  //         alert("Failed to Add Project. Check console for details.");
-  //       });
-  //   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -39,7 +20,9 @@ const AddProjectModal = (props) => {
       .then((result) => {
         toast.success("Project added successfully");
         setShowModal(false);
-        props.setUpdated(true);
+        // Toggle the updated state to trigger refetch
+        props.setUpdated((prev) => !prev);
+        props.onHide();
       })
       .catch((error) => {
         console.error("Failed to Add Project Data", error);
@@ -96,12 +79,11 @@ const AddProjectModal = (props) => {
                   <Button
                     variant="primary"
                     type="submit"
-                    onClick={props.onHide}
                     style={{ marginRight: "8px" }}
                   >
                     Add
                   </Button>
-                  <Button variant="danger" type="submit" onClick={props.onHide}>
+                  <Button variant="danger" type="button" onClick={props.onHide}>
                     Cancel
                   </Button>
                 </Form.Group>

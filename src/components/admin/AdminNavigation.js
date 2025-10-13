@@ -23,7 +23,7 @@ const AdminNavigation = ({ children }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    window.location.href = '/Logout';
+    window.location.href = '/';
   };
 
   return (
