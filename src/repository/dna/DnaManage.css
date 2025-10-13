@@ -161,6 +161,60 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
+
+/* Gene Filter Buttons */
+.gene-filter-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-weight: 600;
+  color: #333;
+  margin-right: 5px;
+}
+
+.gene-filter-btn {
+  padding: 8px 20px;
+  border: 2px solid #C5EA31;
+  background-color: #fff;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.gene-filter-btn:hover {
+  background-color: #C5EA31;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.gene-filter-btn.active {
+  background-color: #C5EA31;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
+}
+
+.gene-filter-btn.clear-btn {
+  border-color: #6c757d;
+  color: #6c757d;
+}
+
+.gene-filter-btn.clear-btn:hover {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.gene-filter-btn:active {
+  transform: translateY(0);
+}
+
 /* Table Section */
 .dna-manage-table-section {
   width: 100%;

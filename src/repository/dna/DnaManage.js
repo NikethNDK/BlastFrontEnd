@@ -214,6 +214,40 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+
+          <div className="gene-filter-buttons">
+            <span className="filter-label">Quick Filter:</span>
+            <button
+              className={`gene-filter-btn ${searchQuery === 'Cyt-b' ? 'active' : ''}`}
+              onClick={() => setSearchQuery('Cyt-b')}
+            >
+              Cyt-b
+            </button>
+            <button
+              className={`gene-filter-btn ${searchQuery === '12s-RNA' ? 'active' : ''}`}
+              onClick={() => setSearchQuery('12s-RNA')}
+            >
+              12s-RNA
+            </button>
+            <button
+              className={`gene-filter-btn ${searchQuery === '16s-RNA' ? 'active' : ''}`}
+              onClick={() => setSearchQuery('16s-RNA')}
+            >
+              16s-RNA
+            </button>
+            <button
+              className={`gene-filter-btn ${searchQuery === 'COx1' ? 'active' : ''}`}
+              onClick={() => setSearchQuery('COx1')}
+            >
+              COx-1
+            </button>
+            <button
+              className="gene-filter-btn clear-btn"
+              onClick={() => setSearchQuery('')}
+            >
+              Clear Filter
+            </button>
+          </div>
           
           <div className="dna-manage-controls">
             <div className="unique-names-counter">
