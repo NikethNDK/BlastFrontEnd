@@ -31,6 +31,9 @@ function Layout({ userId, userDetails }) {
         // Directly render routes without ManagerNavigation
         <Routes>
           <Route path="/" element={<Join />} />
+          <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
+        <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
+        <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
         </Routes>
       ) : (
         // Wrap everything else with ManagerNavigation

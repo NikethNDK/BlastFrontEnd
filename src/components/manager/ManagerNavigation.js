@@ -6,17 +6,18 @@ import {
   FaBell,
   FaRedo,
   FaSyncAlt,
-  FaUserTie
+  FaUserTie,
+  FaHome,
 } from 'react-icons/fa';
 import "../../blast/BlastSidebar.css";
 import Header from "../Lab1/homeLab/Header";
-
+import { useNavigate } from "react-router-dom";
 const ManagerNavigation = ({ 
   children,
   userDetails = { name: "", lab: "", designation: "" }
 }) => {
   const [collapsed, setCollapsed] = useState(false);
-
+  const navigate = useNavigate();
   const handleLogout = () => {
     window.location.href = '/';
   };
@@ -44,7 +45,10 @@ const ManagerNavigation = ({
             <div className="d-flex align-items-center justify-content-between w-100">
               {!collapsed && (
                 <div className="blast-sidebar-brand">
-                  <FaUserTie style={{ marginRight: '8px', marginLeft: "8px", color: '#4b5563' }} />
+                  
+                  <button className="modern-sidebar-logo" onClick={() => navigate("/")}>
+                  <FaHome />
+                </button>
                   <span>Manager</span>
                 </div>
               )}
