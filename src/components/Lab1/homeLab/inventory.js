@@ -183,7 +183,7 @@ const MasterListTable = ({
         
         const response = await fetchMasterListByType(
           masterType || "",
-          userDetails.lab
+          // userDetails.lab
         );
 
         console.log("📊 [INVENTORY TABLE] API response:", response);
