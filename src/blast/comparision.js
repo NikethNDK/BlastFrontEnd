@@ -262,7 +262,7 @@ const Blast = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
                         {/* Example structure assuming 'row' is an array [queryId, refId, identity, ...] */}
                         <td className="table-cell">{row[0]}</td> 
                         <td className="table-cell">{row[1]}</td> 
-                        <td className="table-cell">{row[0].split('_').pop()}</td> 
+                        <td className="table-cell">{row[13]}</td> 
                         <td className="table-cell number-cell">{row[2]}</td>
                         <td className="table-cell number-cell">{row[3]}</td>
                         <td className="table-cell number-cell">{row[4]}</td>

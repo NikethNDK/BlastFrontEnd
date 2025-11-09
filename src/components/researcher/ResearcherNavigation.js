@@ -152,7 +152,7 @@ const ResearcherNavigation = ({
               {!collapsed && <div className="blast-sidebar-section-title">Navigation</div>}
               
               {/* Notification Dropdown */}
-              {!collapsed && (
+              {/* {!collapsed && (
                 <div style={{ padding: '0.5rem 1rem', marginBottom: '0.5rem' }}>
                   <Dropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
                     <DropdownToggle 
@@ -220,10 +220,10 @@ const ResearcherNavigation = ({
                     </DropdownMenu>
                   </Dropdown>
                 </div>
-              )}
+              )} */}
 
               <nav className="blast-sidebar-menu">
-                <NavLink
+                {/* <NavLink
                   to="/re_notify"
                   className={({ isActive }) => 
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
@@ -247,6 +247,19 @@ const ResearcherNavigation = ({
                   {!collapsed && (
                     <span className="blast-sidebar-item-text">Request</span>
                   )}
+                </NavLink> */}
+
+                <NavLink
+                  to="/masters"
+                  className={({ isActive }) => 
+                    `blast-sidebar-item ${isActive ? 'active' : ''}`
+                  }
+                  title="Inventory View"
+                >
+                  <FaHome className="blast-sidebar-item-icon" style={{ color: '#10b981' }} />
+                  {!collapsed && (
+                    <span className="blast-sidebar-item-text">Inventory View</span>
+                  )}
                 </NavLink>
 
                 <NavLink
@@ -262,18 +275,7 @@ const ResearcherNavigation = ({
                   )}
                 </NavLink>
 
-                <NavLink
-                  to="/masters"
-                  className={({ isActive }) => 
-                    `blast-sidebar-item ${isActive ? 'active' : ''}`
-                  }
-                  title="Inventory View"
-                >
-                  <FaHome className="blast-sidebar-item-icon" style={{ color: '#10b981' }} />
-                  {!collapsed && (
-                    <span className="blast-sidebar-item-text">Inventory View</span>
-                  )}
-                </NavLink>
+                
               </nav>
             </div>
           </div>

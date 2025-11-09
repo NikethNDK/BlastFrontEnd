@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { getEmployeeApi } from "../../../services/AppinfoService";
-import BootstrapTable from "react-bootstrap-table-next";
-import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
-import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
-import "react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import "../../../components/Lab1/homeLab/inventory.css";
 
 const EmployeeFilter = () => {
   const [employee, setEmployee] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Filter States
+  const [empIdFilter, setEmpIdFilter] = useState("");
+  const [empNameFilter, setEmpNameFilter] = useState("");
+  const [designationFilter, setDesignationFilter] = useState("");
+  const [projectCodeFilter, setProjectCodeFilter] = useState("");
+  const [projectNameFilter, setProjectNameFilter] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -23,193 +31,181 @@ const EmployeeFilter = () => {
     return () => (mounted = false);
   }, []);
 
-  const columns = [
-    {
-      dataField: "emp_id",
-      text: "Employee Id",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: {
-        backgroundColor: "#f8fafc",
-        fontWeight: 600,
-        color: "#1e293b",
-        textAlign: "center",
-        border: "1px solid #e2e8f0",
-        padding: "12px",
-        fontSize: "0.875rem",
-      },
-      style: { 
-        textAlign: "center", 
-        border: "1px solid #e2e8f0",
-        padding: "12px",
-        fontSize: "0.875rem",
-        color: "#475569",
-      },
-    },
-    {
-      dataField: "emp_name",
-      text: "Employee Name",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: {
-        backgroundColor: "#f8fafc",
-        fontWeight: 600,
-        color: "#1e293b",
-        textAlign: "center",
-        border: "1px solid #e2e8f0",
-        padding: "12px",
-        fontSize: "0.875rem",
-      },
-      style: { 
-        textAlign: "center", 
-        border: "1px solid #e2e8f0",
-        padding: "12px",
-        fontSize: "0.875rem",
-        color: "#475569",
-      },
-    },
-    {
-      dataField: "designation",
-      text: "Designation",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: {
-        backgroundColor: "#f8fafc",
-        fontWeight: 600,
-        color: "#1e293b",
-        textAlign: "center",
-        border: "1px solid #e2e8f0",
-        padding: "12px",
-        fontSize: "0.875rem",
-      },
-      style: { 
-        textAlign: "center", 
-        border: "1px solid #e2e8f0",
-        padding: "12px",
-        fontSize: "0.875rem",
-        color: "#475569",
-      },
-    },
-    {
-      dataField: "project_code",
-      text: "Project Code",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: {
-        backgroundColor: "#f8fafc",
-        fontWeight: 600,
-        color: "#1e293b",
-        textAlign: "center",
-        border: "1px solid #e2e8f0",
-        padding: "12px",
-        fontSize: "0.875rem",
-      },
-      style: { 
-        textAlign: "center", 
-        border: "1px solid #e2e8f0",
-        padding: "12px",
-        fontSize: "0.875rem",
-        color: "#475569",
-      },
-    },
-    {
-      dataField: "project_name",
-      text: "Project Name",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: {
-        backgroundColor: "#f8fafc",
-        fontWeight: 600,
-        color: "#1e293b",
-        textAlign: "center",
-        border: "1px solid #e2e8f0",
-        padding: "12px",
-        fontSize: "0.875rem",
-      },
-      style: { 
-        textAlign: "center", 
-        border: "1px solid #e2e8f0",
-        padding: "12px",
-        fontSize: "0.875rem",
-        color: "#475569",
-      },
-    },
-  ];
+  // Filtering Logic
+  useEffect(() => {
+    const filteredEmployees = employee.filter(
+      (emp) =>
+        (empIdFilter === "" ||
+          (emp.emp_id &&
+            String(emp.emp_id)
+              .toLowerCase()
+              .includes(empIdFilter.toLowerCase()))) &&
+        (empNameFilter === "" ||
+          (emp.emp_name &&
+            emp.emp_name
+              .toLowerCase()
+              .includes(empNameFilter.toLowerCase()))) &&
+        (designationFilter === "" ||
+          (emp.designation &&
+            emp.designation
+              .toLowerCase()
+              .includes(designationFilter.toLowerCase()))) &&
+        (projectCodeFilter === "" ||
+          (emp.project_code &&
+            emp.project_code
+              .toLowerCase()
+              .includes(projectCodeFilter.toLowerCase()))) &&
+        (projectNameFilter === "" ||
+          (emp.project_name &&
+            emp.project_name
+              .toLowerCase()
+              .includes(projectNameFilter.toLowerCase())))
+    );
+
+    setFilteredData(filteredEmployees);
+    setCurrentPage(1); // Reset to first page when filtering
+  }, [
+    employee,
+    empIdFilter,
+    empNameFilter,
+    designationFilter,
+    projectCodeFilter,
+    projectNameFilter,
+  ]);
+
+  // Pagination calculations
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentEmployees = filteredData.slice(startIndex, endIndex);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
 
   return (
-    <div style={{ marginTop: "1px", width: "100%" }}>
-      <div style={{ paddingTop: "10px" }}>
-        <div
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "8px",
-            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
-            overflow: "hidden",
-          }}
-        >
-          <BootstrapTable
-            keyField={(row, index) => `${row.c_id || row.emp_id}-${index}`}
-            data={employee}
-            columns={columns}
-            filter={filterFactory()}
-            striped
-            hover
-            bordered={false}
-            className="react-bootstrap-table"
-            style={{
-              margin: "0",
-              width: "100%",
-            }}
-            rowStyle={{
-              borderBottom: "1px solid #e2e8f0",
-            }}
-            headerClasses="table-header"
-          />
+    <div className="master-list-container" style={{ width: "100%", padding: "24px" }}>
+      {/* --- Pagination Controls (Top) --- */}
+      <div className="pagination-controls top">
+        <div className="pagination-info">
+          Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} employees
+        </div>
+        <div className="pagination-options">
+          <label className="items-per-page-label">
+            Items per page:
+            <select 
+              value={itemsPerPage} 
+              onChange={handleItemsPerPageChange}
+              className="items-per-page-select"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </label>
         </div>
       </div>
 
-      <style jsx>{`
-        :global(.react-bootstrap-table) {
-          border-collapse: separate;
-          border-spacing: 0;
-        }
-        
-        :global(.react-bootstrap-table table) {
-          margin-bottom: 0 !important;
-        }
+      {/* --- Main Data Table --- */}
+      <div className="table-wrapper">
+        <table className="inventory-table">
+          <thead>
+            <tr>
+              {/* Header Cells with Filters */}
+              {[
+                { label: "Employee Id", filter: empIdFilter, setFilter: setEmpIdFilter },
+                { label: "Employee Name", filter: empNameFilter, setFilter: setEmpNameFilter },
+                { label: "Designation", filter: designationFilter, setFilter: setDesignationFilter },
+                { label: "Project Code", filter: projectCodeFilter, setFilter: setProjectCodeFilter },
+                { label: "Project Name", filter: projectNameFilter, setFilter: setProjectNameFilter },
+              ].map(({ label, filter, setFilter }) => (
+                <th key={label} className="table-header">
+                  {label}
+                  <input
+                    type="text"
+                    placeholder={`Filter by ${label}`}
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    className="filter-input"
+                  />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {currentEmployees.length > 0 ? (
+              currentEmployees.map((emp, index) => (
+                <tr
+                  key={emp.emp_id || index}
+                  className="data-row"
+                >
+                  <td className="table-cell">{emp.emp_id || "-"}</td>
+                  <td className="table-cell">{emp.emp_name || "-"}</td>
+                  <td className="table-cell">{emp.designation || "-"}</td>
+                  <td className="table-cell">{emp.project_code || "-"}</td>
+                  <td className="table-cell">{emp.project_name || "-"}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="no-data-cell">
+                  No employees matching your filter criteria.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        :global(.react-bootstrap-table td),
-        :global(.react-bootstrap-table th) {
-          white-space: normal !important;
-          word-wrap: break-word !important;
-          overflow: hidden !important;
-          text-overflow: ellipsis !important;
-        }
-
-        :global(.react-bootstrap-table tbody tr:hover) {
-          background-color: #f1f5f9 !important;
-        }
-
-        :global(.react-bootstrap-table .filter) {
-          border: 1px solid #cbd5e1;
-          border-radius: 4px;
-          padding: 6px 8px;
-          font-size: 0.875rem;
-          margin-top: 4px;
-        }
-
-        :global(.react-bootstrap-table .filter:focus) {
-          outline: none;
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-        }
-
-        :global(.table-header) {
-          position: sticky;
-          top: 0;
-          z-index: 10;
-        }
-      `}</style>
+      {/* --- Pagination Controls (Bottom) --- */}
+      {totalPages > 1 && (
+        <div className="pagination-controls bottom">
+          <div className="pagination-navigation">
+            <button
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="pagination-btn prev-btn"
+            >
+              <FaChevronLeft size={14} />
+              Previous
+            </button>
+            
+            <div className="pagination-numbers">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`pagination-btn page-btn ${
+                    currentPage === page ? "active" : ""
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="pagination-btn next-btn"
+            >
+              Next
+              <FaChevronRight size={14} />
+            </button>
+          </div>
+          
+          <div className="pagination-summary">
+            Page {currentPage} of {totalPages}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

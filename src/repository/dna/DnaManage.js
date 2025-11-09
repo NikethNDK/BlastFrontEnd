@@ -193,11 +193,6 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
       <div className="dna-manage-content">
         <Navigation userDetails={userDetails} />
         <div className="dna-manage-main">
-          <div className="dna-manage-header">
-            <h2 className="dna-manage-title">
-              OVERVIEW
-            </h2>
-          </div>
 
           <div className="dna-manage-search-bar">
             <label

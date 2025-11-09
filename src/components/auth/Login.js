@@ -13,6 +13,10 @@ import CareApp from "../../dnacar";
 import Header from "../Lab1/homeLab/Header";
 import toast, { Toaster } from "react-hot-toast";
 
+// Temporary flag to enable all features (BLAST, Repository, Inventory) for all users regardless of labs
+// Set to false to restore lab-based routing
+const ENABLE_ALL_FEATURES = true;
+
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -78,27 +82,32 @@ function Login() {
   };
 
   return (
-    <div className="App">
+    <div className="App" style={{ 
+      backgroundColor: "#f2f5e6", 
+      minHeight: "100vh", 
+      display: "flex", 
+      flexDirection: "column",
+    }}>
       {isLoggedIn ? (
         (() => {
           switch (userRole) {
             case "Admin":
               return <AdminApp userDetails={userDetails}/>;
             case "Manager":
-              if (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab))) {
+              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab)))) {
                 return <ManagerApp userId={userId} userDetails={userDetails}/>;
               } 
               else {
                 return <ManagerAccessApp userId={userId} userDetails={userDetails}/>;
               }
             case "Lab Assistant":
-              if (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab))) {
+              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab)))) {
                 return <LabApp userDetails={userDetails}/>;
               } else {
                 return <CareApp userDetails={userDetails}/>;
               }
             case "Researcher":
-              if (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab))) {
+              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab)))) {
                 return <ResearcherApp userDetails={userDetails} />;
               } else {
                 return <ResearcherAccessApp userDetails={userDetails}/>;

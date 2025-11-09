@@ -6,7 +6,7 @@
   justify-content: center;
   min-height: 100vh;
   padding: 2rem 1rem;
-  overflow-y: auto; /* Changed from hidden to auto */
+  overflow-y: hidden; /* Changed from hidden to auto */
 }
 
 .register-wrapper {
