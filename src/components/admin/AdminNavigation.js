@@ -27,8 +27,10 @@ const AdminNavigation = ({ children }) => {
   };
 
   return (
-    <div style={{ backgroundColor: "#f2f5e6" }}>
-      <header className="headerr">
+    <div style={{ 
+      backgroundColor: "#f2f5e6", 
+    }}>
+      <header className="headerr" style={{ position: "sticky", top: 0, zIndex: 1000, backgroundColor: "#f2f5e6" }}>
         <Header />
       </header>
 
@@ -67,11 +69,11 @@ const AdminNavigation = ({ children }) => {
                   className={({ isActive }) => 
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
                   }
-                  title="Project Master"
+                  title="Project Management"
                 >
                   <FaChartBar className="blast-sidebar-item-icon" style={{ color: '#3b82f6' }} />
                   {!collapsed && (
-                    <span className="blast-sidebar-item-text">Project Master</span>
+                    <span className="blast-sidebar-item-text">Project Management</span>
                   )}
                 </NavLink>
 
@@ -106,11 +108,11 @@ const AdminNavigation = ({ children }) => {
                   className={({ isActive }) => 
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
                   }
-                  title="Employee Master"
+                  title="Employee Project Management"
                 >
                   <FaUsers className="blast-sidebar-item-icon" style={{ color: '#f59e0b' }} />
                   {!collapsed && (
-                    <span className="blast-sidebar-item-text">Employee Master</span>
+                    <span className="blast-sidebar-item-text">Employee Project Management</span>
                   )}
                 </NavLink>
 

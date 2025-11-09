@@ -55,9 +55,10 @@
 }
 
 /* --- Inventory Type Selector Bar --- */
-.inventory-selector-bar {
+.dash-inventory-selector-bar {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 2rem;
 }
 
@@ -113,10 +114,6 @@
 
 /* --- Responsive Adjustments --- */
 @media (max-width: 1024px) {
-  .homelab-page-container {
-    padding: 1rem;
-    padding-top: 5rem;
-  }
 
   .content-header {
     flex-direction: column;
@@ -128,7 +125,7 @@
     min-width: 100%;
   }
 
-  .inventory-selector-bar {
+  .dash-inventory-selector-bar {
     justify-content: center;
   }
   

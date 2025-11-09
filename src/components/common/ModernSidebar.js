@@ -55,16 +55,16 @@ const ModernSidebar = ({
         { path: '/issuetable', icon: FaFileAlt, label: 'Issued Data', color: 'info' },
         { path: '/retrun', icon: FaUndo, label: 'Return Data', color: 'info' },
         { path: '/add_product', icon: FaPlus, label: 'Add New Data', color: 'info' },
-      ]
+      ] 
     },
-    {
-      title: 'Specialized Tools',
-      items: [
-        // { path: '/dna', icon: FaDna, label: 'DNA Repository', color: 'secondary' },
-        // { path: '/add_blast', icon: FaFlask, label: 'DNA Blast', color: 'secondary' },
-        { path: '/equipment', icon: FaMicroscope, label: 'Equipment List', color: 'secondary' },
-      ]
-    }
+    // {
+    //    title: 'Specialized Tools',
+    //    items: [
+    //     { path: '/dna', icon: FaDna, label: 'DNA Repository', color: 'secondary' },
+    //     { path: '/add_blast', icon: FaFlask, label: 'DNA Blast', color: 'secondary' },
+    //      { path: '/equipment', icon: FaMicroscope, label: 'Equipment List', color: 'secondary' },
+    //    ]
+    //  }
   ];
   
   // Flatten all items for mapping
@@ -133,7 +133,7 @@ const ModernSidebar = ({
           )}
 
           {/* Notifications Toggle */}
-          <div className="modern-sidebar-notifications">
+          {/* <div className="modern-sidebar-notifications">
             <Dropdown show={showNotifications} onToggle={setShowNotifications} align="end">
               <Dropdown.Toggle as="div" className="modern-notification-toggle">
                 <div className="modern-notification-bell">
@@ -183,7 +183,7 @@ const ModernSidebar = ({
                 </div>
               </Dropdown.Menu>
             </Dropdown>
-          </div>
+          </div> */}
         </div>
         
         {/* Menu (Navigation) */}

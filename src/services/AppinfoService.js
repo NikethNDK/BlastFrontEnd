@@ -1012,6 +1012,17 @@ export const fetchUsernames = async (selectedLab, selectedRole) => {
   }
 };
 
+// Get all users with their labs and roles
+export const getAllUsersApi = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/usernames/`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    throw error;
+  }
+};
+
 export const createUnit = async (unitName) => {
   try {
     const response = await axios.post(`${BASE_URL}/unit/`, {

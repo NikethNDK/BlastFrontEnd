@@ -21,7 +21,7 @@ const JoinResearcher = () => {
         </button>
         <button
           className="custom-button"
-          onClick={() => navigate("/re_notify")}
+          onClick={() => navigate("/masters")}
         >
           Inventory
         </button>

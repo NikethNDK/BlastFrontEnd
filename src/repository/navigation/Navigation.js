@@ -6,7 +6,8 @@ import {
   FaUserCircle,
   FaSignOutAlt,
   FaArrowLeft,
-  FaHome
+  FaHome,
+  FaDatabase
 } from 'react-icons/fa';
 import { FcBiotech, FcBiohazard } from "react-icons/fc";
 import "./Navigation.css";
@@ -92,11 +93,11 @@ const Navigation = ({
                 className={({ isActive }) => 
                   `blast-sidebar-item ${isActive ? 'active' : ''}`
                 }
-                title="Home"
+                title="Overview"
               >
                 <FcBiotech className="blast-sidebar-item-icon" />
                 {!collapsed && (
-                  <span className="blast-sidebar-item-text">Home</span>
+                  <span className="blast-sidebar-item-text">Overview</span>
                 )}
               </NavLink>
               
@@ -110,6 +111,19 @@ const Navigation = ({
                 <FcBiohazard className="blast-sidebar-item-icon" />
                 {!collapsed && (
                   <span className="blast-sidebar-item-text">New Submission</span>
+                )}
+              </NavLink>
+
+              <NavLink
+                to='/add_blast'
+                className={({ isActive }) => 
+                  `blast-sidebar-item ${isActive ? 'active' : ''}`
+                }
+                title="Blast"
+              >
+                <FaDatabase className="blast-sidebar-item-icon color-primary" />
+                {!collapsed && (
+                  <span className="blast-sidebar-item-text">Blast</span>
                 )}
               </NavLink>
             </nav>

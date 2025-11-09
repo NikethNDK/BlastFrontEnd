@@ -60,9 +60,9 @@ const HomeLab1 = ({userDetails}) => {
   };
 
   return (
-    <div className="homelab-page-container">
-      {/* --- Inventory Type Selector --- */}
-      <div className="inventory-selector-bar">
+    <div className="fordashboard-page-container">
+      {/* --- Stock Indicator and Inventory Selector (Same Line) --- */}
+      <div className="dash-inventory-selector-bar">
         <ButtonGroup className="inventory-type-group">
           {inventoryTypes.map((type) => (
             <Button
