@@ -5,11 +5,10 @@ import {
   getDesignationsApi,
   getAllUsersApi,
 } from "../../services/AppinfoService";
-import { FaEye, FaEyeSlash, FaUserPlus, FaUser, FaLock, FaBriefcase, FaFlask, FaSearch } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaUserPlus, FaUser, FaLock, FaBriefcase, FaFlask, FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { Table, Modal, Button, Form, InputGroup, Card, Badge } from "react-bootstrap";
 import Select from "react-select";
 import toast from "react-hot-toast";
-import Pagination from "../common/Pagination";
 import "./Register.css";
 
 // Register Modal Component
@@ -280,7 +279,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Fetch users
   const fetchUsers = async () => {
@@ -353,12 +352,23 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
 
   // Paginate filtered users
   const paginatedUsers = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
     return filteredUsers.slice(startIndex, endIndex);
-  }, [filteredUsers, currentPage, pageSize]);
+  }, [filteredUsers, currentPage, itemsPerPage]);
 
-  const totalPages = Math.ceil(filteredUsers.length / pageSize);
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
 
   // Reset to page 1 when search term changes
   useEffect(() => {
@@ -482,9 +492,32 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
             </div>
           ) : (
             <>
-              <div style={{ overflowX: "auto" }}>
+              {/* --- Pagination Controls (Top) --- */}
+              <div className="pagination-controls top" style={{ padding: "1rem 1.5rem", margin: 0 }}>
+                <div className="pagination-info">
+                  Showing {startIndex + 1}-{Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} users
+                </div>
+                <div className="pagination-options">
+                  <label className="items-per-page-label">
+                    Items per page:
+                    <select 
+                      value={itemsPerPage} 
+                      onChange={handleItemsPerPageChange}
+                      className="items-per-page-select"
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={20}>20</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div className="table-wrapper" style={{ margin: "0 1.5rem" }}>
                 <Table 
                   hover 
+                  className="inventory-table"
                   style={{ 
                     marginBottom: 0,
                     fontSize: "0.875rem"
@@ -707,28 +740,46 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                 </Table>
               </div>
 
-              {/* Pagination Footer */}
+              {/* --- Pagination Controls (Bottom) --- */}
               {!loadingUsers && totalPages > 1 && (
-                <div style={{ 
-                  padding: "16px 20px",
-                  display: "flex", 
-                  justifyContent: "space-between", 
-                  alignItems: "center",
-                  backgroundColor: "#f8f9fa",
-                  borderTop: "1px solid #dee2e6"
-                }}>
-                  <div style={{ 
-                    color: "#6c757d", 
-                    fontSize: "0.875rem",
-                    fontWeight: 500
-                  }}>
-                    Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredUsers.length)} of {filteredUsers.length} entries
+                <div className="pagination-controls bottom" style={{ padding: "1rem 1.5rem", margin: 0 }}>
+                  <div className="pagination-navigation">
+                    <button
+                      onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="pagination-btn prev-btn"
+                    >
+                      <FaChevronLeft size={14} />
+                      Previous
+                    </button>
+                    
+                    <div className="pagination-numbers">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`pagination-btn page-btn ${
+                            currentPage === page ? "active" : ""
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <button
+                      onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="pagination-btn next-btn"
+                    >
+                      Next
+                      <FaChevronRight size={14} />
+                    </button>
                   </div>
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                  />
+                  
+                  <div className="pagination-summary">
+                    Page {currentPage} of {totalPages}
+                  </div>
                 </div>
               )}
             </>

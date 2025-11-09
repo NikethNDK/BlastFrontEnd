@@ -2,38 +2,153 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { AiOutlineDownload } from "react-icons/ai";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { BASE_URL } from "../../services/AppinfoService";
+import "../../components/Lab1/homeLab/inventory.css";
 
 const ReturnDataTable = () => {
   const [data, setData] = useState([]);
-  const [filters, setFilters] = useState({});
+  const [filteredData, setFilteredData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Filter States
+  const [entryNoFilter, setEntryNoFilter] = useState("");
+  const [itemNameFilter, setItemNameFilter] = useState("");
+  const [itemCodeFilter, setItemCodeFilter] = useState("");
+  const [quantityReturnedFilter, setQuantityReturnedFilter] = useState("");
+  const [batchNumberFilter, setBatchNumberFilter] = useState("");
+  const [receiptDateFilter, setReceiptDateFilter] = useState("");
+  const [expiryDateFilter, setExpiryDateFilter] = useState("");
+  const [manufacturerFilter, setManufacturerFilter] = useState("");
+  const [supplierFilter, setSupplierFilter] = useState("");
+  const [projectNameFilter, setProjectNameFilter] = useState("");
+  const [invoiceNoFilter, setInvoiceNoFilter] = useState("");
+  const [returnDateFilter, setReturnDateFilter] = useState("");
+  const [remarksFilter, setRemarksFilter] = useState("");
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/item_return/`);
+        setData(response.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
     fetchData();
+    const interval = setInterval(fetchData, 10000);
+    return () => clearInterval(interval);
   }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}/item_return/`);
-      setData(response.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+  // Filtering Logic
+  useEffect(() => {
+    const filteredItems = data
+      .filter(
+        (item) =>
+          (entryNoFilter === "" ||
+            (item.entry_no &&
+              String(item.entry_no)
+                .toLowerCase()
+                .includes(entryNoFilter.toLowerCase()))) &&
+          (itemNameFilter === "" ||
+            (item.item_name &&
+              item.item_name
+                .toLowerCase()
+                .includes(itemNameFilter.toLowerCase()))) &&
+          (itemCodeFilter === "" ||
+            (item.item_code &&
+              String(item.item_code)
+                .toLowerCase()
+                .includes(itemCodeFilter.toLowerCase()))) &&
+          (quantityReturnedFilter === "" ||
+            (item.quantity_returned &&
+              String(item.quantity_returned)
+                .toLowerCase()
+                .includes(quantityReturnedFilter.toLowerCase()))) &&
+          (batchNumberFilter === "" ||
+            (item.batch_number &&
+              String(item.batch_number)
+                .toLowerCase()
+                .includes(batchNumberFilter.toLowerCase()))) &&
+          (receiptDateFilter === "" ||
+            (item.receipt_date &&
+              String(item.receipt_date)
+                .toLowerCase()
+                .includes(receiptDateFilter.toLowerCase()))) &&
+          (expiryDateFilter === "" ||
+            (item.expiry_date &&
+              String(item.expiry_date)
+                .toLowerCase()
+                .includes(expiryDateFilter.toLowerCase()))) &&
+          (manufacturerFilter === "" ||
+            (item.manufacturer &&
+              item.manufacturer
+                .toLowerCase()
+                .includes(manufacturerFilter.toLowerCase()))) &&
+          (supplierFilter === "" ||
+            (item.supplier &&
+              item.supplier
+                .toLowerCase()
+                .includes(supplierFilter.toLowerCase()))) &&
+          (projectNameFilter === "" ||
+            (item.project_name &&
+              item.project_name
+                .toLowerCase()
+                .includes(projectNameFilter.toLowerCase()))) &&
+          (invoiceNoFilter === "" ||
+            (item.invoice_no &&
+              String(item.invoice_no)
+                .toLowerCase()
+                .includes(invoiceNoFilter.toLowerCase()))) &&
+          (returnDateFilter === "" ||
+            (item.return_date &&
+              String(item.return_date)
+                .toLowerCase()
+                .includes(returnDateFilter.toLowerCase()))) &&
+          (remarksFilter === "" ||
+            (item.remarks &&
+              item.remarks
+                .toLowerCase()
+                .includes(remarksFilter.toLowerCase())))
+      )
+      .sort((a, b) => a.entry_no - b.entry_no);
+
+    setFilteredData(filteredItems);
+    setCurrentPage(1); // Reset to first page when filtering
+  }, [
+    data,
+    entryNoFilter,
+    itemNameFilter,
+    itemCodeFilter,
+    quantityReturnedFilter,
+    batchNumberFilter,
+    receiptDateFilter,
+    expiryDateFilter,
+    manufacturerFilter,
+    supplierFilter,
+    projectNameFilter,
+    invoiceNoFilter,
+    returnDateFilter,
+    remarksFilter,
+  ]);
+
+  // Pagination calculations
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredData.slice(startIndex, endIndex);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
-  const handleFilterChange = (e, key) => {
-    setFilters({ ...filters, [key]: e.target.value });
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing items per page
   };
-
-  const filteredData = data
-    .filter((item) =>
-      Object.keys(filters).every((key) => {
-        const cellValue = String(item[key] || "").toLowerCase();
-        const filterValue = String(filters[key] || "").toLowerCase();
-        return filterValue ? cellValue.includes(filterValue) : true;
-      })
-    )
-    .sort((a, b) => a.entry_no - b.entry_no);
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
@@ -43,17 +158,18 @@ const ReturnDataTable = () => {
 
     const worksheet = XLSX.utils.json_to_sheet(
       filteredData.map((item) => ({
+        "Entry No": item.entry_no,
         "Item Name": item.item_name,
         "Item Code": item.item_code,
-        "Quantity Received": item.quantity_issued,
-        "Issued To": item.researcher_name,
-        "Issued Date": item.issue_date,
+        "Quantity Returned": item.quantity_returned,
+        "Batch Number": item.batch_number,
+        "Receipt Date": item.receipt_date,
         "Expiry Date": item.expiry_date,
-        "Master Type": item.master_type,
         Manufacturer: item.manufacturer,
         Supplier: item.supplier,
         "Project Name": item.project_name,
-        "Project Code": item.project_code,
+        "Invoice No": item.invoice_no,
+        "Return Date": item.return_date,
         Remarks: item.remarks,
       }))
     );
@@ -66,321 +182,167 @@ const ReturnDataTable = () => {
     };
 
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Issue Data");
-    XLSX.writeFile(workbook, "IssueData.xlsx");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Return Data");
+    XLSX.writeFile(workbook, "ReturnData.xlsx");
   };
 
+  // Kept for potential future use (not currently displayed)
+  // eslint-disable-next-line no-unused-vars
   const totalQuantityReceived = filteredData.reduce(
-    (sum, item) => sum + (parseInt(item.quantity_issued) || 0),
+    (sum, item) => sum + (parseInt(item.quantity_returned) || 0),
     0
   );
 
-  const columns = [
-    { key: "entry_no", label: "Entry No" },
-    { key: "item_name", label: "Item Name" },
-    { key: "item_code", label: "Item Code" },
-    { key: "quantity_returned", label: "Quantity Returned" },
-    { key: "batch_number", label: "Batch Number" },
-    { key: "receipt_date", label: "Receipt Date" },
-    { key: "expiry_date", label: "Expiry Date" },
-    { key: "manufacturer", label: "Manufacturer" },
-    { key: "supplier", label: "Supplier" },
-    { key: "project_name", label: "Project Name" },
-    { key: "invoice_no", label: "Invoice No" },
-    { key: "return_date", label: "Return Date" },
-    { key: "remarks", label: "Remarks" },
-  ];
-
   return (
-    <div style={{ padding: "20px", width: "100%" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "16px",
-        }}
-      >
-        <h2
-          style={{
-            margin: 0,
-            fontSize: "1.5rem",
-            fontWeight: 600,
-            color: "#1e293b",
-          }}
-        >
-          Return Data
-        </h2>
+    <div className="master-list-container" style={{ width: "100%", padding: "24px" }}>
+      {/* --- Download Button --- */}
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
         <button
           onClick={handleDownload}
+          className="download-btn"
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            padding: "8px 16px",
-            backgroundColor: "#10b981",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontSize: "0.875rem",
-            fontWeight: 500,
-            transition: "all 0.2s",
-            boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = "#059669";
-            e.target.style.boxShadow = "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "#10b981";
-            e.target.style.boxShadow = "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
+            gap: "0.5rem",
           }}
         >
-          <AiOutlineDownload size={18} style={{ marginRight: "6px" }} />
+          <AiOutlineDownload size={18} />
           Download
         </button>
       </div>
 
-      <div
-        style={{
-          backgroundColor: "#ffffff",
-          borderRadius: "8px",
-          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
-          overflow: "hidden",
-        }}
-      >
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "separate",
-              borderSpacing: 0,
-            }}
-          >
-            <thead>
-              <tr>
-                {columns.map((column, index) => (
-                  <th
-                    key={index}
-                    style={{
-                      backgroundColor: "#f8fafc",
-                      padding: "12px",
-                      textAlign: "center",
-                      border: "1px solid #e2e8f0",
-                      fontWeight: 600,
-                      fontSize: "0.875rem",
-                      color: "#1e293b",
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 10,
-                    }}
-                  >
-                    <div style={{ marginBottom: "8px" }}>{column.label}</div>
-                    <input
-                      type="text"
-                      placeholder="Filter"
-                      onChange={(e) => handleFilterChange(e, column.key)}
-                      style={{
-                        width: "100%",
-                        padding: "6px 8px",
-                        border: "1px solid #cbd5e1",
-                        borderRadius: "4px",
-                        fontSize: "0.875rem",
-                        outline: "none",
-                        transition: "all 0.2s",
-                      }}
-                      onFocus={(e) => {
-                        e.target.style.borderColor = "#3b82f6";
-                        e.target.style.boxShadow =
-                          "0 0 0 2px rgba(59, 130, 246, 0.1)";
-                      }}
-                      onBlur={(e) => {
-                        e.target.style.borderColor = "#cbd5e1";
-                        e.target.style.boxShadow = "none";
-                      }}
-                    />
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((item, index) => (
-                <tr
-                  key={item.id}
-                  style={{
-                    transition: "background-color 0.15s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = "#f1f5f9";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor =
-                      index % 2 === 0 ? "#ffffff" : "#f8fafc";
-                  }}
-                >
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.entry_no}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.item_name}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.item_code}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.quantity_returned}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.batch_number}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.receipt_date}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.expiry_date}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.manufacturer}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.supplier}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.project_name}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.invoice_no}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.return_date}
-                  </td>
-                  <td
-                    style={{
-                      padding: "12px",
-                      border: "1px solid #e2e8f0",
-                      textAlign: "center",
-                      fontSize: "0.875rem",
-                      color: "#475569",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                  >
-                    {item.remarks}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* --- Pagination Controls (Top) --- */}
+      <div className="pagination-controls top">
+        <div className="pagination-info">
+          Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} items
+        </div>
+        <div className="pagination-options">
+          <label className="items-per-page-label">
+            Items per page:
+            <select 
+              value={itemsPerPage} 
+              onChange={handleItemsPerPageChange}
+              className="items-per-page-select"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </label>
         </div>
       </div>
+
+      {/* --- Main Data Table --- */}
+      <div className="table-wrapper">
+        <table className="inventory-table">
+          <thead>
+            <tr>
+              {/* Header Cells with Filters */}
+              {[
+                { label: "Entry No", filter: entryNoFilter, setFilter: setEntryNoFilter },
+                { label: "Item Name", filter: itemNameFilter, setFilter: setItemNameFilter },
+                { label: "Item Code", filter: itemCodeFilter, setFilter: setItemCodeFilter },
+                { label: "Quantity Returned", filter: quantityReturnedFilter, setFilter: setQuantityReturnedFilter },
+                { label: "Batch Number", filter: batchNumberFilter, setFilter: setBatchNumberFilter },
+                { label: "Receipt Date", filter: receiptDateFilter, setFilter: setReceiptDateFilter },
+                { label: "Expiry Date", filter: expiryDateFilter, setFilter: setExpiryDateFilter },
+                { label: "Manufacturer", filter: manufacturerFilter, setFilter: setManufacturerFilter },
+                { label: "Supplier", filter: supplierFilter, setFilter: setSupplierFilter },
+                { label: "Project Name", filter: projectNameFilter, setFilter: setProjectNameFilter },
+                { label: "Invoice No", filter: invoiceNoFilter, setFilter: setInvoiceNoFilter },
+                { label: "Return Date", filter: returnDateFilter, setFilter: setReturnDateFilter },
+                { label: "Remarks", filter: remarksFilter, setFilter: setRemarksFilter },
+              ].map(({ label, filter, setFilter }) => (
+                <th key={label} className="table-header">
+                  {label}
+                  <input
+                    type="text"
+                    placeholder={`Filter by ${label}`}
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    className="filter-input"
+                  />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {currentItems.length > 0 ? (
+              currentItems.map((item, index) => (
+                <tr
+                  key={item.id || item.entry_no || index}
+                  className="data-row"
+                >
+                  <td className="table-cell">{item.entry_no || "-"}</td>
+                  <td className="table-cell">{item.item_name || "-"}</td>
+                  <td className="table-cell">{item.item_code || "-"}</td>
+                  <td className="table-cell">{item.quantity_returned || "-"}</td>
+                  <td className="table-cell">{item.batch_number || "-"}</td>
+                  <td className="table-cell">{item.receipt_date || "-"}</td>
+                  <td className="table-cell">{item.expiry_date || "-"}</td>
+                  <td className="table-cell">{item.manufacturer || "-"}</td>
+                  <td className="table-cell">{item.supplier || "-"}</td>
+                  <td className="table-cell">{item.project_name || "-"}</td>
+                  <td className="table-cell">{item.invoice_no || "-"}</td>
+                  <td className="table-cell">{item.return_date || "-"}</td>
+                  <td className="table-cell">{item.remarks || "-"}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="13" className="no-data-cell">
+                  No items matching your filter criteria.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* --- Pagination Controls (Bottom) --- */}
+      {totalPages > 1 && (
+        <div className="pagination-controls bottom">
+          <div className="pagination-navigation">
+            <button
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="pagination-btn prev-btn"
+            >
+              <FaChevronLeft size={14} />
+              Previous
+            </button>
+            
+            <div className="pagination-numbers">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`pagination-btn page-btn ${
+                    currentPage === page ? "active" : ""
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="pagination-btn next-btn"
+            >
+              Next
+              <FaChevronRight size={14} />
+            </button>
+          </div>
+          
+          <div className="pagination-summary">
+            Page {currentPage} of {totalPages}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

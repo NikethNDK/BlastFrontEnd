@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FaUserPlus, FaUsers, FaCheckCircle, FaTimesCircle, FaEye } from "react-icons/fa";
+import { FaUserPlus, FaUsers, FaCheckCircle, FaTimesCircle, FaEye, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import AddEmployeeModal from "./AddEmployeeModal";
 import UpdateEmployeeModal from "./UpdateEmployeeModal";
 import {
@@ -7,6 +7,7 @@ import {
   inactiveEmployeeApi,
 } from "../../../services/AppinfoService";
 import toast from "react-hot-toast";
+import "../../../components/Lab1/homeLab/inventory.css";
 
 const EmployeeManage = () => {
   const [employees, setEmployees] = useState([]);
@@ -15,6 +16,8 @@ const EmployeeManage = () => {
   const [editEmployees, setEditEmployees] = useState([]);
   const [isUpdated, setIsUpdated] = useState(false);
   const [inactiveEmployees, setInactiveEmployees] = useState(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     let mounted = true;
@@ -49,6 +52,11 @@ const EmployeeManage = () => {
     return () => {
       mounted = false;
     };
+  }, [isUpdated]);
+
+  // Reset to first page when employees data changes significantly
+  useEffect(() => {
+    setCurrentPage(1);
   }, [isUpdated]);
 
   const handleUpdate = (e, emp) => {
@@ -284,6 +292,22 @@ const EmployeeManage = () => {
   const activeCount = employees.filter(emp => !inactiveEmployees.has(emp.emp_id)).length;
   const inactiveCount = employees.filter(emp => inactiveEmployees.has(emp.emp_id)).length;
 
+  // Pagination calculations
+  const totalItems = employees.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentEmployees = employees.slice(startIndex, endIndex);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.wrapper}>
@@ -349,6 +373,28 @@ const EmployeeManage = () => {
           </div>
 
           <div style={styles.contentBody}>
+            {/* --- Pagination Controls (Top) --- */}
+            <div className="pagination-controls top" style={{ marginBottom: "1rem" }}>
+              <div className="pagination-info">
+                Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} employees
+              </div>
+              <div className="pagination-options">
+                <label className="items-per-page-label">
+                  Items per page:
+                  <select 
+                    value={itemsPerPage} 
+                    onChange={handleItemsPerPageChange}
+                    className="items-per-page-select"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                    <option value={50}>50</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
             <div style={styles.tableWrapper}>
               <table style={styles.table}>
                 <thead style={styles.tableHead}>
@@ -364,7 +410,8 @@ const EmployeeManage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {employees.map((emp) => {
+                  {currentEmployees.length > 0 ? (
+                    currentEmployees.map((emp) => {
                     const isInactive = inactiveEmployees.has(emp.emp_id);
                     return (
                       <tr
@@ -425,23 +472,73 @@ const EmployeeManage = () => {
                         </td>
                       </tr>
                     );
-                  })}
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="8" style={{ padding: "2rem", textAlign: "center", color: "#6c757d" }}>
+                        No employees found.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
+
+            {/* --- Pagination Controls (Bottom) --- */}
+            {totalPages > 1 && (
+              <div className="pagination-controls bottom" style={{ marginTop: "1rem" }}>
+                <div className="pagination-navigation">
+                  <button
+                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="pagination-btn prev-btn"
+                  >
+                    <FaChevronLeft size={14} />
+                    Previous
+                  </button>
+                  
+                  <div className="pagination-numbers">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`pagination-btn page-btn ${
+                          currentPage === page ? "active" : ""
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <button
+                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="pagination-btn next-btn"
+                  >
+                    Next
+                    <FaChevronRight size={14} />
+                  </button>
+                </div>
+                
+                <div className="pagination-summary">
+                  Page {currentPage} of {totalPages}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
                   
-      < AddEmployeeModal
+      <AddEmployeeModal
         show={addModalShow}
-        setUpdated={setIsUpdated}
+        setUpdated={() => setIsUpdated(prev => !prev)}
         onHide={() => setAddModalShow(false)}
-       />              
+      />              
 
       <UpdateEmployeeModal
         show={editModalShow}
-        setUpdated={setIsUpdated}
+        setUpdated={() => setIsUpdated(prev => !prev)}
         onHide={() => setEditModalShow(false)}
         employee={editEmployees}
       />
@@ -449,4 +546,4 @@ const EmployeeManage = () => {
   );
 };
 
-export default EmployeeManage
+export default EmployeeManage;
