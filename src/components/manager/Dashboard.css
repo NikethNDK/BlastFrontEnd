@@ -78,6 +78,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0;
+  position: relative; /* Ensure proper stacking context */
 }
 
 .dashboard-section-button {
@@ -90,6 +91,10 @@
   z-index: 1;
   position: relative;
   white-space: nowrap;
+}
+
+.dashboard-section-button.has-badge {
+  padding-right: 2rem; /* Extra padding to accommodate badge */
 }
 
 /* Remove default Bootstrap border radius for button group */
@@ -140,6 +145,8 @@
   justify-content: center;
   font-weight: bold;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10; /* Ensure badge appears above adjacent buttons */
+  pointer-events: none; /* Prevent badge from interfering with clicks */
 }
 
 .notification-badge.badge-new {
@@ -202,6 +209,10 @@
     font-size: 0.85rem;
     flex-shrink: 0;
   }
+
+  .dashboard-section-button.has-badge {
+    padding-right: 1.75rem; /* Adjusted padding for smaller screens */
+  }
 }
 
 @media (max-width: 768px) {
@@ -212,6 +223,10 @@
   .dashboard-section-button {
     padding: 0.6rem 0.8rem;
     font-size: 0.8rem;
+  }
+
+  .dashboard-section-button.has-badge {
+    padding-right: 1.5rem; /* Adjusted padding for mobile screens */
   }
 
   .notification-badge {

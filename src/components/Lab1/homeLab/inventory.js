@@ -373,7 +373,7 @@ const MasterListTable = ({
       </div>
       
       {/* --- Equipment Action Buttons --- */}
-      {masterType === "Equipment" && (
+      {/* {masterType === "Equipment" && (
         <div className="equipment-actions">
           <button
             className={`action-btn ${isUpdateMode ? 'active-update' : ''}`}
@@ -388,7 +388,7 @@ const MasterListTable = ({
             View Details
           </button>
         </div>
-      )}
+      )} */}
 
       {/* --- Pagination Controls (Top) --- */}
       <div className="pagination-controls top">

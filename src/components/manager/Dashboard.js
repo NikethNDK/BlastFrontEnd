@@ -102,6 +102,8 @@ const Dashboard = ({ userDetails = { name: "", lab: "", designation: "" } }) => 
               variant="light"
               className={`dashboard-section-button ${
                 selectedButton === section.key ? "active" : ""
+              } ${
+                section.key === "ReceivedFilter" && receivedCount > 0 ? "has-badge" : ""
               }`}
               onClick={() => handleButtonClick(section.key)}
             >

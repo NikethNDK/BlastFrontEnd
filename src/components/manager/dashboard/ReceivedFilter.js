@@ -1,275 +1,291 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import BootstrapTable from "react-bootstrap-table-next";
-import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
-import "react-bootstrap-table-next/dist/react-bootstrap-table2.min.css";
-import "react-bootstrap-table2-filter/dist/react-bootstrap-table2-filter.min.css";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import "../../../components/Lab1/homeLab/inventory.css";
 
 const ReceivedFilter = ({ setReceivedCount }) => {
-  const seenEntryNos = useRef(new Set());
   const [receive, setReceive] = useState([]);
-  const [newEntries, setNewEntries] = useState(new Set());
+  const [filteredData, setFilteredData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const getHeaderStyle = () => ({
-    backgroundColor: "#f8fafc",
-    fontWeight: 600,
-    color: "#1e293b",
-    textAlign: "center",
-    border: "1px solid #e2e8f0",
-    padding: "12px",
-    fontSize: "0.875rem",
-  });
+  // Filter States
+  const [itemCodeFilter, setItemCodeFilter] = useState("");
+  const [itemNameFilter, setItemNameFilter] = useState("");
+  const [projectNameFilter, setProjectNameFilter] = useState("");
+  const [projectCodeFilter, setProjectCodeFilter] = useState("");
+  const [receiptDateFilter, setReceiptDateFilter] = useState("");
+  const [expiryDateFilter, setExpiryDateFilter] = useState("");
+  const [quantityReceivedFilter, setQuantityReceivedFilter] = useState("");
+  const [manufacturerFilter, setManufacturerFilter] = useState("");
+  const [supplierFilter, setSupplierFilter] = useState("");
+  const [invoiceNoFilter, setInvoiceNoFilter] = useState("");
+  const [poNumberFilter, setPoNumberFilter] = useState("");
+  const [batchNumberFilter, setBatchNumberFilter] = useState("");
+  const [remarksFilter, setRemarksFilter] = useState("");
 
-  const getCellStyle = () => ({
-    textAlign: "center",
-    border: "1px solid #e2e8f0",
-    padding: "12px",
-    fontSize: "0.875rem",
-    color: "#475569",
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/itemreceive/");
+        const { new_data, all_data } = response.data;
 
-  const columns = [
-    {
-      dataField: "item_code",
-      text: "Item Code",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "item_name",
-      text: "Item Name",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "project_name",
-      text: "Project Name",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "project_code",
-      text: "Project Code",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "receipt_date",
-      text: "Receipt Date",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "expiry_date",
-      text: "Expiry Date",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "quantity_received",
-      text: "Quantity Received",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "manufacturer",
-      text: "Manufacturer",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "supplier",
-      text: "Supplier",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "invoice_no",
-      text: "Invoice No/Date",
-      filter: textFilter(),
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "po_number",
-      filter: textFilter(),
-      text: "PO Number",
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "batch_number",
-      filter: textFilter(),
-      text: "Batch/Lot Number",
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    {
-      dataField: "remarks",
-      filter: textFilter(),
-      text: "Remarks",
-      sort: true,
-      headerStyle: getHeaderStyle,
-      style: getCellStyle,
-    },
-    { dataField: "entry_no", text: "Entry No", hidden: true },
-  ];
+        setReceive(all_data);
 
-  const rowClasses = (row) => {
-    if (newEntries.has(String(row.entry_no))) {
-      return "highlight-new-row";
-    }
-    return "";
-  };
-
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const response = await axios.get("http://127.0.0.1:8000/itemreceive/");
-      const { new_data, all_data } = response.data;
-
-      setReceive(all_data);
-
-      const freshEntries = new_data.filter(
-        (item) => !seenEntryNos.current.has(item.entry_no)
-      );
-
-      if (freshEntries.length > 0) {
-        setReceivedCount(freshEntries.length);
-        
-        // Create new entry set with only fresh entries
-        const newEntrySet = new Set(
-          freshEntries.map((item) => String(item.entry_no))
-        );
-        setNewEntries(newEntrySet);
-
-        // Add to seen entries
-        freshEntries.forEach((item) =>
-          seenEntryNos.current.add(item.entry_no)
-        );
-
-        // Clear highlights after 100 seconds
-        setTimeout(() => {
-          setNewEntries(new Set());
-        }, 100000);
+        if (new_data && new_data.length > 0) {
+          setReceivedCount(new_data.length);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 10000);
+    return () => clearInterval(interval);
+  }, [setReceivedCount]);
+
+  // Filtering Logic
+  useEffect(() => {
+    const filteredItems = receive.filter(
+      (item) =>
+        (itemCodeFilter === "" ||
+          (item.item_code &&
+            String(item.item_code)
+              .toLowerCase()
+              .includes(itemCodeFilter.toLowerCase()))) &&
+        (itemNameFilter === "" ||
+          (item.item_name &&
+            item.item_name
+              .toLowerCase()
+              .includes(itemNameFilter.toLowerCase()))) &&
+        (projectNameFilter === "" ||
+          (item.project_name &&
+            item.project_name
+              .toLowerCase()
+              .includes(projectNameFilter.toLowerCase()))) &&
+        (projectCodeFilter === "" ||
+          (item.project_code &&
+            item.project_code
+              .toLowerCase()
+              .includes(projectCodeFilter.toLowerCase()))) &&
+        (receiptDateFilter === "" ||
+          (item.receipt_date &&
+            String(item.receipt_date)
+              .toLowerCase()
+              .includes(receiptDateFilter.toLowerCase()))) &&
+        (expiryDateFilter === "" ||
+          (item.expiry_date &&
+            String(item.expiry_date)
+              .toLowerCase()
+              .includes(expiryDateFilter.toLowerCase()))) &&
+        (quantityReceivedFilter === "" ||
+          (item.quantity_received &&
+            String(item.quantity_received)
+              .toLowerCase()
+              .includes(quantityReceivedFilter.toLowerCase()))) &&
+        (manufacturerFilter === "" ||
+          (item.manufacturer &&
+            item.manufacturer
+              .toLowerCase()
+              .includes(manufacturerFilter.toLowerCase()))) &&
+        (supplierFilter === "" ||
+          (item.supplier &&
+            item.supplier
+              .toLowerCase()
+              .includes(supplierFilter.toLowerCase()))) &&
+        (invoiceNoFilter === "" ||
+          (item.invoice_no &&
+            String(item.invoice_no)
+              .toLowerCase()
+              .includes(invoiceNoFilter.toLowerCase()))) &&
+        (poNumberFilter === "" ||
+          (item.po_number &&
+            String(item.po_number)
+              .toLowerCase()
+              .includes(poNumberFilter.toLowerCase()))) &&
+        (batchNumberFilter === "" ||
+          (item.batch_number &&
+            String(item.batch_number)
+              .toLowerCase()
+              .includes(batchNumberFilter.toLowerCase()))) &&
+        (remarksFilter === "" ||
+          (item.remarks &&
+            item.remarks
+              .toLowerCase()
+              .includes(remarksFilter.toLowerCase())))
+    );
+
+    setFilteredData(filteredItems);
+    setCurrentPage(1); // Reset to first page when filtering
+  }, [
+    receive,
+    itemCodeFilter,
+    itemNameFilter,
+    projectNameFilter,
+    projectCodeFilter,
+    receiptDateFilter,
+    expiryDateFilter,
+    quantityReceivedFilter,
+    manufacturerFilter,
+    supplierFilter,
+    invoiceNoFilter,
+    poNumberFilter,
+    batchNumberFilter,
+    remarksFilter,
+  ]);
+
+  // Pagination calculations
+  const totalItems = filteredData.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredData.slice(startIndex, endIndex);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
-  fetchData();
-  const interval = setInterval(fetchData, 10000);
-  return () => clearInterval(interval);
-}, [setReceivedCount]);
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
 
   return (
-    <div style={{ marginTop: "1px", width: "100%" }}>
-
-      <div style={{ paddingTop: "10px" }}>
-        <div
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "8px",
-            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
-            overflow: "hidden",
-          }}
-        >
-          <div style={{ overflowY: "scroll", maxHeight: "300px" }}>
-            <BootstrapTable
-              keyField="entry_no"
-              data={receive}
-              columns={columns}
-              striped
-              hover
-              bordered={false}
-              className="react-bootstrap-table"
-              filter={filterFactory()}
-              rowClasses={rowClasses}
-              rowStyle={{
-                borderBottom: "1px solid #e2e8f0",
-              }}
-              headerClasses="table-header"
-            />
-          </div>
+    <div className="master-list-container" style={{ width: "100%", padding: "24px" }}>
+      {/* --- Pagination Controls (Top) --- */}
+      <div className="pagination-controls top">
+        <div className="pagination-info">
+          Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} items
+        </div>
+        <div className="pagination-options">
+          <label className="items-per-page-label">
+            Items per page:
+            <select 
+              value={itemsPerPage} 
+              onChange={handleItemsPerPageChange}
+              className="items-per-page-select"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+          </label>
         </div>
       </div>
 
-      <style jsx>{`
-        :global(.react-bootstrap-table) {
-          border-collapse: separate;
-          border-spacing: 0;
-        }
+      {/* --- Main Data Table --- */}
+      <div className="table-wrapper">
+        <table className="inventory-table">
+          <thead>
+            <tr>
+              {/* Header Cells with Filters */}
+              {[
+                { label: "Item Code", filter: itemCodeFilter, setFilter: setItemCodeFilter },
+                { label: "Item Name", filter: itemNameFilter, setFilter: setItemNameFilter },
+                { label: "Project Name", filter: projectNameFilter, setFilter: setProjectNameFilter },
+                { label: "Project Code", filter: projectCodeFilter, setFilter: setProjectCodeFilter },
+                { label: "Receipt Date", filter: receiptDateFilter, setFilter: setReceiptDateFilter },
+                { label: "Expiry Date", filter: expiryDateFilter, setFilter: setExpiryDateFilter },
+                { label: "Quantity Received", filter: quantityReceivedFilter, setFilter: setQuantityReceivedFilter },
+                { label: "Manufacturer", filter: manufacturerFilter, setFilter: setManufacturerFilter },
+                { label: "Supplier", filter: supplierFilter, setFilter: setSupplierFilter },
+                { label: "Invoice No/Date", filter: invoiceNoFilter, setFilter: setInvoiceNoFilter },
+                { label: "PO Number", filter: poNumberFilter, setFilter: setPoNumberFilter },
+                { label: "Batch/Lot Number", filter: batchNumberFilter, setFilter: setBatchNumberFilter },
+                { label: "Remarks", filter: remarksFilter, setFilter: setRemarksFilter },
+              ].map(({ label, filter, setFilter }) => (
+                <th key={label} className="table-header">
+                  {label}
+                  <input
+                    type="text"
+                    placeholder={`Filter by ${label}`}
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    className="filter-input"
+                  />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {currentItems.length > 0 ? (
+              currentItems.map((item, index) => (
+                <tr
+                  key={item.entry_no || index}
+                  className="data-row"
+                >
+                  <td className="table-cell">{item.item_code || "-"}</td>
+                  <td className="table-cell">{item.item_name || "-"}</td>
+                  <td className="table-cell">{item.project_name || "-"}</td>
+                  <td className="table-cell">{item.project_code || "-"}</td>
+                  <td className="table-cell">{item.receipt_date || "-"}</td>
+                  <td className="table-cell">{item.expiry_date || "-"}</td>
+                  <td className="table-cell">{item.quantity_received || "-"}</td>
+                  <td className="table-cell">{item.manufacturer || "-"}</td>
+                  <td className="table-cell">{item.supplier || "-"}</td>
+                  <td className="table-cell">{item.invoice_no || "-"}</td>
+                  <td className="table-cell">{item.po_number || "-"}</td>
+                  <td className="table-cell">{item.batch_number || "-"}</td>
+                  <td className="table-cell">{item.remarks || "-"}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="13" className="no-data-cell">
+                  No items matching your filter criteria.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-        :global(.react-bootstrap-table table) {
-          margin-bottom: 0 !important;
-        }
-
-        :global(.react-bootstrap-table tbody tr:hover) {
-          background-color: #f1f5f9 !important;
-        }
-
-        :global(.react-bootstrap-table .filter) {
-          border: 1px solid #cbd5e1;
-          border-radius: 4px;
-          padding: 6px 8px;
-          font-size: 0.875rem;
-          margin-top: 4px;
-        }
-
-        :global(.react-bootstrap-table .filter:focus) {
-          outline: none;
-          border-color: #3b82f6;
-          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-        }
-
-        :global(.table-header) {
-          position: sticky;
-          top: 0;
-          z-index: 10;
-        }
-
-        :global(.highlight-new-row) {
-          background-color: #fef3c7 !important;
-          animation: fadeHighlight 100s ease-out forwards;
-        }
-
-        :global(.highlight-new-row:hover) {
-          background-color: #fde68a !important;
-        }
-
-        @keyframes fadeHighlight {
-          0% {
-            background-color: #fef3c7;
-          }
-          100% {
-            background-color: #ffffff;
-          }
-        }
-      `}</style>
+      {/* --- Pagination Controls (Bottom) --- */}
+      {totalPages > 1 && (
+        <div className="pagination-controls bottom">
+          <div className="pagination-navigation">
+            <button
+              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="pagination-btn prev-btn"
+            >
+              <FaChevronLeft size={14} />
+              Previous
+            </button>
+            
+            <div className="pagination-numbers">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`pagination-btn page-btn ${
+                    currentPage === page ? "active" : ""
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+            
+            <button
+              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+              disabled={currentPage === totalPages}
+              className="pagination-btn next-btn"
+            >
+              Next
+              <FaChevronRight size={14} />
+            </button>
+          </div>
+          
+          <div className="pagination-summary">
+            Page {currentPage} of {totalPages}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default ReceivedFilter
+export default ReceivedFilter;
