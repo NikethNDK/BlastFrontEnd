@@ -16,6 +16,7 @@ import {
   getMastertyApi,
   getSuppliersApi,
   getLocationsApi,
+  getLabsApi,
 } from "../../../services/AppinfoService";
 import "../../inventory/formBorder.css";
 import Select from "react-select";
@@ -221,7 +222,7 @@ const ReceivedProduct = ({
   };
 
   // --- Add Handler (remains the same, but includes modal closure) ---
-  const handleAdd = (e) => {
+  const handleAdd = async (e) => {
     e.preventDefault(); // Prevent default form submission since we are using an API call
 
     const formData = new FormData(formRef.current);
@@ -288,6 +289,21 @@ const ReceivedProduct = ({
       return;
     }
 
+    // Get lab ID from userDetails
+    let labId = null;
+    if (userDetails.lab && Array.isArray(userDetails.lab) && userDetails.lab.length > 0) {
+      const labName = userDetails.lab[0];
+      try {
+        const labsResponse = await getLabsApi();
+        const userLab = labsResponse.data.find(l => l.name === labName);
+        if (userLab) {
+          labId = userLab.id;
+        }
+      } catch (error) {
+        console.error("Error fetching lab:", error);
+      }
+    }
+
     // Prepare data for API
     const receiveData = {
       bill_no: formData.get("bill"),
@@ -311,6 +327,7 @@ const ReceivedProduct = ({
       master_type: masterType || "",
       unit_measure: selectedItemDetails.units,
       min_req_stock: selectedStockDetails?.requiredStock || "",
+      lab_id: labId, // Add lab ID for backend to assign to Master
     };
 
     // API call

@@ -83,6 +83,12 @@ const RegisterModal = ({
       return;
     }
 
+    // Add validation for Lab Assistant - must have exactly one lab
+    if (role === "Lab Assistant" && selectedLabs.length !== 1) {
+      toast.error("Lab Assistant must be assigned to exactly one lab.");
+      return;
+    }
+
     const selectedLabIds = selectedLabs.map((lab) => lab.value);
 
     if (isNaN(parseInt(designation, 10))) {
@@ -240,13 +246,20 @@ const RegisterModal = ({
               </label>
               <Select
                 options={labs}
-                isMulti
+                isMulti={role !== "Lab Assistant"}  // Single select for Lab Assistant
                 styles={customSelectStyles}
                 value={selectedLabs}
-                onChange={(selectedOptions) => setSelectedLabs(selectedOptions || [])}
+                onChange={(selectedOptions) => {
+                  if (role === "Lab Assistant") {
+                    // For Lab Assistant, only allow single selection
+                    setSelectedLabs(selectedOptions ? [selectedOptions] : []);
+                  } else {
+                    setSelectedLabs(selectedOptions || []);
+                  }
+                }}
                 className="basic-multi-select"
                 classNamePrefix="select"
-                placeholder="Select labs..."
+                placeholder={role === "Lab Assistant" ? "Select lab..." : "Select labs..."}
                 menuPortalTarget={document.body}
                 menuPosition="fixed"
               />
