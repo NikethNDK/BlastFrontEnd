@@ -7,6 +7,7 @@ import {
   createMasterType,
   addLabMasterApi,
   getMastertyApi,
+  getLabsApi,
 } from "../../../services/AppinfoService";
 import toast from "react-hot-toast";
 import { Button } from "react-bootstrap";
@@ -103,12 +104,37 @@ const AddProduct = ({
       return;
     }
 
+    // Get lab ID - userDetails.lab is an array, use first lab
+    let labId = null;
+    let labName = null;
+    
+    if (userDetails.lab && Array.isArray(userDetails.lab) && userDetails.lab.length > 0) {
+      labName = userDetails.lab[0]; // Use first lab from array
+      try {
+        const labsResponse = await getLabsApi();
+        const userLab = labsResponse.data.find(l => l.name === labName);
+        if (userLab) {
+          labId = userLab.id;
+        } else {
+          toast.error("Unable to determine your lab. Please contact administrator.");
+          return; // Prevent creation
+        }
+      } catch (error) {
+        toast.error("Unable to determine your lab. Please contact administrator.");
+        return; // Prevent creation
+      }
+    } else {
+      toast.error("Unable to determine your lab. Please contact administrator.");
+      return; // Prevent creation
+    }
+
     const masterData = {
       master_type: masterType,
       item_code: itemCode,
       item_name: itemName,
       min_req_stock: reqStock,
       units: units,
+      lab: labId, // Add lab ID
     };
 
     try {

@@ -57,9 +57,13 @@ export async function updateAppinfo(infoid, appinfo) {
 
 // ------------------------------Chemical---------------------------------------------------
 
-export function getMasterApi() {
+export function getMasterApi(labName = null) {
+  const url = labName 
+    ? `${BASE_URL}/master/?lab=${encodeURIComponent(labName)}`
+    : `${BASE_URL}/master/`;
+    
   return axios
-    .get(`${BASE_URL}/master/`)
+    .get(url)
     .then((response) => response.data);
 }
 
@@ -628,7 +632,7 @@ export function getDistinctRoleApi() {
 
 //---------------------------------Newvwrsion Lab Assistant------------------//
 
-export function addLabMasterApi(lab) {
+export function addLabMasterApi(lab, userDetails) {
   return axios
     .post(`${BASE_URL}/master_inventory/create/`, {
       c_id: null,
@@ -644,6 +648,7 @@ export function addLabMasterApi(lab) {
       // instruction_specification: lab.instruction_specification,
       min_req_stock: lab.min_req_stock,
       // remarks: lab.remarks,
+      lab: lab.lab, // Include lab ID
     })
     .then((response) => response.data);
 }

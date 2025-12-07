@@ -181,9 +181,14 @@ const MasterListTable = ({
           userLab: userDetails.lab
         });
         
+        // Get lab name from userDetails (first lab if array)
+        const labName = Array.isArray(userDetails.lab) 
+          ? userDetails.lab[0] 
+          : (userDetails.lab !== 'N/A' ? userDetails.lab : null);
+
         const response = await fetchMasterListByType(
           masterType || "",
-          // userDetails.lab
+          labName  // <-- UNCOMMENT and pass lab name
         );
 
         console.log("📊 [INVENTORY TABLE] API response:", response);
