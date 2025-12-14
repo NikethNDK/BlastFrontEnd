@@ -2,7 +2,7 @@ import axios from "axios";
 import { API_ENDPOINTS, API_BASE_URL } from "../config/api";
 
 // Base URL for all API calls
-export const BASE_URL = "http://127.0.0.1:8000";
+export const BASE_URL = "http://localhost:8000";
 
 export function getAppinfo() {
   return axios
@@ -58,10 +58,10 @@ export async function updateAppinfo(infoid, appinfo) {
 // ------------------------------Chemical---------------------------------------------------
 
 export function getMasterApi(labName = null) {
-  const url = labName 
+  const url = labName
     ? `${BASE_URL}/master/?lab=${encodeURIComponent(labName)}`
     : `${BASE_URL}/master/`;
-    
+
   return axios
     .get(url)
     .then((response) => response.data);
@@ -307,7 +307,7 @@ export async function updateInventoryApi(enNo, inventory) {
 
 export async function loginUserApi(credentials) {
   try {
-    const response = await axios.post(`${BASE_URL}/login-view/`, credentials);
+    const response = await axios.post(`${BASE_URL}/login-view/`, credentials, { withCredentials: true });
     return response.data;
   } catch (error) {
     console.error("Error logging in:", error);
@@ -792,7 +792,7 @@ export function addTempItemReceiveApi(receive) {
       receipt_date: currentDate,
       quantity_received: receive.quantity_received,
       po_number: receive.po_number,
-      batch_number: receive.batch_number, 
+      batch_number: receive.batch_number,
       remarks: receive.remarks,
       master_type: receive.master_type,
       min_req_stock: receive.min_req_stock,
@@ -1327,14 +1327,14 @@ export const fetchMasterListByType = async (masterType, lab = null) => {
     if (lab) {
       params.lab = lab;
     }
-    
+
     console.log("🌐 [API] fetchMasterListByType called with:", { masterType, lab, params });
     console.log("🌐 [API] Making request to:", `${BASE_URL}/api/master-list-by-type/`);
-    
+
     const response = await axios.get(`${BASE_URL}/api/master-list-by-type/`, {
       params: params,
     });
-    
+
     console.log("🌐 [API] fetchMasterListByType response:", response.data);
     return response.data;
   } catch (error) {
@@ -1346,11 +1346,11 @@ export const fetchMasterListByType = async (masterType, lab = null) => {
 export const fetchItemExpiryDates = async (itemCode) => {
   try {
     console.log("🌐 [API] fetchItemExpiryDates called with itemCode:", itemCode);
-    
+
     const response = await axios.get(`${BASE_URL}/api/item-expiry-dates/`, {
       params: { item_code: itemCode },
     });
-    
+
     console.log("🌐 [API] fetchItemExpiryDates response:", response.data);
     return response.data;
   } catch (error) {
@@ -1362,11 +1362,11 @@ export const fetchItemExpiryDates = async (itemCode) => {
 export const fetchItemLocations = async (itemCode) => {
   try {
     console.log("🌐 [API] fetchItemLocations called with itemCode:", itemCode);
-    
+
     const response = await axios.get(`${BASE_URL}/api/item-locations/`, {
       params: { item_code: itemCode },
     });
-    
+
     console.log("🌐 [API] fetchItemLocations response:", response.data);
     return response.data;
   } catch (error) {
@@ -1379,10 +1379,10 @@ export function getTemptReceiveApi(lab = null) {
   if (lab) {
     params.lab = lab;
   }
-  
+
   console.log("🌐 [API] getTemptReceiveApi called with:", { lab, params });
   console.log("🌐 [API] Making request to:", `${BASE_URL}/api/inventoryReceive/`);
-  
+
   return axios
     .get(`${BASE_URL}/api/inventoryReceive/`, { params })
     .then((response) => {

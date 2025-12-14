@@ -400,10 +400,10 @@ body {
   padding: var(--space-6);
 }
 
-/* Modern Header */
+/* Modern Header - Using green gradient to match Header.css */
 .modern-header {
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
-  color: white;
+  background: linear-gradient(135deg, #c5ea31 0%, #c5ea31 100%);
+  color: #000;
   padding: var(--space-8) 0;
   margin-bottom: var(--space-8);
   border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
