@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/lab-design-system.css";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { logoutUser } from './store/slices/userSlice';
 import { Toaster } from "react-hot-toast";
 import ModernSidebar from "./components/common/ModernSidebar";
 import ModernHeader from "./components/common/ModernHeader";
@@ -118,9 +120,19 @@ function Layout({ userDetails }) {
     }
   };
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const handleLogout = () => {
-    // Add logout logic here
-    window.location.href = '/';
+    dispatch(logoutUser())
+      .unwrap()
+      .then(() => {
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error('Logout failed:', err);
+        navigate('/');
+      });
   };
 
   const getPageTitle = (pathname) => {
@@ -184,7 +196,7 @@ function Layout({ userDetails }) {
 
   return (
     <div className="lab-app">
-      <Header/>
+      <Header />
       <div className="lab-body-container">
         <ModernSidebar
           userDetails={userDetails}
@@ -192,15 +204,15 @@ function Layout({ userDetails }) {
           onNotificationClick={handleNotificationClick}
           onLogout={handleLogout}
         />
-        
+
         <div className={`lab-main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          
+
           <div className="lab-content-container">
             <Routes>
               <Route path="/master" element={
                 <div>
                   {/* <StatsDashboard stats={stats} loading={loading} /> */}
-                  
+
                   <HomeLab userDetails={userDetails} />
                 </div>
               } />
@@ -214,7 +226,7 @@ function Layout({ userDetails }) {
               <Route path="/received_issue" element={<ChemicalIssuePage userDetails={userDetails} />} />
               <Route path="/returntable" element={<ReceivedDataTable userDetails={userDetails} />} />
               <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
-              <Route path="/common_name" element={<CommonNameDna userDetails={userDetails}/>} />
+              <Route path="/common_name" element={<CommonNameDna userDetails={userDetails} />} />
               <Route path="/scientific_name" element={<ScientificNameDna userDetails={userDetails} />} />
               <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
               <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
@@ -225,7 +237,7 @@ function Layout({ userDetails }) {
           </div>
         </div>
       </div>
-      <Toaster 
+      <Toaster
         position="top-center"
         toastOptions={{
           duration: 4000,

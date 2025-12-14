@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { 
+import {
   FaSignOutAlt,
   FaChartBar,
   FaBell,
@@ -12,26 +12,37 @@ import {
 import "../../blast/BlastSidebar.css";
 import Header from "../Lab1/homeLab/Header";
 import { useNavigate } from "react-router-dom";
-const ManagerNavigation = ({ 
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../../store/slices/userSlice';
+const ManagerNavigation = ({
   children,
   userDetails = { name: "", lab: "", designation: "" }
 }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const handleLogout = () => {
-    window.location.href = '/';
+    dispatch(logoutUser())
+      .unwrap()
+      .then(() => {
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error('Logout failed:', err);
+        navigate('/');
+      });
   };
 
   return (
     <div style={{ backgroundColor: "#f2f5e6" }}>
       {/* <header className="headerr"> */}
-        <Header />
+      <Header />
       {/* </header> */}
 
       <div style={{ display: "flex" }}>
         {/* Mobile Overlay */}
         {!collapsed && (
-          <div 
+          <div
             className="blast-sidebar-overlay d-lg-none"
             onClick={() => setCollapsed(true)}
           />
@@ -39,22 +50,22 @@ const ManagerNavigation = ({
 
         {/* Sidebar */}
         <div className={`blast-sidebar ${collapsed ? 'collapsed' : ''}`}>
-          
+
           {/* Header and Toggle */}
           <div className="blast-sidebar-header">
             <div className="d-flex align-items-center justify-content-between w-100">
               {!collapsed && (
                 <div className="blast-sidebar-brand">
-                  
+
                   <button className="modern-sidebar-logo" onClick={() => navigate("/")}>
-                  <FaHome />
-                </button>
+                    <FaHome />
+                  </button>
                   <span>Manager</span>
                 </div>
               )}
             </div>
           </div>
-          
+
           {/* Menu (Navigation) */}
           <div className="blast-sidebar-menu-wrapper">
             <div className="blast-sidebar-section">
@@ -63,7 +74,7 @@ const ManagerNavigation = ({
               <nav className="blast-sidebar-menu">
                 <NavLink
                   to="/dashboard"
-                  className={({ isActive }) => 
+                  className={({ isActive }) =>
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
                   }
                   title="Dashboard"
@@ -89,7 +100,7 @@ const ManagerNavigation = ({
 
                 <NavLink
                   to="/change_password"
-                  className={({ isActive }) => 
+                  className={({ isActive }) =>
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
                   }
                   title="Change Password"
@@ -118,7 +129,7 @@ const ManagerNavigation = ({
 
           {/* Footer - Logout Button */}
           <div className="blast-sidebar-footer">
-            <button 
+            <button
               className="blast-sidebar-logout"
               onClick={handleLogout}
               title="Logout"

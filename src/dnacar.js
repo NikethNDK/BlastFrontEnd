@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { logoutUser } from './store/slices/userSlice';
 import HomeLab from "../src/components/Lab1/homeLab/HomeLab";
 import LabNavigatio from "./components/Lab1/homeLab/nav";
 import AddProduct from "./components/Lab1/addProduct/AddProduct";
@@ -31,9 +33,19 @@ function Layout({ userDetails }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const handleLogout = () => {
-    // Add logout logic here
-    window.location.href = '/';
+    dispatch(logoutUser())
+      .unwrap()
+      .then(() => {
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error('Logout failed:', err);
+        navigate('/');
+      });
   };
 
   const handleNotificationClick = async (notification) => {
@@ -61,10 +73,10 @@ function Layout({ userDetails }) {
     } catch (error) {
       console.error("Error closing item:", error);
     }
-  };  
+  };
 
   // Hide navigation only on JoinLab ("/") route
-  const hiddenPaths = ["/", "/add_blast","/dna","/add_dna"];
+  const hiddenPaths = ["/", "/add_blast", "/dna", "/add_dna"];
   const hideNavigation = hiddenPaths.includes(location.pathname);
 
   if (hideNavigation) {
@@ -82,7 +94,7 @@ function Layout({ userDetails }) {
     <>
       <div className="lab-app">
         < Header />
-        <div className="lab-body-container"> 
+        <div className="lab-body-container">
           <ModernSidebar
             userDetails={userDetails}
             notifications={notifications}
@@ -103,7 +115,7 @@ function Layout({ userDetails }) {
               <Route path="/received_issue" element={<ChemicalIssuePage userDetails={userDetails} />} />
               <Route path="/returntable" element={<ReceivedDataTable userDetails={userDetails} />} />
               <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
-              <Route path="/common_name" element={<CommonNameDna userDetails={userDetails}/>} />
+              <Route path="/common_name" element={<CommonNameDna userDetails={userDetails} />} />
               <Route path="/scientific_name" element={<ScientificNameDna userDetails={userDetails} />} />
               <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
               <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />

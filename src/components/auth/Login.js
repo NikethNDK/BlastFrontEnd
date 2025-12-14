@@ -41,9 +41,11 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
   });
 
   // Sync with Redux state changes (for page refresh)
+  // Sync with Redux state changes (for page refresh and logout)
   useEffect(() => {
+    setLoggedIn(isReduxAuthenticated);
+
     if (isReduxAuthenticated && reduxUser) {
-      setLoggedIn(true);
       setUserRole(reduxUser.role || "");
       setUserLabs(reduxUser.lab || []);
       setUserId(reduxUser.id || "");

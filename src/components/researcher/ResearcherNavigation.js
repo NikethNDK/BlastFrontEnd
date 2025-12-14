@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { 
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../../store/slices/userSlice';
+import {
   FaBars,
   FaTimes,
   FaBell,
@@ -10,7 +12,7 @@ import {
   FaHome,
   FaRedo
 } from 'react-icons/fa';
-import { 
+import {
   Badge,
   Dropdown,
   DropdownToggle,
@@ -23,7 +25,7 @@ import { BASE_URL } from "../../services/AppinfoService";
 
 const UserAvatarIcon = FaUserCircle;
 
-const ResearcherNavigation = ({ 
+const ResearcherNavigation = ({
   userDetails = { name: '', lab: '', designation: '' }, children
 }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -90,8 +92,17 @@ const ResearcherNavigation = ({
     fetchDeclinedItems();
   };
 
+  const dispatch = useDispatch();
   const handleLogout = () => {
-    window.location.href = '/';
+    dispatch(logoutUser())
+      .unwrap()
+      .then(() => {
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error('Logout failed:', err);
+        navigate('/');
+      });
   };
 
   return (
@@ -100,10 +111,10 @@ const ResearcherNavigation = ({
         <Header />
       </header>
 
-      <div style={{display: "flex"}}>
+      <div style={{ display: "flex" }}>
         {/* Mobile Overlay */}
         {!collapsed && (
-          <div 
+          <div
             className="blast-sidebar-overlay d-lg-none"
             onClick={() => setCollapsed(true)}
           />
@@ -111,14 +122,14 @@ const ResearcherNavigation = ({
 
         {/* Sidebar */}
         <div className={`blast-sidebar ${collapsed ? 'collapsed' : ''}`}>
-          
+
           {/* Header and Toggle */}
           <div className="blast-sidebar-header">
             <div className="d-flex align-items-center justify-content-between w-100">
               {!collapsed && (
                 <div className="blast-sidebar-brand">
-                  <button 
-                    className="blast-sidebar-logo" 
+                  <button
+                    className="blast-sidebar-logo"
                     onClick={() => navigate('/')}
                     style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                   >
@@ -145,12 +156,12 @@ const ResearcherNavigation = ({
               </div>
             )}
           </div>
-          
+
           {/* Menu (Navigation) */}
           <div className="blast-sidebar-menu-wrapper">
             <div className="blast-sidebar-section">
               {!collapsed && <div className="blast-sidebar-section-title">Navigation</div>}
-              
+
               {/* Notification Dropdown */}
               {/* {!collapsed && (
                 <div style={{ padding: '0.5rem 1rem', marginBottom: '0.5rem' }}>
@@ -251,7 +262,7 @@ const ResearcherNavigation = ({
 
                 <NavLink
                   to="/masters"
-                  className={({ isActive }) => 
+                  className={({ isActive }) =>
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
                   }
                   title="Inventory View"
@@ -264,7 +275,7 @@ const ResearcherNavigation = ({
 
                 <NavLink
                   to="/change_password"
-                  className={({ isActive }) => 
+                  className={({ isActive }) =>
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
                   }
                   title="Change Password"
@@ -275,14 +286,14 @@ const ResearcherNavigation = ({
                   )}
                 </NavLink>
 
-                
+
               </nav>
             </div>
           </div>
 
           {/* Footer - Logout Button */}
           <div className="blast-sidebar-footer">
-            <button 
+            <button
               className="blast-sidebar-logout"
               onClick={handleLogout}
               title="Logout"
@@ -294,7 +305,7 @@ const ResearcherNavigation = ({
         </div>
 
         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            {children}
+          {children}
         </div>
       </div>
     </div>

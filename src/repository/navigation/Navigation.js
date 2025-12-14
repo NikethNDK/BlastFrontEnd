@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { 
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../../store/slices/userSlice';
+import {
   FaBars,
   FaTimes,
   FaUserCircle,
@@ -15,7 +17,7 @@ import "../../App.css";
 
 const UserAvatarIcon = FaUserCircle;
 
-const Navigation = ({ 
+const Navigation = ({
   userDetails = { name: 'User Name', lab: 'Lab Assistant', designation: 'Researcher' }
 }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -26,17 +28,25 @@ const Navigation = ({
     setCollapsed(!collapsed);
   };
 
+  const dispatch = useDispatch();
   const handleLogout = () => {
-    window.location.href = "/";
-    // Add any logout logic here
-    console.log('Logout clicked');
+    dispatch(logoutUser())
+      .unwrap()
+      .then(() => {
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error('Logout failed:', err);
+        // Force redirect even if backend fails
+        navigate('/');
+      });
   };
 
   return (
     <>
       {/* Mobile Overlay */}
       {!collapsed && (
-        <div 
+        <div
           className="blast-sidebar-overlay d-lg-none"
           onClick={() => setCollapsed(true)}
         />
@@ -44,7 +54,7 @@ const Navigation = ({
 
       {/* Sidebar */}
       <div className={`blast-sidebar ${collapsed ? 'collapsed' : ''}`}>
-        
+
         {/* Header and Toggle */}
         <div className="blast-sidebar-header">
           <div className="d-flex align-items-center justify-content-between w-100">
@@ -52,8 +62,8 @@ const Navigation = ({
               <div className="blast-sidebar-brand">
                 <div className="blast-sidebar-logo">
                   <button className="blast-sidebar-logo" onClick={() => navigate("/")}>
-                                    <FaHome />
-                                  </button>
+                    <FaHome />
+                  </button>
                 </div>
                 <span>DNA Repository</span>
               </div>
@@ -82,7 +92,7 @@ const Navigation = ({
             </div>
           )}
         </div>
-        
+
         {/* Menu (Navigation) */}
         <div className="blast-sidebar-menu-wrapper">
           <div className="blast-sidebar-section">
@@ -90,7 +100,7 @@ const Navigation = ({
             <nav className="blast-sidebar-menu">
               <NavLink
                 to="/dna"
-                className={({ isActive }) => 
+                className={({ isActive }) =>
                   `blast-sidebar-item ${isActive ? 'active' : ''}`
                 }
                 title="Overview"
@@ -100,10 +110,10 @@ const Navigation = ({
                   <span className="blast-sidebar-item-text">Overview</span>
                 )}
               </NavLink>
-              
+
               <NavLink
                 to="/add_dna"
-                className={({ isActive }) => 
+                className={({ isActive }) =>
                   `blast-sidebar-item ${isActive ? 'active' : ''}`
                 }
                 title="New Submission"
@@ -116,7 +126,7 @@ const Navigation = ({
 
               <NavLink
                 to='/add_blast'
-                className={({ isActive }) => 
+                className={({ isActive }) =>
                   `blast-sidebar-item ${isActive ? 'active' : ''}`
                 }
                 title="Blast"
@@ -132,7 +142,7 @@ const Navigation = ({
 
         {/* Footer - Logout Button */}
         <div className="blast-sidebar-footer">
-          <button 
+          <button
             className="blast-sidebar-logout"
             onClick={handleLogout}
             title="Logout"
