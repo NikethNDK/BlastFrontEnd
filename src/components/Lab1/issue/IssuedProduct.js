@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Modal, Col, Row, Form, Button } from "react-bootstrap";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 import {
   addItemIssueApi,
   getSuppliersApi,
@@ -26,7 +27,18 @@ import { BASE_URL } from "../../../services/AppinfoService";
 const IssuedProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
-  console.log("🏗️ [COMPONENT] IssuedProduct component initialized with userDetails:", userDetails);
+  // Get user from Redux as fallback/primary source
+  const reduxUser = useSelector((state) => state.user.user);
+  
+  // Merge userDetails prop with Redux user data (Redux takes priority)
+  const effectiveUserDetails = reduxUser ? {
+    name: reduxUser.user_name || userDetails.name || "",
+    user_name: reduxUser.user_name || userDetails.user_name || userDetails.name || "",
+    lab: reduxUser.lab || userDetails.lab || "N/A",
+    designation: reduxUser.designation || userDetails.designation || "Not Assigned",
+    role: reduxUser.role || userDetails.role || ""
+  } : userDetails;
+  
   const [masterTypes, setMasterTypes] = useState([]);
   const [issues, setIssues] = useState([]);
   const [message, setMessage] = useState("");
@@ -168,10 +180,14 @@ const IssuedProduct = ({
         selectedProject: selectedProject.value,
         selectedExpiryDate: selectedExpiryDate.value,
         selectedLocation: selectedLocation.value,
-        userLab: userDetails.lab
+        userLab: effectiveUserDetails.lab
       });
 
-      getTemptReceiveApi(userDetails.lab)
+      const username = effectiveUserDetails.user_name || effectiveUserDetails.name || null;
+      const labName = Array.isArray(effectiveUserDetails.lab) 
+        ? effectiveUserDetails.lab[0] 
+        : (effectiveUserDetails.lab !== 'N/A' ? effectiveUserDetails.lab : null);
+      getTemptReceiveApi(labName, username)
         .then((data) => {
           console.log("📊 [QUANTITY FETCH] Raw API response data:", data);
           console.log("📊 [QUANTITY FETCH] Data length:", data.length);
@@ -264,7 +280,7 @@ const IssuedProduct = ({
         selectedLocation: !!selectedLocation
       });
     }
-  }, [selectedItemCode, selectedProject, selectedExpiryDate, selectedLocation, userDetails.lab]);
+  }, [selectedItemCode, selectedProject, selectedExpiryDate, selectedLocation, effectiveUserDetails.lab]);
 
   useEffect(() => {
     if (!masterType) {
@@ -274,11 +290,15 @@ const IssuedProduct = ({
 
     console.log("🔍 [ITEM LIST FETCH] Starting item list fetch with:", {
       masterType,
-      userLab: userDetails.lab,
-      userDetails: userDetails
+      userLab: effectiveUserDetails.lab,
+      userDetails: effectiveUserDetails
     });
 
-    getTemptReceiveApi(userDetails.lab)
+    const username = effectiveUserDetails.user_name || effectiveUserDetails.name || null;
+    const labName = Array.isArray(effectiveUserDetails.lab) 
+      ? effectiveUserDetails.lab[0] 
+      : (effectiveUserDetails.lab !== 'N/A' ? effectiveUserDetails.lab : null);
+    getTemptReceiveApi(labName, username)
       .then((data) => {
         console.log("📊 [ITEM LIST FETCH] Raw API response data:", data);
         console.log("📊 [ITEM LIST FETCH] Data length:", data.length);
@@ -372,7 +392,7 @@ const IssuedProduct = ({
           console.error("Error fetching issues:", error);
         });
     }
-  }, [masterType, selectedNames, userDetails.lab]);
+  }, [masterType, selectedNames, effectiveUserDetails.lab]);
 
   const handleItemCodeChange = async (selectedOption) => {
     console.log("🔍 [ITEM SELECTION] Item code changed to:", selectedOption);
