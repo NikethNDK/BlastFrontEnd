@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import "./TransferredDataTable.css";
 import * as XLSX from "xlsx";
@@ -7,10 +7,37 @@ import { AiOutlineDownload } from "react-icons/ai";
 import LabNavigation1 from "../homeLab/LabNavigation1";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../services/AppinfoService";
+import { useSelector } from "react-redux";
 
 const ReceivedDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  // Get user from Redux as fallback/primary source
+  const reduxUser = useSelector((state) => state.user.user);
+  
+  // Merge userDetails prop with Redux user data (Redux takes priority) - memoized to prevent infinite loops
+  const effectiveUserDetails = useMemo(() => {
+    return reduxUser ? {
+      name: reduxUser.user_name || userDetails.name || "",
+      user_name: reduxUser.user_name || userDetails.user_name || userDetails.name || "",
+      lab: reduxUser.lab || userDetails.lab || "N/A",
+      designation: reduxUser.designation || userDetails.designation || "Not Assigned",
+      role: reduxUser.role || userDetails.role || ""
+    } : userDetails;
+  }, [reduxUser, userDetails]);
+
+  // Extract username and lab for dependency tracking
+  const username = useMemo(() => 
+    effectiveUserDetails.user_name || effectiveUserDetails.name || null,
+    [effectiveUserDetails.user_name, effectiveUserDetails.name]
+  );
+  const labName = useMemo(() => 
+    effectiveUserDetails.lab && effectiveUserDetails.lab !== 'N/A' 
+      ? effectiveUserDetails.lab 
+      : null,
+    [effectiveUserDetails.lab]
+  );
+
   const [data, setData] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false); // Popup state
@@ -23,12 +50,25 @@ const ReceivedDataTable = ({
 
   useEffect(() => {
     fetchData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username, labName]);
 
   const fetchData = async () => {
     try {
+      // Build query parameters
+      const params = {};
+      if (username) {
+        params.username = username;
+      }
+      if (labName) {
+        params.lab = labName;
+      }
+
+      console.log("🌐 [API] get_transferred_data called with:", { username, lab: labName, params });
+
       const response = await axios.get(
-        `${BASE_URL}/api/transfer_data/`
+        `${BASE_URL}/api/transfer_data/`,
+        { params: params }
       );
       setData(response.data);
     } catch (error) {
