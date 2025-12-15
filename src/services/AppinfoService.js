@@ -1321,14 +1321,17 @@ export function getLabassistantEmployeeApi() {
     .get(`${BASE_URL}/lab-assistants/`)
     .then((response) => response.data);
 }
-export const fetchMasterListByType = async (masterType, lab = null) => {
+export const fetchMasterListByType = async (masterType, lab = null, username = null) => {
   try {
     const params = { master_type: masterType };
     if (lab) {
       params.lab = lab;
     }
+    if (username) {
+      params.username = username;
+    }
 
-    console.log("🌐 [API] fetchMasterListByType called with:", { masterType, lab, params });
+    console.log("🌐 [API] fetchMasterListByType called with:", { masterType, lab, username, params });
     console.log("🌐 [API] Making request to:", `${BASE_URL}/api/master-list-by-type/`);
 
     const response = await axios.get(`${BASE_URL}/api/master-list-by-type/`, {
@@ -1374,13 +1377,16 @@ export const fetchItemLocations = async (itemCode) => {
     throw error;
   }
 };
-export function getTemptReceiveApi(lab = null) {
+export function getTemptReceiveApi(lab = null, username = null) {
   const params = {};
   if (lab) {
     params.lab = lab;
   }
+  if (username) {
+    params.username = username;
+  }
 
-  console.log("🌐 [API] getTemptReceiveApi called with:", { lab, params });
+  console.log("🌐 [API] getTemptReceiveApi called with:", { lab, username, params });
   console.log("🌐 [API] Making request to:", `${BASE_URL}/api/inventoryReceive/`);
 
   return axios

@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 import { FaBell, FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { AiOutlineDownload } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import "./inventory.css";
 
@@ -15,6 +16,18 @@ const MasterListTable = ({
   initialNotifications,
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  // Get user from Redux as fallback/primary source
+  const reduxUser = useSelector((state) => state.user.user);
+  
+  // Merge userDetails prop with Redux user data (Redux takes priority)
+  const effectiveUserDetails = reduxUser ? {
+    name: reduxUser.user_name || userDetails.name || "",
+    user_name: reduxUser.user_name || userDetails.user_name || userDetails.name || "",
+    lab: reduxUser.lab || userDetails.lab || "N/A",
+    designation: reduxUser.designation || userDetails.designation || "Not Assigned",
+    role: reduxUser.role || userDetails.role || ""
+  } : userDetails;
+  
   const [selectedDates, setSelectedDates] = useState([]);
   const [currentDate, setCurrentDate] = useState("");
   const [isUpdateMode, setIsUpdateMode] = useState(false);
@@ -176,44 +189,27 @@ const MasterListTable = ({
     const getData = async () => {
       try {
         setLoading(true);
-        console.log("🔍 [INVENTORY TABLE] Starting data fetch with:", {
-          masterType: masterType || "",
-          userLab: userDetails.lab
-        });
         
-        // Get lab name from userDetails (first lab if array)
-        const labName = Array.isArray(userDetails.lab) 
-          ? userDetails.lab[0] 
-          : (userDetails.lab !== 'N/A' ? userDetails.lab : null);
+        // Get lab name from effectiveUserDetails (first lab if array)
+        const labName = Array.isArray(effectiveUserDetails.lab) 
+          ? effectiveUserDetails.lab[0] 
+          : (effectiveUserDetails.lab !== 'N/A' ? effectiveUserDetails.lab : null);
+        
+        // Get username from effectiveUserDetails (prioritize user_name, then name)
+        const username = effectiveUserDetails.user_name || effectiveUserDetails.name || null;
 
         const response = await fetchMasterListByType(
           masterType || "",
-          labName  // <-- UNCOMMENT and pass lab name
+          labName,  // Optional manual lab filter
+          username  // Username for auto-filtering (Lab Assistants)
         );
 
-        console.log("📊 [INVENTORY TABLE] API response:", response);
-
         const combinedData = [...(response.master_data || [])];
-
-        console.log("📋 [INVENTORY TABLE] Combined data:", combinedData);
-        console.log("📋 [INVENTORY TABLE] Data length:", combinedData.length);
-
-        combinedData.slice(0, 3).forEach((item, index) => {
-          console.log(`📋 [INVENTORY TABLE] Sample item ${index + 1}:`, {
-            item_code: item.item_code,
-            item_name: item.item_name,
-            master_type: item.master_type,
-            stock: item.stock,
-            quantity_received: item.quantity_received,
-            lab: item.c_id?.lab?.name || 'No lab info'
-          });
-        });
 
         setData(combinedData);
         setFilteredData(combinedData);
         setCurrentPage(1); // Reset to first page when new data loads
       } catch (err) {
-        console.error("💥 [INVENTORY TABLE] Error fetching data:", err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -221,7 +217,7 @@ const MasterListTable = ({
     };
 
     getData();
-  }, [masterType, userDetails.lab]);
+  }, [masterType, effectiveUserDetails.lab, reduxUser]);
 
   // 2. Local Expiry Notifications
   useEffect(() => {
