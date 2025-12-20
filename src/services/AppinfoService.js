@@ -57,9 +57,17 @@ export async function updateAppinfo(infoid, appinfo) {
 
 // ------------------------------Chemical---------------------------------------------------
 
-export function getMasterApi(labName = null) {
-  const url = labName
-    ? `${BASE_URL}/master/?lab=${encodeURIComponent(labName)}`
+export function getMasterApi(labName = null, username = null) {
+  const params = new URLSearchParams();
+  if (labName) {
+    params.append('lab', labName);
+  }
+  if (username) {
+    params.append('username', username);
+  }
+
+  const url = params.toString()
+    ? `${BASE_URL}/master/?${params.toString()}`
     : `${BASE_URL}/master/`;
 
   return axios
@@ -738,9 +746,21 @@ export function getTempIssueApi() {
       .then((response) => response.data)
   );
 }
-export function getTempReturnApi() {
+export function getTempReturnApi(username = null, lab = null) {
+  const params = new URLSearchParams();
+  if (username) {
+    params.append('username', username);
+  }
+  if (lab) {
+    params.append('lab', lab);
+  }
+
+  const url = params.toString()
+    ? `${BASE_URL}/temp_return?${params.toString()}`
+    : `${BASE_URL}/temp_return`;
+
   return axios
-    .get(`${BASE_URL}/temp_return`)
+    .get(url)
     .then((response) => response.data);
 }
 

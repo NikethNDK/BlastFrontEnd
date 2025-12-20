@@ -1,22 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {Modal, Col, Row, Form, Button} from 'react-bootstrap';
 // import {FormControl, FormGroup, FormLabel} from 'react-bootstrap';
 import { addItemReturnApi, getMasterApi } from '../../services/AppinfoService';
 import './formBorder.css';
 import Select from 'react-select';
+import { useSelector } from 'react-redux';
 
 const AddReturnModal = (props) => {
+    // Get user from Redux as fallback/primary source
+    const reduxUser = useSelector((state) => state.user.user);
+    
+    // Extract username for API call
+    const username = useMemo(() => 
+        reduxUser?.user_name || props.userDetails?.user_name || props.userDetails?.name || null,
+        [reduxUser, props.userDetails]
+    );
+
     const [itemsCodes, setItemsCodes] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
 
     useEffect(() => {
-        // Fetch project codes
-        getMasterApi()
+        // Fetch project codes with username for filtering
+        getMasterApi(null, username)
             .then(data => {
                 setItemsCodes(data.map(item => ({ value: item.c_id, label: item.item_code })));
             })
             .catch(error => console.error('Error fetching project codes:', error));
-    }, []);
+    }, [username]);
 
     const handleSubmit = (e) => {
         e.preventDefault(); // Prevent default form submission behavior

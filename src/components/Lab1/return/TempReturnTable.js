@@ -1,15 +1,42 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Table, Button } from "react-bootstrap";
 import { getTempReturnApi } from "../../../services/AppinfoService";
 import "../../../App.css";
 import { NavLink } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-const TempReturnTable = () => {
+const TempReturnTable = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
+  // Get user from Redux as fallback/primary source
+  const reduxUser = useSelector((state) => state.user.user);
+  
+  // Merge userDetails prop with Redux user data (Redux takes priority)
+  const effectiveUserDetails = useMemo(() => {
+    return reduxUser ? {
+      name: reduxUser.user_name || userDetails.name || "",
+      user_name: reduxUser.user_name || userDetails.user_name || userDetails.name || "",
+      lab: reduxUser.lab || userDetails.lab || "N/A",
+      designation: reduxUser.designation || userDetails.designation || "Not Assigned",
+      role: reduxUser.role || userDetails.role || ""
+    } : userDetails;
+  }, [reduxUser, userDetails]);
+
+  // Extract username and lab for API calls
+  const username = useMemo(() => 
+    effectiveUserDetails.user_name || effectiveUserDetails.name || null,
+    [effectiveUserDetails.user_name, effectiveUserDetails.name]
+  );
+  const labName = useMemo(() => 
+    effectiveUserDetails.lab && effectiveUserDetails.lab !== 'N/A' 
+      ? effectiveUserDetails.lab 
+      : null,
+    [effectiveUserDetails.lab]
+  );
+
   const [issued, setIssued] = useState([]);
 
   useEffect(() => {
     let mounted = true;
-    getTempReturnApi()
+    getTempReturnApi(username, labName)
       .then((data) => {
         if (mounted) {
           setIssued(data);
@@ -20,7 +47,7 @@ const TempReturnTable = () => {
       });
 
     return () => (mounted = false);
-  }, []);
+  }, [username, labName]);
 
   return (
     <div>

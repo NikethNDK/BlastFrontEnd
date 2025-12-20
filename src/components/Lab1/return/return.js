@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import {Modal, Col, Row, Form, Button} from 'react-bootstrap';
 // import {FormControl, FormGroup, FormLabel} from 'react-bootstrap';
 import { addItemIssueApi, getMasterApi, getProjectApi, getResEmployeeApi, addTempItemReturnApi, addTempToIssueApi } from '../../../services/AppinfoService';
@@ -6,8 +6,28 @@ import '../../inventory/formBorder.css';
 import Select from 'react-select';
 import TempIssueTable from './TempReturnTable';
 import { BASE_URL } from "../../../services/AppinfoService";
+import { useSelector } from 'react-redux';
 
 const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
+    // Get user from Redux as fallback/primary source
+    const reduxUser = useSelector((state) => state.user.user);
+    
+    // Merge userDetails prop with Redux user data (Redux takes priority)
+    const effectiveUserDetails = useMemo(() => {
+        return reduxUser ? {
+            name: reduxUser.user_name || userDetails.name || "",
+            user_name: reduxUser.user_name || userDetails.user_name || userDetails.name || "",
+            lab: reduxUser.lab || userDetails.lab || "N/A",
+            designation: reduxUser.designation || userDetails.designation || "Not Assigned",
+            role: reduxUser.role || userDetails.role || ""
+        } : userDetails;
+    }, [reduxUser, userDetails]);
+
+    // Extract username for API calls
+    const username = useMemo(() => 
+        effectiveUserDetails.user_name || effectiveUserDetails.name || null,
+        [effectiveUserDetails.user_name, effectiveUserDetails.name]
+    );
     const [message, setMessage] = useState('');
     const [itemsCodes, setItemsCodes] = useState([]);
     const [itemsNames, setItemsNames] = useState([]);
@@ -33,8 +53,8 @@ const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) 
     });
     useEffect(() => {
         
-        // Fetch project codes
-        getMasterApi()
+        // Fetch project codes with username for filtering
+        getMasterApi(null, username)
             .then(data => {
                 // Filter data based on masterType
                 if (masterType === 'Chemical') {
@@ -63,7 +83,7 @@ const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) 
             })
             .catch(error => console.error('Error fetching Researcher Names:', error));
     
-    }, [masterType]);
+    }, [masterType, username]);
 
     const handleItemCodeChange = (selectedOption) => {
         setSelectedItemCode(selectedOption);
@@ -309,7 +329,7 @@ const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) 
                     </Row>
             </div>
             <div style={{paddingTop: '10px' }}>
-                <TempIssueTable />
+                <TempIssueTable userDetails={effectiveUserDetails} />
             </div>
         </div>
     );
