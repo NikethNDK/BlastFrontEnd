@@ -13,43 +13,52 @@ const ReturnDataTableNotification = ({
   managerId,
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  // 🚀 Component mount verification log
+  console.log("🚀 [RETURN NOTIFICATION] ReturnDataTableNotification component MOUNTED");
+  console.log("🚀 [RETURN NOTIFICATION] Mount timestamp:", new Date().toISOString());
+  console.log("🚀 [RETURN NOTIFICATION] Component is reachable and rendering");
+
   const [data, setData] = useState([]);
   const [filters, setFilters] = useState({});
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!managerId) {
-        console.log("Manager ID not available yet");
-        return;
-      }
+  // Temporary console log to verify managerId value
+  console.log("🔍 [RETURN NOTIFICATION] Component rendered with managerId:", managerId);
+  console.log("🔍 [RETURN NOTIFICATION] managerId type:", typeof managerId);
+  console.log("🔍 [RETURN NOTIFICATION] userDetails:", userDetails);
 
+  useEffect(() => {
+    // Only fetch if managerId is available
+    if (!managerId) {
+      console.log("❌ [RETURN NOTIFICATION] Manager ID not available yet");
+      return;
+    }
+
+    const fetchData = async () => {
       try {
-        console.log("Fetching data for manager ID:", managerId);
+        console.log("🌐 [RETURN NOTIFICATION] Fetching data for manager ID:", managerId);
         const fetchedData = await getItemReturnsForManager(managerId);
-        setData(fetchedData);
+        console.log("📦 [RETURN NOTIFICATION] API response data:", fetchedData);
+        console.log("📦 [RETURN NOTIFICATION] Response type:", typeof fetchedData);
+        console.log("📦 [RETURN NOTIFICATION] Is array?", Array.isArray(fetchedData));
+        console.log("📦 [RETURN NOTIFICATION] Response length:", fetchedData?.length);
+        if (fetchedData && fetchedData.length > 0) {
+          console.log("📦 [RETURN NOTIFICATION] First item structure:", fetchedData[0]);
+          console.log("📦 [RETURN NOTIFICATION] First item keys:", Object.keys(fetchedData[0]));
+        }
+        setData(Array.isArray(fetchedData) ? fetchedData : []);
+        console.log("🧾 [RETURN NOTIFICATION] State 'data' updated, length:", fetchedData?.length || 0);
       } catch (error) {
-        console.error("Failed to fetch item return data:", error);
+        console.error("❌ [RETURN NOTIFICATION] Failed to fetch item return data:", error);
+        setData([]); // Set empty array on error to prevent stale data
       }
     };
 
     fetchData();
+    // Only depend on managerId - this ensures the effect runs:
+    // 1. On initial mount (if managerId is available)
+    // 2. When managerId prop changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [managerId]);
-
-  const fetchData = async (managerId) => {
-    try {
-      console.log("Fetching data for manager ID:", managerId);
-      const data = await getItemReturnsForManager(managerId);
-      console.log("Fetched data:", data);
-
-      if (!Array.isArray(data)) {
-        console.error("Data is not an array:", data);
-      }
-
-      setData(data || []);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
 
   const handleStatusUpdate = async (entryNo, status) => {
     try {
@@ -224,9 +233,13 @@ const ReturnDataTableNotification = ({
                 </tr>
               </thead>
               <tbody>
-                {data.map((inven, index) => (
+                {console.log("🧾 [RETURN NOTIFICATION] Rendering table with data length:", data.length)}
+                {data.length === 0 && console.log("⚠️ [RETURN NOTIFICATION] No data to render - data array is empty")}
+                {data.map((inven, index) => {
+                  console.log(`🧾 [RETURN NOTIFICATION] Rendering row ${index}:`, inven);
+                  return (
                   <tr
-                    key={inven.id}
+                    key={inven.entry_no || inven.id || index}
                     style={{
                       transition: "background-color 0.15s",
                       backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
@@ -409,7 +422,8 @@ const ReturnDataTableNotification = ({
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

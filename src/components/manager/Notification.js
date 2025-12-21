@@ -20,25 +20,26 @@ const Notification = ({
   useEffect(() => {
     let mounted = true;
 
-    if (note.length && !isUpdated) {
-      return;
-    }
-
-    getIssueItems()
-      .then((data) => {
+    const fetchData = async () => {
+      try {
+        const data = await getIssueItems();
         if (mounted) {
           setNote(data);
+          setIsUpdated(false); // Reset update flag after successful fetch
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error fetching data:", error);
-      });
+      }
+    };
+
+    fetchData();
 
     return () => {
       mounted = false;
-      setIsUpdated(false);
     };
-  }, [isUpdated, note]);
+    // Only depend on isUpdated - fetch when explicitly triggered to refresh
+    // Remove 'note' from dependencies to prevent infinite loop
+  }, [isUpdated]);
 
   const handleUpdate = (e, item) => {
     e.preventDefault();

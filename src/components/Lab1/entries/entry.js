@@ -8,10 +8,14 @@ import { AiOutlineDownload } from "react-icons/ai";
 import { getmanagerEmployeeApi } from "../../../services/AppinfoService";
 import LabNavigation1 from "../homeLab/LabNavigation1";
 import { BASE_URL } from "../../../services/AppinfoService";
+import { useSelector } from "react-redux";
 
 const TransferredDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  // Get user from Redux store
+  const reduxUser = useSelector((state) => state.user.user);
+  
   const [data, setData] = useState([]);
   const [filters, setFilters] = useState({});
   const [selectedItem, setSelectedItem] = useState(null);
@@ -111,11 +115,18 @@ const TransferredDataTable = ({
       const returnQuantity = updatedQuantity;
       const remainingQuantity = selectedItem.stock - returnQuantity;
 
+      // Guard: Ensure username is available from Redux
+      if (!reduxUser || !reduxUser.user_name) {
+        toast.error("User information not available. Please refresh the page.");
+        return;
+      }
+
       console.log("🔍 [FRONTEND] Return attempt:", {
         returnQuantity,
         selectedItem: selectedItem,
         selectedManager,
-        remainingQuantity
+        remainingQuantity,
+        username: reduxUser.user_name
       });
 
       if (!selectedManager) {
@@ -133,15 +144,25 @@ const TransferredDataTable = ({
         return;
       }
 
-      await axios.put(
+      const response = await axios.put(
         `${BASE_URL}/update_transfer/${selectedItem.entry_no}/`,
         {
           quantity_returned: returnQuantity,
           manager_username: selectedManager,
+          username: reduxUser.user_name,  // Send username from Redux
         }
       );
 
-      toast.success(`Return processed successfully! Removed ${returnQuantity} items from inventory.`);
+      // Update toast message based on response status
+      const responseStatus = response.data?.status;
+      if (responseStatus === "Pending") {
+        toast.success(`Return request sent for approval. Awaiting manager approval.`);
+      } else if (responseStatus === "Accepted") {
+        toast.success(`Return approved and inventory updated. Removed ${returnQuantity} items from inventory.`);
+      } else {
+        toast.success(response.data?.message || `Return processed successfully!`);
+      }
+
       fetchData();
       setSelectedItem(null);
       closePopup();

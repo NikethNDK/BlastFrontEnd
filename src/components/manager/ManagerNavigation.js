@@ -85,7 +85,7 @@ const ManagerNavigation = ({
                   )}
                 </NavLink>
 
-                {/* <NavLink
+                <NavLink
                   to="/notification"
                   className={({ isActive }) => 
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
@@ -96,7 +96,20 @@ const ManagerNavigation = ({
                   {!collapsed && (
                     <span className="blast-sidebar-item-text">Request Notification</span>
                   )}
-                </NavLink> */}
+                </NavLink>
+                
+                <NavLink
+                  to="/returnNoti"
+                  className={({ isActive }) => 
+                    `blast-sidebar-item ${isActive ? 'active' : ''}`
+                  }
+                  title="Return Notification"
+                >
+                  <FaSyncAlt className="blast-sidebar-item-icon" style={{ color: '#06b6d4' }} />
+                  {!collapsed && (
+                    <span className="blast-sidebar-item-text">Return Notification</span>
+                  )}
+                </NavLink>
 
                 <NavLink
                   to="/change_password"
@@ -111,18 +124,6 @@ const ManagerNavigation = ({
                   )}
                 </NavLink>
 
-                {/* <NavLink
-                  to="/returnNoti"
-                  className={({ isActive }) => 
-                    `blast-sidebar-item ${isActive ? 'active' : ''}`
-                  }
-                  title="Return Notification"
-                >
-                  <FaSyncAlt className="blast-sidebar-item-icon" style={{ color: '#06b6d4' }} />
-                  {!collapsed && (
-                    <span className="blast-sidebar-item-text">Return Notification</span>
-                  )}
-                </NavLink> */}
               </nav>
             </div>
           </div>
