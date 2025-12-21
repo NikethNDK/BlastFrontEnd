@@ -28,6 +28,8 @@ const ReturnDataTable = () => {
   const [remarksFilter, setRemarksFilter] = useState("");
 
   useEffect(() => {
+    // NOTE: Polling removed - data now fetched once on mount
+    // For notification updates, see centralized polling in ManagerNavigation
     const fetchData = async () => {
       try {
         const response = await axios.get(`${BASE_URL}/item_return/`);
@@ -37,9 +39,8 @@ const ReturnDataTable = () => {
       }
     };
 
+    // Single fetch on mount - no recurring polling
     fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
   }, []);
 
   // Filtering Logic

@@ -1730,3 +1730,38 @@ export const getItemReturnsForManager = async (managerId) => {
     return []; // Return empty array on error
   }
 };
+
+/**
+ * Fetch all notifications for the logged-in user
+ * @returns {Promise<Array>} Array of notification objects with is_read status
+ */
+export const getUserNotifications = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/app-notifications/`, {
+      withCredentials: true, // Send cookies for JWT authentication
+    });
+    return response.data; // Return the fetched notifications
+  } catch (error) {
+    console.error("Error fetching user notifications:", error);
+    return []; // Return empty array on error
+  }
+};
+
+/**
+ * Mark notifications as read for the logged-in user
+ * @param {Array<number>} notificationIds - Array of notification IDs to mark as read
+ * @returns {Promise<Object>} Response with message and updated_count
+ */
+export const markNotificationsRead = async (notificationIds) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/app-notifications/mark-read/`,
+      { notification_ids: notificationIds },
+      { withCredentials: true } // Send cookies for JWT authentication
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error marking notifications as read:", error);
+    throw error;
+  }
+};

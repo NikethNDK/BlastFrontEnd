@@ -37,7 +37,7 @@ function Layout({ userId, userDetails }) {
         </Routes>
       ) : (
         // Wrap everything else with ManagerNavigation
-        <ManagerNavigation userDetails={userDetails}>
+        <ManagerNavigation userId={userId} userDetails={userDetails}>
           <Routes>
             <Route path="/dashboard" element={<Dasboard userId={userId} userDetails={userDetails} />} />
             <Route path="/project" element={<Project />} />

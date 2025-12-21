@@ -141,7 +141,7 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
               }
             case "Lab Assistant":
               if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab)))) {
-                return <LabApp userDetails={userDetails} />;
+                return <LabApp userId={userId} userDetails={userDetails} />;
               } else {
                 return <CareApp userDetails={userDetails} />;
               }

@@ -1,45 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Button } from "react-bootstrap";
 import { FaCheck, FaTimes } from "react-icons/fa";
-import { getIssueItems } from "../../services/AppinfoService";
 import AdminApprovalModal from "./AdminApproval";
 import ManagerNavigation from "../manager/ManagerNavigation";
 import { BASE_URL } from "../../services/AppinfoService";
+import { setManagerPendingIssues } from "../../store/slices/notificationSlice";
 
 const Notification = ({
   no,
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
-  const [note, setNote] = useState([]);
+  const dispatch = useDispatch();
+  
+  // NOTE: Data is now provided by centralized polling via Redux
+  // The useNotificationPolling hook in ManagerNavigation fetches and dispatches data
+  const note = useSelector((state) => state.notifications.manager.pendingIssues || []);
+
   const [addModalShow, setAddModalShow] = useState(false);
   const [editModalShow, setEditModalShow] = useState(false);
   const [editNotes, setEditNotes] = useState([]);
-  const [isUpdated, setIsUpdated] = useState(false);
   const [notifications, setNotifications] = useState([]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const fetchData = async () => {
-      try {
-        const data = await getIssueItems();
-        if (mounted) {
-          setNote(data);
-          setIsUpdated(false); // Reset update flag after successful fetch
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      mounted = false;
-    };
-    // Only depend on isUpdated - fetch when explicitly triggered to refresh
-    // Remove 'note' from dependencies to prevent infinite loop
-  }, [isUpdated]);
 
   const handleUpdate = (e, item) => {
     e.preventDefault();
@@ -77,9 +58,10 @@ const Notification = ({
       const result = await response.json();
 
       if (response.ok) {
-        setNote((prevNotes) =>
-          prevNotes.filter((n) => n.entry_no !== item.entry_no)
-        );
+        // Remove the item from Redux state after successful update
+        // The next polling cycle will refresh the data automatically
+        const updatedData = note.filter((n) => n.entry_no !== item.entry_no);
+        dispatch(setManagerPendingIssues(updatedData));
         alert("Item has been accepted.");
       } else {
         console.error("Failed to accept item:", result.error);
@@ -111,9 +93,10 @@ const Notification = ({
       const result = await response.json();
 
       if (response.ok) {
-        setNote((prevNotes) =>
-          prevNotes.filter((n) => n.entry_no !== item.entry_no)
-        );
+        // Remove the item from Redux state after successful update
+        // The next polling cycle will refresh the data automatically
+        const updatedData = note.filter((n) => n.entry_no !== item.entry_no);
+        dispatch(setManagerPendingIssues(updatedData));
         alert("Item has been Declined.");
       } else {
         console.error("Failed to accept item:", result.error);
@@ -141,7 +124,7 @@ const Notification = ({
             color: "#1e293b",
           }}
         >
-          NOTIFICATION
+          REQUEST NOTIFICATION
         </h2>
       </div>
 
@@ -328,7 +311,14 @@ const Notification = ({
                 </tr>
               </thead>
               <tbody>
-                {note.map((no, index) => (
+                {note.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                      No pending issue requests. Data is automatically updated via centralized polling.
+                    </td>
+                  </tr>
+                ) : (
+                  note.map((no, index) => (
                   <tr
                     key={no.id}
                     style={{
@@ -509,7 +499,8 @@ const Notification = ({
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>

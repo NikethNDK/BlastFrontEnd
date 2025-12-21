@@ -25,6 +25,8 @@ const ReceivedFilter = ({ setReceivedCount }) => {
   const [remarksFilter, setRemarksFilter] = useState("");
 
   useEffect(() => {
+    // NOTE: Polling removed - data now fetched once on mount
+    // For notification updates, see centralized polling in ManagerNavigation
     const fetchData = async () => {
       try {
         const response = await axios.get("http://127.0.0.1:8000/itemreceive/");
@@ -40,9 +42,8 @@ const ReceivedFilter = ({ setReceivedCount }) => {
       }
     };
 
+    // Single fetch on mount - no recurring polling
     fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
   }, [setReceivedCount]);
 
   // Filtering Logic

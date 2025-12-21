@@ -1,84 +1,52 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 import { Button } from "react-bootstrap";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaCheck, FaTimes } from "react-icons/fa";
-import { getItemReturnsForManager } from "../../services/AppinfoService";
-import ManagerNavigation from "../manager/ManagerNavigation";
 import { BASE_URL } from "../../services/AppinfoService";
+import { setManagerPendingReturns } from "../../store/slices/notificationSlice";
 
 const ReturnDataTableNotification = ({
   managerId,
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
-  // 🚀 Component mount verification log
-  console.log("🚀 [RETURN NOTIFICATION] ReturnDataTableNotification component MOUNTED");
-  console.log("🚀 [RETURN NOTIFICATION] Mount timestamp:", new Date().toISOString());
-  console.log("🚀 [RETURN NOTIFICATION] Component is reachable and rendering");
+  const dispatch = useDispatch();
+  
+  // NOTE: Data is now provided by centralized polling via Redux
+  // The useNotificationPolling hook in ManagerNavigation fetches and dispatches data
+  const data = useSelector((state) => state.notifications.manager.pendingReturns || []);
+  
+  // Get user from Redux store to send username in request
+  const reduxUser = useSelector((state) => state.user.user);
 
-  const [data, setData] = useState([]);
   const [filters, setFilters] = useState({});
-
-  // Temporary console log to verify managerId value
-  console.log("🔍 [RETURN NOTIFICATION] Component rendered with managerId:", managerId);
-  console.log("🔍 [RETURN NOTIFICATION] managerId type:", typeof managerId);
-  console.log("🔍 [RETURN NOTIFICATION] userDetails:", userDetails);
-
-  useEffect(() => {
-    // Only fetch if managerId is available
-    if (!managerId) {
-      console.log("❌ [RETURN NOTIFICATION] Manager ID not available yet");
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        console.log("🌐 [RETURN NOTIFICATION] Fetching data for manager ID:", managerId);
-        const fetchedData = await getItemReturnsForManager(managerId);
-        console.log("📦 [RETURN NOTIFICATION] API response data:", fetchedData);
-        console.log("📦 [RETURN NOTIFICATION] Response type:", typeof fetchedData);
-        console.log("📦 [RETURN NOTIFICATION] Is array?", Array.isArray(fetchedData));
-        console.log("📦 [RETURN NOTIFICATION] Response length:", fetchedData?.length);
-        if (fetchedData && fetchedData.length > 0) {
-          console.log("📦 [RETURN NOTIFICATION] First item structure:", fetchedData[0]);
-          console.log("📦 [RETURN NOTIFICATION] First item keys:", Object.keys(fetchedData[0]));
-        }
-        setData(Array.isArray(fetchedData) ? fetchedData : []);
-        console.log("🧾 [RETURN NOTIFICATION] State 'data' updated, length:", fetchedData?.length || 0);
-      } catch (error) {
-        console.error("❌ [RETURN NOTIFICATION] Failed to fetch item return data:", error);
-        setData([]); // Set empty array on error to prevent stale data
-      }
-    };
-
-    fetchData();
-    // Only depend on managerId - this ensures the effect runs:
-    // 1. On initial mount (if managerId is available)
-    // 2. When managerId prop changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [managerId]);
 
   const handleStatusUpdate = async (entryNo, status) => {
     try {
+      // Guard: Ensure username is available from Redux
+      if (!reduxUser || !reduxUser.user_name) {
+        toast.error("User information not available. Please refresh the page.");
+        return;
+      }
+
       const response = await axios.put(
         `${BASE_URL}/item_return/approve/${entryNo}/`,
-        { status }
+        { 
+          status,
+          username: reduxUser.user_name  // Send username from Redux
+        }
       );
 
       console.log(response.data);
       toast.success(`Item return ${status} successfully!`);
 
-      if (status === "Declined") {
-        setData((prevData) =>
-          prevData.filter((item) => item.entry_no !== entryNo)
-        );
-      } else {
-        setData((prevData) =>
-          prevData.filter((item) => item.entry_no !== entryNo)
-        );
-      }
+      // Remove the item from Redux state after successful update
+      // The next polling cycle will refresh the data automatically
+      const updatedData = data.filter((item) => item.entry_no !== entryNo);
+      dispatch(setManagerPendingReturns(updatedData));
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error("Failed to update item return status.");
@@ -233,11 +201,14 @@ const ReturnDataTableNotification = ({
                 </tr>
               </thead>
               <tbody>
-                {console.log("🧾 [RETURN NOTIFICATION] Rendering table with data length:", data.length)}
-                {data.length === 0 && console.log("⚠️ [RETURN NOTIFICATION] No data to render - data array is empty")}
-                {data.map((inven, index) => {
-                  console.log(`🧾 [RETURN NOTIFICATION] Rendering row ${index}:`, inven);
-                  return (
+                {data.length === 0 ? (
+                  <tr>
+                    <td colSpan={columns.length + 1} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                      No pending return requests. Data is automatically updated via centralized polling.
+                    </td>
+                  </tr>
+                ) : (
+                  data.map((inven, index) => (
                   <tr
                     key={inven.entry_no || inven.id || index}
                     style={{
@@ -422,8 +393,8 @@ const ReturnDataTableNotification = ({
                       </div>
                     </td>
                   </tr>
-                  );
-                })}
+                  ))
+                )}
               </tbody>
             </table>
           </div>

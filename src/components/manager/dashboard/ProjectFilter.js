@@ -9,15 +9,16 @@ const ProjectManage = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
+    // NOTE: Polling removed - data now fetched once on mount
+    // For notification updates, see centralized polling in ManagerNavigation
     const fetchData = () => {
       getProjectApi()
         .then((data) => setProjects(data))
         .catch((error) => console.error("Error fetching data:", error));
     };
 
+    // Single fetch on mount - no recurring polling
     fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
   }, []);
 
   // Pagination calculations
