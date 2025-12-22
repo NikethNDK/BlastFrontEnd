@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import { AiOutlineDownload } from "react-icons/ai";
@@ -7,10 +8,19 @@ import { BASE_URL } from "../../services/AppinfoService";
 import "../../components/Lab1/homeLab/inventory.css";
 
 const ReturnDataTable = () => {
+  // Get user from Redux store to get username and labs
+  const reduxUser = useSelector((state) => state.user.user);
+  const username = reduxUser?.user_name || reduxUser?.name || null;
+  
+  // Get manager's assigned labs from Redux
+  const userLabs = reduxUser?.lab || [];
+  const managerLabs = Array.isArray(userLabs) ? userLabs : (userLabs ? [userLabs] : []);
+
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [selectedLab, setSelectedLab] = useState("All"); // Lab filter state
 
   // Filter States
   const [entryNoFilter, setEntryNoFilter] = useState("");
@@ -31,17 +41,35 @@ const ReturnDataTable = () => {
     // NOTE: Polling removed - data now fetched once on mount
     // For notification updates, see centralized polling in ManagerNavigation
     const fetchData = async () => {
+      // Guard: Ensure username is available
+      if (!username) {
+        console.error("Username not available. Please ensure user is logged in.");
+        return;
+      }
+
       try {
-        const response = await axios.get(`${BASE_URL}/item_return/`);
-        setData(response.data);
+        // Build query parameters
+        const params = {
+          username: username
+        };
+        
+        // Add lab parameter if a specific lab is selected (not "All")
+        if (selectedLab !== "All") {
+          params.lab = selectedLab;
+        }
+        
+        const response = await axios.get(`${BASE_URL}/item_return/`, { params });
+        setData(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
-    // Single fetch on mount - no recurring polling
-    fetchData();
-  }, []);
+    // Fetch data when username or selectedLab changes
+    if (username) {
+      fetchData();
+    }
+  }, [username, selectedLab]);
 
   // Filtering Logic
   useEffect(() => {
@@ -196,8 +224,33 @@ const ReturnDataTable = () => {
 
   return (
     <div className="master-list-container" style={{ width: "100%", padding: "24px" }}>
-      {/* --- Download Button --- */}
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+      {/* --- Lab Filter and Download Button --- */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        {/* Lab Filter Dropdown */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <label style={{ fontWeight: "500", fontSize: "14px" }}>Lab Name:</label>
+          <select
+            value={selectedLab}
+            onChange={(e) => setSelectedLab(e.target.value)}
+            style={{
+              padding: "8px 12px",
+              fontSize: "14px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              minWidth: "200px",
+              cursor: "pointer"
+            }}
+          >
+            <option value="All">All</option>
+            {managerLabs.map((lab, index) => (
+              <option key={index} value={lab}>
+                {lab}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Download Button */}
         <button
           onClick={handleDownload}
           className="download-btn"

@@ -1,18 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button } from "react-bootstrap";
+import { useSelector } from "react-redux";
 import { getItemReceiveApi } from "../../services/AppinfoService";
 import "../../App.css";
 import { NavLink } from "react-router-dom";
 
 const ReceivedItems = () => {
+  // Get user from Redux store to get username
+  const reduxUser = useSelector((state) => state.user.user);
+  const username = reduxUser?.user_name || reduxUser?.name || null;
+
   const [receive, setReceive] = useState([]);
 
   useEffect(() => {
     let mounted = true;
-    getItemReceiveApi()
+    
+    // Guard: Ensure username is available
+    if (!username) {
+      console.error("Username not available. Please ensure user is logged in.");
+      return;
+    }
+
+    getItemReceiveApi(username)
       .then((data) => {
         if (mounted) {
-          setReceive(data);
+          // Handle both old format (array) and new format (object with all_data)
+          if (data && data.all_data) {
+            setReceive(data.all_data);
+          } else if (Array.isArray(data)) {
+            setReceive(data);
+          } else {
+            setReceive([]);
+          }
         }
       })
       .catch((error) => {
@@ -20,7 +39,7 @@ const ReceivedItems = () => {
       });
 
     return () => (mounted = false);
-  }, []);
+  }, [username]);
 
   return (
     <div>

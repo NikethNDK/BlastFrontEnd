@@ -15,6 +15,7 @@ const MasterListTable = ({
   masterType,
   initialNotifications,
   userDetails = { name: "", lab: "", designation: "" },
+  selectedLab = "All", // Lab filter prop
 }) => {
   // Get user from Redux as fallback/primary source
   const reduxUser = useSelector((state) => state.user.user);
@@ -190,17 +191,23 @@ const MasterListTable = ({
       try {
         setLoading(true);
         
-        // Get lab name from effectiveUserDetails (first lab if array)
-        const labName = Array.isArray(effectiveUserDetails.lab) 
-          ? effectiveUserDetails.lab[0] 
-          : (effectiveUserDetails.lab !== 'N/A' ? effectiveUserDetails.lab : null);
+        // Use selectedLab prop if provided and not "All", otherwise use effectiveUserDetails lab
+        let labName = null;
+        if (selectedLab && selectedLab !== "All") {
+          labName = selectedLab;
+        } else {
+          // Get lab name from effectiveUserDetails (first lab if array)
+          labName = Array.isArray(effectiveUserDetails.lab) 
+            ? effectiveUserDetails.lab[0] 
+            : (effectiveUserDetails.lab !== 'N/A' ? effectiveUserDetails.lab : null);
+        }
         
         // Get username from effectiveUserDetails (prioritize user_name, then name)
         const username = effectiveUserDetails.user_name || effectiveUserDetails.name || null;
 
         const response = await fetchMasterListByType(
           masterType || "",
-          labName,  // Optional manual lab filter
+          labName,  // Lab filter (from dropdown or user details)
           username  // Username for auto-filtering (Lab Assistants)
         );
 
@@ -217,7 +224,7 @@ const MasterListTable = ({
     };
 
     getData();
-  }, [masterType, effectiveUserDetails.lab, reduxUser]);
+  }, [masterType, effectiveUserDetails.lab, reduxUser, selectedLab]);
 
   // 2. Local Expiry Notifications
   useEffect(() => {

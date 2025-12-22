@@ -784,9 +784,23 @@ export function addItemIssueApi(data) {
 
 //---------------------------ITEM RECEIVE---------------------------//
 
-export function getItemReceiveApi() {
+export function getItemReceiveApi(username, lab = null) {
+  if (!username) {
+    return Promise.reject(new Error("Username is required"));
+  }
+  
+  const params = {
+    username: username
+  };
+  
+  if (lab) {
+    params.lab = lab;
+  }
+  
   return axios
-    .get(`${BASE_URL}/itemreceive/`)
+    .get(`${BASE_URL}/itemreceive/`, {
+      params: params
+    })
     .then((response) => response.data);
 }
 
@@ -824,9 +838,21 @@ export function addTempItemReceiveApi(receive) {
 
 //---------------------------ITEM ISSUE---------------------------//
 
-export function getItemIssueApi() {
+export function getItemIssueApi(username = null, lab = null) {
+  const params = {};
+  
+  if (username) {
+    params.username = username;
+  }
+  
+  if (lab) {
+    params.lab = lab;
+  }
+  
   return axios
-    .get(`${BASE_URL}/api/issue_data/`)
+    .get(`${BASE_URL}/api/issue_data/`, {
+      params: params
+    })
     .then((response) => response.data);
 }
 
