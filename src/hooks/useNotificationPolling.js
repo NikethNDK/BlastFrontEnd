@@ -7,7 +7,10 @@ import {
   setManagerPendingIssues,
   setManagerNotifications,
   setLabAssistantNotifications,
+  setResearcherPendingConfirmations,
+  setResearcherNotifications,
 } from '../store/slices/notificationSlice';
+import { getIssueItemsByStatus } from '../services/AppinfoService';
 
 /**
  * Reusable hook for polling notification APIs based on user role
@@ -29,14 +32,16 @@ const useNotificationPolling = ({ role, userId, intervalMs = 3000 }) => {
   const prevUnreadCountRef = useRef(null);
 
   useEffect(() => {
-    // Only start polling if role is 'manager' or 'lab_assistant' and userId exists
-    if ((role !== 'manager' && role !== 'lab_assistant') || !userId) {
-      if (role !== 'manager' && role !== 'lab_assistant') {
-        console.log(`🔄 [POLLING] Skipping polling - role "${role}" not supported yet`);
-      }
-      if (!userId) {
-        console.log('🔄 [POLLING] Skipping polling - userId not available');
-      }
+    // Start polling for manager, lab_assistant, or researcher
+    // For researcher, userId is optional (can use username from Redux)
+    if (role !== 'manager' && role !== 'lab_assistant' && role !== 'researcher') {
+      console.log(`🔄 [POLLING] Skipping polling - role "${role}" not supported`);
+      return;
+    }
+    
+    // Manager and lab_assistant require userId
+    if ((role === 'manager' || role === 'lab_assistant') && !userId) {
+      console.log('🔄 [POLLING] Skipping polling - userId not available');
       return;
     }
 
@@ -107,6 +112,14 @@ const useNotificationPolling = ({ role, userId, intervalMs = 3000 }) => {
           dispatch(setManagerPendingIssues(issueNotifications || []));
         } else if (role === 'lab_assistant') {
           dispatch(setLabAssistantNotifications(notifications || []));
+        } else if (role === 'researcher') {
+          dispatch(setResearcherNotifications(notifications || []));
+          
+          // Poll for RSR-CONFIRM items (pending researcher confirmation)
+          console.log('🔄 [POLLING] Calling getIssueItemsByStatus for RSR-CONFIRM...');
+          const confirmItems = await getIssueItemsByStatus('RSR-CONFIRM');
+          console.log(`🔄 [POLLING] Pending confirmations: ${confirmItems?.length || 0}`);
+          dispatch(setResearcherPendingConfirmations(confirmItems || []));
         }
         
         console.log('✅ [POLLING] Polling cycle completed successfully - data dispatched to Redux');

@@ -12,6 +12,7 @@ const Notification = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
   const dispatch = useDispatch();
+  const reduxUser = useSelector((state) => state.user.user);
   
   // NOTE: Data is now provided by centralized polling via Redux
   // The useNotificationPolling hook in ManagerNavigation fetches and dispatches data
@@ -40,9 +41,11 @@ const Notification = ({
     console.log("Sending request with entry_no:", item.entry_no);
 
     try {
+      const username = reduxUser?.user_name || userDetails.name;
       const payload = {
         id: item.entry_no,
         status: "LAB-OPEN",
+        username: username, // Add username for notification creation
       };
 
       const response = await fetch(
@@ -75,9 +78,11 @@ const Notification = ({
     console.log("Sending request with entry_no:", item.entry_no);
 
     try {
+      const username = reduxUser?.user_name || userDetails.name;
       const payload = {
         id: item.entry_no,
         status: "MGR-DCL",
+        username: username, // Add username for notification creation
       };
 
       const response = await fetch(

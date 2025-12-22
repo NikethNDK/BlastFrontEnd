@@ -1268,6 +1268,16 @@ export function updateTempIssueApi(entry_no, updatedData) {
     });
 }
 
+export function acceptTempIssueApi(entry_no) {
+  return axios
+    .post(`${BASE_URL}/temp_issue/accept/`, { entry_no })
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("Error accepting item:", error);
+      throw error;
+    });
+}
+
 export function updateTempReceiveApi(billNo, updatedData) {
   return axios
     .put(`${BASE_URL}/temp-receive/update/${billNo}/`, updatedData)
@@ -1330,15 +1340,35 @@ export function addIssueResearcherApi(receive) {
     .then((response) => response.data);
 }
 
-export function getmanagerEmployeeApi(userDetails) {
+export function getmanagerEmployeeApi(labName) {
+  // Build URL with optional lab parameter
+  // If labName is provided, add it as query param; otherwise omit it
+  const url = labName 
+    ? `${BASE_URL}/managerEmpName/?lab=${labName}`
+    : `${BASE_URL}/managerEmpName/`;
+  
   return axios
-    .get(`${BASE_URL}/managerEmpName/?lab=${userDetails}`)
+    .get(url)
     .then((response) => response.data);
 }
 
-export function getLabassistantEmployeeApi() {
+export function getLabassistantEmployeeApi(labName, projectCodes) {
+  // Build URL with optional lab and project_code parameters
+  const params = new URLSearchParams();
+  if (labName) {
+    params.append('lab', labName);
+  }
+  if (projectCodes && projectCodes.length > 0) {
+    // Join multiple project codes with comma
+    params.append('project_code', projectCodes.join(','));
+  }
+  
+  const url = params.toString()
+    ? `${BASE_URL}/lab-assistants/?${params.toString()}`
+    : `${BASE_URL}/lab-assistants/`;
+  
   return axios
-    .get(`${BASE_URL}/lab-assistants/`)
+    .get(url)
     .then((response) => response.data);
 }
 export const fetchMasterListByType = async (masterType, lab = null, username = null) => {
@@ -1695,6 +1725,35 @@ export const getIssueItems = async () => {
   } catch (error) {
     console.error("Error fetching issue items:", error);
     throw error; // Throwing error to handle in the frontend
+  }
+};
+
+export const getIssueItemsByStatus = async (status) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/get-issue-items?status=${status}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching issue items with status ${status}:`, error);
+    throw error;
+  }
+};
+
+export const confirmIssue = async (entryNo, action, username) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/issue/confirm/`,
+      {
+        entry_no: entryNo,
+        action: action, // 'accept' or 'decline'
+        username: username
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error confirming issue:", error);
+    throw error;
   }
 };
 
