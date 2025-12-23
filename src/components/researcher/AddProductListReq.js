@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Modal, Col, Row, Form, Button } from "react-bootstrap";
+import { useSelector } from "react-redux";
 // import {FormControl, FormGroup, FormLabel} from 'react-bootstrap';
 import {
   addItemIssueApi,
@@ -14,6 +15,7 @@ import {
   getResEmployeeApi,
   addTempItemIssueApi,
   addTempToIssueApi,
+  getEmployeeApi,
 } from "../../services/AppinfoService";
 // import '../../inventory/formBorder.css';
 import Select from "react-select";
@@ -23,6 +25,8 @@ import { Heading2 } from "lucide-react";
 const AddProductListReq = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  // Get user from Redux store (preferred over userDetails prop)
+  const reduxUser = useSelector((state) => state.user.user);
   const [selectedLabAssistant, setSelectedLabAssistant] = useState("");
   const [labassistantNames, setLabassistantNames] = useState([]);
   const [selectedProject, setSelectedProject] = useState("");
@@ -78,22 +82,56 @@ const AddProductListReq = ({
       );
     });
   }, []);
-  useEffect(() => {
-    getLabassistantEmployeeApi()
+  // Function to fetch lab assistants based on lab and project
+  const fetchLabAssistants = (labName, projectCode) => {
+    // If researcher has no project assigned, show empty list
+    if (!projectCode) {
+      setLabassistantNames([]);
+      return;
+    }
+    
+    // Pass lab name and selected project code to filter lab assistants
+    // Backend filters by both lab AND project (intersection)
+    getLabassistantEmployeeApi(labName || null, projectCode ? [projectCode] : [])
       .then((data) => {
         console.log("Lab Assistants API Response:", data);
         setLabassistantNames(
           data.map((item) => ({ value: item, label: item }))
         );
       })
-      .catch((error) =>
-        console.error("Error fetching Lab Assistants Names:", error)
-      );
-  }, []);
+      .catch((error) => {
+        console.error("Error fetching Lab Assistants Names:", error);
+        setLabassistantNames([]);
+      });
+  };
+
+  // Fetch lab assistants when project is selected or researcher data changes
+  useEffect(() => {
+    // Get researcher's lab(s)
+    const researcherLabs = reduxUser?.lab || userDetails.lab || [];
+    let labName = null;
+    
+    if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
+      // Use first lab if multiple labs (backend uses icontains, so this should work)
+      labName = researcherLabs[0];
+    } else if (typeof researcherLabs === 'string' && researcherLabs !== 'N/A') {
+      labName = researcherLabs;
+    }
+    
+    // Get selected project code from form
+    const selectedProjectCode = selectedCodes?.value || null;
+    
+    // Fetch lab assistants filtered by lab and selected project
+    fetchLabAssistants(labName, selectedProjectCode);
+  }, [selectedCodes, reduxUser?.lab, userDetails.lab]);
 
   useEffect(() => {
+    // Get username for filtering (used in both API calls)
+    const username = reduxUser?.user_name || userDetails.name;
+    
     // Fetch project codes
-    getMasterApi()
+    // Pass username to filter items by researcher's lab and projects
+    getMasterApi(null, username)
       .then((data) => {
         // Filter data based on masterType
         console.log("Before selection master type",data)
@@ -125,21 +163,73 @@ const AddProductListReq = ({
       })
       .catch((error) => console.error("Error fetching project codes:", error));
     //Fetch Projects codes
-    getProjectApi().then((data) => {
-      console.log("All Projects:", data); // Log full response to check structure
+    
+    // Fetch all projects and employee data in parallel
+    Promise.all([getProjectApi(), getEmployeeApi()])
+      .then(([projectsData, employeesData]) => {
+        console.log("All Projects:", projectsData);
+        console.log("All Employees:", employeesData);
 
-      const activeProjects = data.filter((item) => item.deleted === 0); // Filter only active projects
+        // Filter only active projects
+        const activeProjects = projectsData.filter((item) => item.deleted === 0);
 
-      console.log("Active Projects:", activeProjects); // Log filtered response to verify
+        // Get researcher's assigned project codes
+        let assignedProjectCodes = [];
+        
+        if (username) {
+          // Try to find employee record (EmpDet) - preferred source
+          const employee = employeesData.find(
+            (emp) => emp.emp_name === username && emp.is_active !== false
+          );
+          
+          if (employee && employee.project_code && employee.project_code.length > 0) {
+            // Use EmpDet.project_code (authoritative source)
+            assignedProjectCodes = Array.isArray(employee.project_code)
+              ? employee.project_code
+              : [employee.project_code];
+            console.log("Using EmpDet project codes:", assignedProjectCodes);
+          } else if (reduxUser && reduxUser.project_code) {
+            // Fallback to LoginCre.project_code if EmpDet not found
+            assignedProjectCodes = Array.isArray(reduxUser.project_code)
+              ? reduxUser.project_code
+              : [reduxUser.project_code];
+            console.log("Using LoginCre project codes (fallback):", assignedProjectCodes);
+          }
+        }
 
-      setProjectsMap(
-        activeProjects.map((item) => ({
-          value: item.project_code,
-          label: item.project_name,
-          code: item.project_code,
-        }))
-      );
-    });
+        // Filter projects to only show assigned ones
+        let filteredProjects = activeProjects;
+        if (assignedProjectCodes.length > 0) {
+          filteredProjects = activeProjects.filter((project) =>
+            assignedProjectCodes.includes(project.project_code)
+          );
+          console.log("Filtered Projects (assigned only):", filteredProjects);
+        } else {
+          console.log("No assigned projects found - showing empty dropdown");
+        }
+
+        setProjectsMap(
+          filteredProjects.map((item) => ({
+            value: item.project_code,
+            label: item.project_name,
+            code: item.project_code,
+          }))
+        );
+      })
+      .catch((error) => {
+        console.error("Error fetching projects or employees:", error);
+        // Fallback: show all active projects if fetch fails
+        getProjectApi().then((data) => {
+          const activeProjects = data.filter((item) => item.deleted === 0);
+          setProjectsMap(
+            activeProjects.map((item) => ({
+              value: item.project_code,
+              label: item.project_name,
+              code: item.project_code,
+            }))
+          );
+        });
+      });
     //Fetch Projects codes
     getResEmployeeApi()
       .then((data) => {
@@ -149,15 +239,30 @@ const AddProductListReq = ({
       .catch((error) =>
         console.error("Error fetching Researcher Names:", error)
       );
-    getmanagerEmployeeApi()
+    // Get researcher's lab(s) for filtering managers
+    // Redux user.lab is an array of lab names (from LoginSerializer)
+    // userDetails.lab might be string or array
+    const researcherLabs = reduxUser?.lab || userDetails.lab || [];
+    let labName = null;
+    
+    if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
+      // Use first lab if multiple labs (backend uses icontains, so this should work)
+      labName = researcherLabs[0];
+    } else if (typeof researcherLabs === 'string' && researcherLabs !== 'N/A') {
+      labName = researcherLabs;
+    }
+    
+    // Pass lab name to filter managers by researcher's lab
+    // Backend returns all managers if lab param is missing (optional filtering)
+    getmanagerEmployeeApi(labName || null)
       .then((data) => {
-        console.log("Received data:", data); // Log received data
+        console.log("Received manager data:", data); // Log received data
         setManagerNames(data.map((item) => ({ value: item, label: item })));
       })
       .catch((error) =>
-        console.error("Error fetching Researcher Names:", error)
+        console.error("Error fetching Manager Names:", error)
       );
-  }, [masterType]);
+  }, [masterType, reduxUser?.user_name, userDetails.name]);
   const filteredItemsCodes = itemsCodes.filter(
     (item) => item.details.masterType === masterType
   );
@@ -217,7 +322,9 @@ const AddProductListReq = ({
     if (!selectedCodes) newErrorMessages.project = "Please fill this field";
     if (!selectedLabAssistant)
       newErrorMessages.labAssistant = "Please fill this field";
-    if (!userDetails.name) newErrorMessages.issuedTo = "Please fill this field";
+    // Use Redux user if available, fallback to userDetails prop
+    const username = reduxUser?.user_name || userDetails.name;
+    if (!username) newErrorMessages.issuedTo = "Please fill this field";
 
     if (Object.keys(newErrorMessages).length > 0) {
       setErrorMessages(newErrorMessages);
@@ -228,7 +335,7 @@ const AddProductListReq = ({
     const issueData = {
       c_id: selectedItemCode.value,
       project_code: selectedCodes.value,
-      issued_to: userDetails.name,
+      issued_to: username,
       project_name: selectedCodes.label,
       supervisor_name: selectedmanNames.value,
       remarks: formData.get("remarks"),
@@ -523,7 +630,7 @@ const AddProductListReq = ({
                     <Form.Control
                       type="text"
                       name="issuedTo"
-                      value={userDetails.name}
+                      value={reduxUser?.user_name || userDetails.name}
                       readOnly
                       style={{ borderColor: "black" }}
                     />

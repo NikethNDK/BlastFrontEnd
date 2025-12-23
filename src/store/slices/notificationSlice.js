@@ -14,6 +14,12 @@ const initialState = {
     unreadCount: 0,     // Count of unread notifications (is_read === false)
     lastUpdated: null,  // Timestamp of last successful poll
   },
+  researcher: {
+    pendingConfirmations: [], // Issue requests waiting for researcher confirmation (RSR-CONFIRM)
+    notifications: [],  // All notifications from /app-notifications/ API
+    unreadCount: 0,     // Count of unread notifications (is_read === false)
+    lastUpdated: null,  // Timestamp of last successful poll
+  },
 };
 
 const notificationSlice = createSlice({
@@ -84,6 +90,38 @@ const notificationSlice = createSlice({
       state.labAssistant.unreadCount = 0;
       state.labAssistant.lastUpdated = null;
     },
+    // Set pending confirmations for researcher (RSR-CONFIRM status)
+    setResearcherPendingConfirmations: (state, action) => {
+      state.researcher.pendingConfirmations = Array.isArray(action.payload) ? action.payload : [];
+      state.researcher.lastUpdated = new Date().toISOString();
+    },
+    // Set all notifications for researcher from /app-notifications/ API
+    setResearcherNotifications: (state, action) => {
+      const notifications = Array.isArray(action.payload) ? action.payload : [];
+      state.researcher.notifications = notifications;
+      // Compute unreadCount from notifications where is_read === false
+      state.researcher.unreadCount = notifications.filter(n => !n.is_read).length;
+      state.researcher.lastUpdated = new Date().toISOString();
+    },
+    // Mark notifications as read locally for researcher (optimistic update)
+    markResearcherNotificationsRead: (state, action) => {
+      const notificationIds = Array.isArray(action.payload) ? action.payload : [];
+      state.researcher.notifications = state.researcher.notifications.map(notification => {
+        if (notificationIds.includes(notification.id)) {
+          return { ...notification, is_read: true };
+        }
+        return notification;
+      });
+      // Recompute unreadCount
+      state.researcher.unreadCount = state.researcher.notifications.filter(n => !n.is_read).length;
+    },
+    // Clear all researcher notifications (e.g., on logout)
+    clearResearcherNotifications: (state) => {
+      state.researcher.pendingConfirmations = [];
+      state.researcher.notifications = [];
+      state.researcher.unreadCount = 0;
+      state.researcher.lastUpdated = null;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -97,6 +135,10 @@ const notificationSlice = createSlice({
         state.labAssistant.notifications = [];
         state.labAssistant.unreadCount = 0;
         state.labAssistant.lastUpdated = null;
+        state.researcher.pendingConfirmations = [];
+        state.researcher.notifications = [];
+        state.researcher.unreadCount = 0;
+        state.researcher.lastUpdated = null;
       });
   },
 });
@@ -110,6 +152,10 @@ export const {
   setLabAssistantNotifications,
   markLabAssistantNotificationsRead,
   clearLabAssistantNotifications,
+  setResearcherPendingConfirmations,
+  setResearcherNotifications,
+  markResearcherNotificationsRead,
+  clearResearcherNotifications,
 } = notificationSlice.actions;
 
 export default notificationSlice.reducer;

@@ -6,6 +6,7 @@ import ResearcherNavigation from "./components/researcher/ResearcherNavigation";
 import ReNotification from "./components/researcher/ReNotification";
 import AddProductListReq from "./components/researcher/AddProductListReq";
 import IssueNotify from "./components/researcher/IssueNotify";
+import ConfirmIssue from "./components/researcher/ConfirmIssue";
 import HomeLab from "../src/components/Lab1/homeLab/HomeLab";
 import ChangePassword from "./components/researcher/ChangePassword";
 import JoinResearcher from "./researcher_jump";
@@ -36,6 +37,7 @@ function Layout({ userDetails }) {
         <Route path="/re_notify" element={<IssueNotify userDetails={userDetails} />} />
         <Route path="/masters" element={<HomeLab userDetails={userDetails} />} />
         <Route path="/addProductReq" element={<AddProductListReq userDetails={userDetails} />} />
+        <Route path="/confirm-issue" element={<ConfirmIssue userDetails={userDetails} />} />
         <Route path="/change_password" element={<ChangePassword userDetails={userDetails} />} />
       </Routes>
     </ResearcherNavigation>
