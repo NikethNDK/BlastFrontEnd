@@ -23,11 +23,22 @@ const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) 
         } : userDetails;
     }, [reduxUser, userDetails]);
 
-    // Extract username for API calls
+    // Extract username and lab for API calls
     const username = useMemo(() => 
         effectiveUserDetails.user_name || effectiveUserDetails.name || null,
         [effectiveUserDetails.user_name, effectiveUserDetails.name]
     );
+    
+    // Extract lab name from effectiveUserDetails (first lab if array)
+    const labName = useMemo(() => {
+        if (effectiveUserDetails.lab) {
+            return Array.isArray(effectiveUserDetails.lab) 
+                ? effectiveUserDetails.lab[0] 
+                : (effectiveUserDetails.lab !== 'N/A' ? effectiveUserDetails.lab : null);
+        }
+        return null;
+    }, [effectiveUserDetails.lab]);
+    
     const [message, setMessage] = useState('');
     const [itemsCodes, setItemsCodes] = useState([]);
     const [itemsNames, setItemsNames] = useState([]);
@@ -53,8 +64,11 @@ const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) 
     });
     useEffect(() => {
         
-        // Fetch project codes with username for filtering
-        getMasterApi(null, username)
+        // Fetch master items with lab and username for proper filtering
+        // The backend will filter by:
+        // - Project codes if user has projects assigned (from that lab)
+        // - Lab only if user has no projects assigned
+        getMasterApi(labName, username)
             .then(data => {
                 // Filter data based on masterType
                 if (masterType === 'Chemical') {
@@ -83,7 +97,7 @@ const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) 
             })
             .catch(error => console.error('Error fetching Researcher Names:', error));
     
-    }, [masterType, username]);
+    }, [masterType, username, labName]);
 
     const handleItemCodeChange = (selectedOption) => {
         setSelectedItemCode(selectedOption);
