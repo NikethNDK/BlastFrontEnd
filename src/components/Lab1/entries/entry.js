@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import "./TransferredDataTable.css"; // Use the new CSS file
 import * as XLSX from "xlsx";
@@ -16,6 +16,29 @@ const TransferredDataTable = ({
   // Get user from Redux store
   const reduxUser = useSelector((state) => state.user.user);
   
+  // Merge userDetails prop with Redux user data (Redux takes priority) - memoized to prevent infinite loops
+  const effectiveUserDetails = useMemo(() => {
+    return reduxUser ? {
+      name: reduxUser.user_name || userDetails.name || "",
+      user_name: reduxUser.user_name || userDetails.user_name || userDetails.name || "",
+      lab: reduxUser.lab || userDetails.lab || "N/A",
+      designation: reduxUser.designation || userDetails.designation || "Not Assigned",
+      role: reduxUser.role || userDetails.role || ""
+    } : userDetails;
+  }, [reduxUser, userDetails]);
+
+  // Extract username and lab for dependency tracking
+  const username = useMemo(() => 
+    effectiveUserDetails.user_name || effectiveUserDetails.name || null,
+    [effectiveUserDetails.user_name, effectiveUserDetails.name]
+  );
+  const labName = useMemo(() => 
+    effectiveUserDetails.lab && effectiveUserDetails.lab !== 'N/A' 
+      ? (Array.isArray(effectiveUserDetails.lab) ? effectiveUserDetails.lab[0] : effectiveUserDetails.lab)
+      : null,
+    [effectiveUserDetails.lab]
+  );
+
   const [data, setData] = useState([]);
   const [filters, setFilters] = useState({});
   const [selectedItem, setSelectedItem] = useState(null);
@@ -30,30 +53,46 @@ const TransferredDataTable = ({
   );
 
   useEffect(() => {
-    if (userDetails.lab) {
-      getmanagerEmployeeApi(userDetails.lab)
+    const lab = labName || effectiveUserDetails.lab;
+    if (lab && lab !== 'N/A') {
+      const labToUse = Array.isArray(lab) ? lab[0] : lab;
+      getmanagerEmployeeApi(labToUse)
         .then((data) => {
           console.log("Received manager data:", data);
           setManagerNames(data.map((item) => ({ value: item, label: item })));
         })
         .catch((error) => console.error("Error fetching Manager Names:", error));
     }
-  }, [userDetails.lab]);
+  }, [labName, effectiveUserDetails.lab]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username, labName]);
 
   const fetchData = async () => {
     try {
+      // Build query parameters
+      const params = {};
+      if (username) {
+        params.username = username;
+      }
+      if (labName) {
+        params.lab = labName;
+      }
+
+      console.log("🔍 [FRONTEND] get_inventory_data called with:", { username, lab: labName, params });
+
       const response = await axios.get(
-        `${BASE_URL}/api/inventoryReceive/`
+        `${BASE_URL}/api/inventoryReceive/`,
+        { params }
       );
       console.log("🔍 [FRONTEND] Fetched data:", response.data);
       console.log("🔍 [FRONTEND] Sample item (entry 20):", response.data.find(item => item.entry_no === 20));
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
+      toast.error("Failed to fetch inventory data. Please try again.");
     }
   };
 
