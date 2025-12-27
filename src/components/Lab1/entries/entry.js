@@ -408,8 +408,8 @@ const TransferredDataTable = ({
                 >
                   <option value="">Select Manager</option>
                   {managerNames.map((manager) => (
-                    <option key={manager.value} value={manager.value[0]}>
-                      {manager.label[0]}
+                    <option key={manager.value} value={manager.value}>
+                      {manager.label}
                     </option>
                   ))}
                 </select>
