@@ -191,16 +191,13 @@ const MasterListTable = ({
       try {
         setLoading(true);
         
-        // Use selectedLab prop if provided and not "All", otherwise use effectiveUserDetails lab
+        // Pass lab parameter if a specific lab is selected (not "All")
+        // When "All" is selected, pass null so backend can show all user labs
         let labName = null;
         if (selectedLab && selectedLab !== "All") {
           labName = selectedLab;
-        } else {
-          // Get lab name from effectiveUserDetails (first lab if array)
-          labName = Array.isArray(effectiveUserDetails.lab) 
-            ? effectiveUserDetails.lab[0] 
-            : (effectiveUserDetails.lab !== 'N/A' ? effectiveUserDetails.lab : null);
         }
+        // If "All" is selected, labName remains null - backend will handle showing all labs
         
         // Get username from effectiveUserDetails (prioritize user_name, then name)
         const username = effectiveUserDetails.user_name || effectiveUserDetails.name || null;
