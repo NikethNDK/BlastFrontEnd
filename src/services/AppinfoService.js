@@ -804,10 +804,9 @@ export function getItemReceiveApi(username, lab = null) {
     .then((response) => response.data);
 }
 
-export function addTempItemReceiveApi(receive) {
+export function addTempItemReceiveApi(receive, username = null) {
   const currentDate = new Date().toISOString();
-  return axios
-    .post(`${BASE_URL}/add_temp_receive_item`, {
+  const payload = {
       entry_no: null,
       bill_no: receive.bill_no,
       c_id: receive.c_id,
@@ -832,7 +831,15 @@ export function addTempItemReceiveApi(receive) {
       min_req_stock: receive.min_req_stock,
       unit_measure: receive.unit_measure,
       // stock: receive.stock,
-    })
+  };
+  
+  // Add username if provided (for notification creation)
+  if (username) {
+    payload.username = username;
+  }
+  
+  return axios
+    .post(`${BASE_URL}/add_temp_receive_item`, payload)
     .then((response) => response.data);
 }
 

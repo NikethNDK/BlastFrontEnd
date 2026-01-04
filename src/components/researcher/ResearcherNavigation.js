@@ -321,7 +321,16 @@ const ResearcherNavigation = ({
                                 <span>{notification.notification_type}</span>
                                 <span>•</span>
                                 <span>
-                                  {new Date(notification.created_at).toLocaleString()}
+                                  {notification.created_at 
+                                    ? new Date(notification.created_at).toLocaleString('en-US', {
+                                        year: 'numeric',
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true
+                                      })
+                                    : 'Time not available'}
                                 </span>
                               </div>
                             </div>
