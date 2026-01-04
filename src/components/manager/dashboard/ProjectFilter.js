@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { getProjectApi } from "../../../services/AppinfoService";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "../../../components/Lab1/homeLab/inventory.css";
 
 const ProjectManage = () => {
+  // Get user from Redux store to get username
+  const reduxUser = useSelector((state) => state.user.user);
+  const username = reduxUser?.user_name || reduxUser?.name || null;
+  
   const [projects, setProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -12,14 +17,14 @@ const ProjectManage = () => {
     // NOTE: Polling removed - data now fetched once on mount
     // For notification updates, see centralized polling in ManagerNavigation
     const fetchData = () => {
-      getProjectApi()
+      getProjectApi(username)
         .then((data) => setProjects(data))
         .catch((error) => console.error("Error fetching data:", error));
     };
 
     // Single fetch on mount - no recurring polling
     fetchData();
-  }, []);
+  }, [username]);
 
   // Pagination calculations
   const totalItems = projects.length;
