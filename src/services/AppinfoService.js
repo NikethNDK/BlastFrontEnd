@@ -446,13 +446,16 @@ export async function updateLoginApi(id, log) {
 
 //---------------------------Employee---------------------------//
 
-export function getEmployeeApi(username = null, lab = null) {
+export function getEmployeeApi(username = null, lab = null, role = null) {
   const params = {};
   if (username) {
     params.username = username;
   }
   if (lab) {
     params.lab = lab;
+  }
+  if (role) {
+    params.role = role;
   }
   return axios
     .get(`${BASE_URL}/emp/`, { params })
