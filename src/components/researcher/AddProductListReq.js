@@ -55,6 +55,7 @@ const AddProductListReq = ({
   const [suppliers, setSuppliers] = useState([]);
   const [selectedunits, setSelectedunits] = useState(null);
   const [units, setUnits] = useState([]);
+  const [quantityIssued, setQuantityIssued] = useState('');
   const [errorMessages, setErrorMessages] = useState({
     issuedTo: "",
     remarks: "",
@@ -343,6 +344,7 @@ const AddProductListReq = ({
       item_name: selectedItemName.label,
       item_code: selectedItemCode.label,
       lab_assistant_name: selectedLabAssistant.label,
+      quantity_issued: quantityIssued || null,
     };
 
     addIssueResearcherApi(issueData)
@@ -358,6 +360,7 @@ const AddProductListReq = ({
         setMasterType("");
         setSelectedNames(null);
         setSelectedLabAssistant(null);
+        setQuantityIssued('');
         setErrorMessages({});
       })
       .catch((error) => {
@@ -608,7 +611,6 @@ const AddProductListReq = ({
               </Row>
               <p></p>
               <Row>
-                {" "}
                 <Col>
                   <Form.Group controlId="remarks">
                     <Form.Label>Remarks</Form.Label>
@@ -617,12 +619,14 @@ const AddProductListReq = ({
                       name="remarks"
                       required
                       placeholder=""
-                      className="custom-border"
+                      style={{ borderColor: "black" }}
                     />
+                    {errorMessages.remarks && (
+                      <div style={{ color: "red", marginTop: "5px" }}>
+                        {errorMessages.remarks}
+                      </div>
+                    )}
                   </Form.Group>
-                  <span style={{ color: "red", float: "right" }}>
-                    {errorMessages.remarks}
-                  </span>
                 </Col>
                 <Col>
                   <Form.Group controlId="issuedTo">
@@ -634,10 +638,12 @@ const AddProductListReq = ({
                       readOnly
                       style={{ borderColor: "black" }}
                     />
+                    {errorMessages.issuedTo && (
+                      <div style={{ color: "red", marginTop: "5px" }}>
+                        {errorMessages.issuedTo}
+                      </div>
+                    )}
                   </Form.Group>
-                  <span style={{ color: "red", float: "right" }}>
-                    {errorMessages.issuedTo}
-                  </span>
                 </Col>
                 <Col>
                   <Form.Group controlId="labAssistantName">
@@ -647,22 +653,47 @@ const AddProductListReq = ({
                       value={selectedLabAssistant}
                       onChange={setSelectedLabAssistant}
                       placeholder="Lab Assistant Name"
-                    >
-                      <option value="">Select Lab Assistant</option>
-                      {labassistantNames.map((lab_assistants) => (
-                        <option
-                          key={lab_assistants.value}
-                          value={lab_assistants.value}
-                        >
-                          {lab_assistants.label}
-                        </option>
-                      ))}
-                    </Select>
+                      styles={{
+                        control: (provided) => ({
+                          ...provided,
+                          borderColor: "black",
+                        }),
+                      }}
+                    />
+                    {errorMessages.labAssistant && (
+                      <div style={{ color: "red", marginTop: "5px" }}>
+                        {errorMessages.labAssistant}
+                      </div>
+                    )}
                   </Form.Group>
-                  <span style={{ color: "red", float: "right" }}>
-                    {errorMessages.remarks}
-                  </span>
                 </Col>
+              </Row>
+              <p></p>
+              <Row>
+                <Col>
+                  <Form.Group controlId="quantityIssued">
+                    <Form.Label>Quantity</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="quantityIssued"
+                      min="1"
+                      value={quantityIssued}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || (parseInt(value) >= 1)) {
+                          setQuantityIssued(value);
+                        }
+                      }}
+                      placeholder="Optional"
+                      style={{ borderColor: "black" }}
+                    />
+                    <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
+                      Quantity can be adjusted by Lab Assistant before issuing
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+                <Col></Col>
+                <Col></Col>
               </Row>
             </Form>
             <Button

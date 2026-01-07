@@ -93,7 +93,7 @@ const TempIssueTable = ({ onEdit }) => {
                   <td className="table-cell">{item.entry_no || "-"}</td>
                   <td className="table-cell">{item.item_code || "-"}</td>
                   <td className="table-cell">{item.item_name || "-"}</td>
-                  <td className="table-cell">{item.quantity_issued || "-"}</td>
+                  <td className="table-cell">{item.quantity_issued ?? "—"}</td>
                   <td className="table-cell">{item.project_code || "-"}</td>
                   <td className="table-cell">{item.project_name || "-"}</td>
                   <td className="table-cell">{item.issued_to || "-"}</td>

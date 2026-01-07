@@ -1369,7 +1369,7 @@ export function addIssueResearcherApi(receive) {
       // bill_no: receive.bill_no,
       c_id: receive.c_id,
       issue_date: currentDate,
-      // quantity_issued: receive.quantity_issued,
+      quantity_issued: receive.quantity_issued || null,
       issued_to: receive.issued_to,
       project_code: receive.project_code,
       project_name: receive.project_name,
