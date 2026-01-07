@@ -7,6 +7,7 @@ import {
   getLabsApi,
   getAllUsersApi,
   getEmployeeApi,
+  getUsersForAssignProjectApi,
 } from "../../../services/AppinfoService";
 import toast from "react-hot-toast";
 
@@ -64,17 +65,17 @@ const AssignProjectModal = (props) => {
   // Fetch usernames when both lab and role are selected
   useEffect(() => {
     if (selectedLab && selectedRole) {
-      // Fetch employees filtered by lab and role using backend endpoint
-      getEmployeeApi(null, selectedLab, selectedRole)
-        .then((employees) => {
+      // Fetch users from LoginCre filtered by lab and role using new dedicated endpoint
+      getUsersForAssignProjectApi(selectedLab, selectedRole)
+        .then((users) => {
           // Handle both array and single object responses
-          const employeeList = Array.isArray(employees) ? employees : [employees];
+          const userList = Array.isArray(users) ? users : [users];
           setUsernames(
-            employeeList.map((emp) => emp.emp_name).filter(Boolean)
+            userList.map((user) => user.emp_name).filter(Boolean)
           );
         })
         .catch((error) => {
-          console.error("Error fetching employees:", error);
+          console.error("Error fetching users for assign project:", error);
           setUsernames([]);
         });
     } else {

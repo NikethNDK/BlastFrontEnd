@@ -466,6 +466,14 @@ export function getEmployeeApi(username = null, lab = null, role = null) {
     .then((response) => response.data);
 }
 
+export function getUsersForAssignProjectApi(lab, role) {
+  return axios
+    .get(`${BASE_URL}/emp/assign-project-users/`, {
+      params: { lab, role }
+    })
+    .then((response) => response.data);
+}
+
 export function getEmployeeByUsernameApi(username) {
   return axios
     .get(`${BASE_URL}/emp/?username=${encodeURIComponent(username)}`)
