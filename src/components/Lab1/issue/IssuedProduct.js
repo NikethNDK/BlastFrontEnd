@@ -72,6 +72,8 @@ const IssuedProduct = ({
   const [selectedunits, setSelectedunits] = useState(null);
   const [expiryDate, setExpiryDate] = useState("");
   const [quantityIssued, setQuantityIssued] = useState(0);
+  const [instructionSpecification, setInstructionSpecification] = useState("");
+  const [remarks, setRemarks] = useState("");
   const [selectedItem, setSelectedItem] = useState({
     code: null,
     name: null,
@@ -131,6 +133,8 @@ const IssuedProduct = ({
     setLocations([]);
     setSelectedExpiryDate(null);
     setSelectedLocation(null);
+    setInstructionSpecification("");
+    setRemarks("");
     setErrorMessages({});
     setIsEditMode(false);
     setEditingIssue(null);
@@ -160,24 +164,18 @@ const IssuedProduct = ({
       setQuantityIssued(issue.quantity_issued);
     }
 
-    // Set instruction_specification in form (direct DOM manipulation)
-    if (formRef.current && issue.instruction_specification) {
-      setTimeout(() => {
-        const instructionField = formRef.current.querySelector('textarea[name="instruction_specification"]');
-        if (instructionField) {
-          instructionField.value = issue.instruction_specification;
-        }
-      }, 100);
+    // Set instruction_specification in state
+    if (issue.instruction_specification) {
+      setInstructionSpecification(issue.instruction_specification);
+    } else {
+      setInstructionSpecification("");
     }
 
-    // Set remarks in form (direct DOM manipulation)
-    if (formRef.current && issue.remarks) {
-      setTimeout(() => {
-        const remarksField = formRef.current.querySelector('textarea[name="remarks"]');
-        if (remarksField) {
-          remarksField.value = issue.remarks;
-        }
-      }, 100);
+    // Set remarks in state
+    if (issue.remarks) {
+      setRemarks(issue.remarks);
+    } else {
+      setRemarks("");
     }
 
     // Store issue data for useEffect to complete population
@@ -334,7 +332,8 @@ const IssuedProduct = ({
         selectedProject: selectedProject.value,
         selectedExpiryDate: selectedExpiryDate.value,
         selectedLocation: selectedLocation.value,
-        userLab: effectiveUserDetails.lab
+        userLab: effectiveUserDetails.lab,
+        isEditMode: isEditMode
       });
 
       const username = effectiveUserDetails.user_name || effectiveUserDetails.name || null;
@@ -390,16 +389,24 @@ const IssuedProduct = ({
           if (matchedItem) {
             // Use stock field for available quantity, fallback to quantity_received
             const availableQuantity = matchedItem.stock || matchedItem.quantity_received || 0;
-            console.log("✅ [QUANTITY FETCH] Setting quantity:", {
+            console.log("✅ [QUANTITY FETCH] Available quantity:", {
               stock: matchedItem.stock,
               quantity_received: matchedItem.quantity_received,
-              availableQuantity
+              availableQuantity,
+              isEditMode: isEditMode
             });
             
-            setQuantityIssued(availableQuantity);
+            // Update selectedItemDetails to show available stock as hint
             setSelectedItemDetails({
               quantityIssued: availableQuantity,
             });
+            
+            // Only set quantity if NOT in edit mode (preserve existing quantity in edit mode)
+            if (!isEditMode) {
+              setQuantityIssued(availableQuantity);
+            } else {
+              console.log("📝 [QUANTITY FETCH] Edit mode: preserving existing quantity:", quantityIssued);
+            }
           } else {
             console.log("❌ [QUANTITY FETCH] No exact match found, trying fallback matching...");
             
@@ -412,14 +419,27 @@ const IssuedProduct = ({
             if (itemCodeMatch) {
               console.log("🔄 [QUANTITY FETCH] Found item by code only:", itemCodeMatch);
               const availableQuantity = itemCodeMatch.stock || itemCodeMatch.quantity_received || 0;
-              setQuantityIssued(availableQuantity);
+              
+              // Update selectedItemDetails to show available stock as hint
               setSelectedItemDetails({
                 quantityIssued: availableQuantity,
               });
+              
+              // Only set quantity if NOT in edit mode
+              if (!isEditMode) {
+                setQuantityIssued(availableQuantity);
+              }
             } else {
               console.log("❌ [QUANTITY FETCH] No fallback match found either");
-              setQuantityIssued("");
-              setSelectedItemDetails(null);
+              
+              // Only clear quantity if NOT in edit mode
+              if (!isEditMode) {
+                setQuantityIssued("");
+                setSelectedItemDetails(null);
+              } else {
+                // In edit mode, just clear the hint but preserve quantity
+                setSelectedItemDetails(null);
+              }
             }
           }
         })
@@ -434,7 +454,7 @@ const IssuedProduct = ({
         selectedLocation: !!selectedLocation
       });
     }
-  }, [selectedItemCode, selectedProject, selectedExpiryDate, selectedLocation, effectiveUserDetails.lab]);
+  }, [selectedItemCode, selectedProject, selectedExpiryDate, selectedLocation, effectiveUserDetails.lab, isEditMode]);
 
   useEffect(() => {
     if (!masterType) {
@@ -626,20 +646,27 @@ const IssuedProduct = ({
     const newErrors = {};
     let hasError = false;
 
-    // Validate text inputs
-    const requiredFields = [
-      "quantityIssued",
-      "project",
-      "remarks",
-      "instruction_specification", // Changed from "issuedTo"
-    ];
-    requiredFields.forEach((field) => {
-      const value = formData.get(field);
-      if (!value || value.trim() === "") {
-        newErrors[field] = "Please fill this field";
-        hasError = true;
-      }
-    });
+    // Validate text inputs - use state values for controlled fields
+    if (!quantityIssued || quantityIssued === 0) {
+      newErrors.quantityIssued = "Please fill this field";
+      hasError = true;
+    }
+    
+    if (!instructionSpecification || instructionSpecification.trim() === "") {
+      newErrors.instruction_specification = "Please fill this field";
+      hasError = true;
+    }
+    
+    if (!remarks || remarks.trim() === "") {
+      newErrors.remarks = "Please fill this field";
+      hasError = true;
+    }
+    
+    const projectValue = formData.get("project");
+    if (!projectValue || projectValue.trim() === "") {
+      newErrors.project = "Please fill this field";
+      hasError = true;
+    }
 
     // Validate dropdown/select fields
     if (!selectedItemCode) {
@@ -677,15 +704,15 @@ const IssuedProduct = ({
       return;
     }
 
-    // Prepare data
+    // Prepare data - use state values for controlled fields
     const issueData = {
       c_id: selectedItemCode.value,
-      quantity_issued: formData.get("quantityIssued"),
+      quantity_issued: quantityIssued,
       issued_to: selectedNames.value,
       project_code: selectedCodes.value,
       researcher_name: selectedNames.value,
-      remarks: formData.get("remarks"),
-      instruction_specification: formData.get("instruction_specification"), // Changed from "issuedTo"
+      remarks: remarks,
+      instruction_specification: instructionSpecification,
       master_type: masterType || "",
       item_name: selectedItemName ? selectedItemName.label : "",
       item_code: selectedItemCode ? selectedItemCode.label : "",
@@ -1210,12 +1237,16 @@ const IssuedProduct = ({
                         as="textarea"
                         name="instruction_specification"
                         required
+                        value={instructionSpecification}
                         placeholder=""
                         className="custom-border"
                         style={{
                           borderColor: errorMessages.instruction_specification ? "red" : "black",
                         }}
-                        onChange={() => setErrorMessages(prev => ({...prev, instruction_specification: ""}))}
+                        onChange={(e) => {
+                          setInstructionSpecification(e.target.value);
+                          setErrorMessages(prev => ({...prev, instruction_specification: ""}));
+                        }}
                       />
                       {errorMessages.instruction_specification && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -1232,12 +1263,16 @@ const IssuedProduct = ({
                         as="textarea"
                         name="remarks"
                         required
+                        value={remarks}
                         placeholder=""
                         className="custom-border"
                         style={{
                           borderColor: errorMessages.remarks ? "red" : "black",
                         }}
-                        onChange={() => setErrorMessages(prev => ({...prev, remarks: ""}))}
+                        onChange={(e) => {
+                          setRemarks(e.target.value);
+                          setErrorMessages(prev => ({...prev, remarks: ""}));
+                        }}
                       />
                       {errorMessages.remarks && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
