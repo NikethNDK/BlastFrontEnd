@@ -174,12 +174,16 @@ export const getStockLevelApi = () => {
 
 // --------------------------------Project Master------------------------------------------
 
-export function getProjectApi(username = null) {
-  const url = username 
-    ? `${BASE_URL}/project/?username=${encodeURIComponent(username)}`
-    : `${BASE_URL}/project/`;
+export function getProjectApi(username = null, lab = null) {
+  const params = {};
+  if (username) {
+    params.username = username;
+  }
+  if (lab && lab !== 'All') {
+    params.lab = lab;
+  }
   return axios
-    .get(url)
+    .get(`${BASE_URL}/project/`, { params })
     .then((response) => response.data);
 }
 
@@ -446,13 +450,16 @@ export async function updateLoginApi(id, log) {
 
 //---------------------------Employee---------------------------//
 
-export function getEmployeeApi(username = null, lab = null) {
+export function getEmployeeApi(username = null, lab = null, role = null) {
   const params = {};
   if (username) {
     params.username = username;
   }
   if (lab) {
     params.lab = lab;
+  }
+  if (role) {
+    params.role = role;
   }
   return axios
     .get(`${BASE_URL}/emp/`, { params })
