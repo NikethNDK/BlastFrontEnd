@@ -337,7 +337,13 @@ const ProjectManage = () => {
                             </td>
                             <td>
                               <small style={{ color: '#6c757d' }}>
-                                {new Date().toLocaleDateString()}
+                                {project.created_at 
+                                  ? new Date(project.created_at).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric'
+                                    })
+                                  : 'N/A'}
                               </small>
                             </td>
                             <td>
