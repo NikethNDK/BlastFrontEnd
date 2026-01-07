@@ -94,7 +94,7 @@ const ReceivedProduct = ({
       );
     });
 
-    getProjectApi()
+    getProjectApi(userDetails.name)
       .then((data) => {
         const activeProjects = data.filter((item) => item.deleted === 0);
         setProjects(
