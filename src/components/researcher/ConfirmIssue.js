@@ -23,7 +23,9 @@ const ConfirmIssue = ({ userDetails = { name: "", lab: "", designation: "" } }) 
 
   const fetchPendingConfirmations = async () => {
     try {
-      const data = await getIssueItemsByStatus('RSR-CONFIRM');
+      // Get username from Redux or userDetails for filtering
+      const username = reduxUser?.user_name || userDetails.name || null;
+      const data = await getIssueItemsByStatus('RSR-CONFIRM', username);
       dispatch(setResearcherPendingConfirmations(data || []));
     } catch (error) {
       console.error('Error fetching pending confirmations:', error);

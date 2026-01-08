@@ -718,6 +718,7 @@ const IssuedProduct = ({
       item_code: selectedItemCode ? selectedItemCode.label : "",
       expiry_date: selectedExpiryDate ? selectedExpiryDate.value : "",
       location: selectedLocation ? selectedLocation.value : "",
+      lab_assistant_name: effectiveUserDetails.user_name || null,
     };
 
     // Submit data - unified handler for both Add and Edit
@@ -764,7 +765,9 @@ const IssuedProduct = ({
       
       // Step 1: Accept all LAB-OPEN items (prepare for researcher confirmation)
       try {
-        const labOpenItems = await getTempIssueApi();
+        // Get username from Redux or userDetails for filtering
+        const username = reduxUser?.user_name || effectiveUserDetails.user_name || null;
+        const labOpenItems = await getTempIssueApi(username);
         const itemsToAccept = labOpenItems.filter(item => item.status === "LAB-OPEN");
         
         if (itemsToAccept.length > 0) {
@@ -869,7 +872,10 @@ const IssuedProduct = ({
       <p></p>
 
       <div style={{ paddingTop: "10px" }}>
-        <TempIssueTable onEdit={openIssueEditor} />
+        <TempIssueTable 
+          onEdit={openIssueEditor} 
+          username={effectiveUserDetails.user_name || null}
+        />
       </div>
 
       {/* --- Modal Component for Add Issue Form --- */}

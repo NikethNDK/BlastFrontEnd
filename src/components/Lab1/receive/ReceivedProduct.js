@@ -1045,7 +1045,7 @@ const ReceivedProduct = ({
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
-          <Button variant="primary" type="submit">
+          <Button variant="primary" onClick={handleSubmit}>
             {modalMode === "edit" ? "Save Changes" : "Add Item"}
           </Button>
         </Modal.Footer>

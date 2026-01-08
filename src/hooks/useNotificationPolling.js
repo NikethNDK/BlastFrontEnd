@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { getItemReturnsForManager, getIssueItems, getUserNotifications } from '../services/AppinfoService';
 import {
@@ -26,6 +26,7 @@ import { getIssueItemsByStatus } from '../services/AppinfoService';
  */
 const useNotificationPolling = ({ role, userId, intervalMs = 3000 }) => {
   const dispatch = useDispatch();
+  const reduxUser = useSelector((state) => state.user.user);
   const intervalRef = useRef(null);
   // Track previous unreadCount to detect new notifications
   // null = not initialized yet (first poll), number = previous count
@@ -107,7 +108,9 @@ const useNotificationPolling = ({ role, userId, intervalMs = 3000 }) => {
           dispatch(setManagerPendingReturns(returnNotifications || []));
           
           console.log('🔄 [POLLING] Calling getIssueItems...');
-          const issueNotifications = await getIssueItems();
+          // Get username from Redux user for filtering
+          const managerUsername = reduxUser?.user_name || null;
+          const issueNotifications = await getIssueItems(managerUsername);
           console.log(`🔄 [POLLING] Issue requests: ${issueNotifications?.length || 0} pending`);
           dispatch(setManagerPendingIssues(issueNotifications || []));
         } else if (role === 'lab_assistant') {
@@ -117,7 +120,9 @@ const useNotificationPolling = ({ role, userId, intervalMs = 3000 }) => {
           
           // Poll for RSR-CONFIRM items (pending researcher confirmation)
           console.log('🔄 [POLLING] Calling getIssueItemsByStatus for RSR-CONFIRM...');
-          const confirmItems = await getIssueItemsByStatus('RSR-CONFIRM');
+          // Get username from Redux user for filtering
+          const researcherUsername = reduxUser?.user_name || null;
+          const confirmItems = await getIssueItemsByStatus('RSR-CONFIRM', researcherUsername);
           console.log(`🔄 [POLLING] Pending confirmations: ${confirmItems?.length || 0}`);
           dispatch(setResearcherPendingConfirmations(confirmItems || []));
         }
@@ -144,7 +149,7 @@ const useNotificationPolling = ({ role, userId, intervalMs = 3000 }) => {
         intervalRef.current = null;
       }
     };
-  }, [role, userId, intervalMs, dispatch]);
+  }, [role, userId, intervalMs, dispatch, reduxUser]);
 
   // Hook doesn't need to return anything for now
   // Can be extended to return polling status if needed

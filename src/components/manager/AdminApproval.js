@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, Col, Row, Form, Button } from 'react-bootstrap';
+import toast from 'react-hot-toast';
 import { updateRequestApi } from '../../services/AppinfoService';
 
 const AdminApprovalModal = (props) => {
@@ -21,11 +22,11 @@ const AdminApprovalModal = (props) => {
       
         try {
           const result = await updateRequestApi(props.request.id, approvalData);
-          alert("Approval Updated Successfully");
+          toast.success("Approval Updated Successfully");
           props.setUpdated(true);
         } catch (error) {
           console.error('Failed to Update Approval:', error);
-          alert(`Failed to Update Approval: ${error.message}`);
+          toast.error(`Failed to Update Approval: ${error.message}`);
         }
       };
       console.log('Props Request:', props.request);

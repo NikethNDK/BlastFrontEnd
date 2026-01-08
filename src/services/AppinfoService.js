@@ -769,11 +769,15 @@ export function getTempReceiveApi() {
     .then((response) => response.data);
 }
 
-export function getTempIssueApi() {
+export function getTempIssueApi(username = null) {
+  // Build URL with optional username parameter (backward compatible)
+  const url = username
+    ? `${BASE_URL}/get-issue-items?status=LAB-OPEN&username=${username}`
+    : `${BASE_URL}/get-issue-items?status=LAB-OPEN`;
+  
   return (
     axios
-      // .get("${BASE_URL}/get-issue-items/")
-      .get(`${BASE_URL}/get-issue-items?status=LAB-OPEN`)
+      .get(url)
       .then((response) => response.data)
   );
 }
@@ -919,6 +923,7 @@ export function addTempItemIssueApi(receive) {
       location: receive.location,
       status: "LAB-OPEN",
       instruction_specification: receive.instruction_specification,
+      lab_assistant_name: receive.lab_assistant_name || null,
     })
     .then((response) => response.data);
 }
@@ -1779,12 +1784,14 @@ export const updateItemStatus = async (entry_no, status) => {
 //   }
 // };
 
-export const getIssueItems = async () => {
+export const getIssueItems = async (username = null) => {
   try {
-    const response = await axios.get(
-      `${BASE_URL}/get-issue-items?status=RCH-OPEN`
-      // `${BASE_URL}/get-issue-items`
-    );
+    // Build URL with optional username parameter (backward compatible)
+    const url = username 
+      ? `${BASE_URL}/get-issue-items?status=RCH-OPEN&username=${username}`
+      : `${BASE_URL}/get-issue-items?status=RCH-OPEN`;
+    
+    const response = await axios.get(url);
     return response.data; // Returning response data
   } catch (error) {
     console.error("Error fetching issue items:", error);
@@ -1792,11 +1799,14 @@ export const getIssueItems = async () => {
   }
 };
 
-export const getIssueItemsByStatus = async (status) => {
+export const getIssueItemsByStatus = async (status, username = null) => {
   try {
-    const response = await axios.get(
-      `${BASE_URL}/get-issue-items?status=${status}`
-    );
+    // Build URL with optional username parameter (backward compatible)
+    const url = username
+      ? `${BASE_URL}/get-issue-items?status=${status}&username=${username}`
+      : `${BASE_URL}/get-issue-items?status=${status}`;
+    
+    const response = await axios.get(url);
     return response.data;
   } catch (error) {
     console.error(`Error fetching issue items with status ${status}:`, error);

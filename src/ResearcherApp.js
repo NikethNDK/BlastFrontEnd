@@ -1,5 +1,6 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { Toaster } from "react-hot-toast";
 import Home from "./components/Home";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import ResearcherNavigation from "./components/researcher/ResearcherNavigation";
@@ -49,6 +50,30 @@ function ResearcherApp({ userDetails = { name: '', lab: '', designation: '' } })
   return (
     <BrowserRouter>
       <Layout userDetails={userDetails} />
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </BrowserRouter>
   );
 }
