@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Modal, Col, Row, Form, Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 // import {FormControl, FormGroup, FormLabel} from 'react-bootstrap';
 import {
   addItemIssueApi,
@@ -349,7 +350,7 @@ const AddProductListReq = ({
 
     addIssueResearcherApi(issueData)
       .then(() => {
-        alert("Request added successfully");
+        toast.success("Request added successfully");
         formRef.current.reset();
         setSelectedItem(null);
         setSelectedItemCode(null);
@@ -365,7 +366,7 @@ const AddProductListReq = ({
       })
       .catch((error) => {
         console.error("Failed to Add Inventory Data", error);
-        alert("Failed to Add Inventory. Check console for details.");
+        toast.error("Failed to Add Inventory. Check console for details.");
       });
   };
 

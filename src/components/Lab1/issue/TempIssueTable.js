@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { Modal, Button } from "react-bootstrap";
 import toast from "react-hot-toast";
 import {
   getTempIssueApi,
@@ -7,10 +8,26 @@ import {
 } from "../../../services/AppinfoService";
 import "./TempIssueTable.css"; // Import the new CSS file
 
-const TempIssueTable = ({ onEdit }) => {
+const TempIssueTable = ({ onEdit, username = null }) => {
   const [issued, setIssued] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getTempIssueApi(username);
+      setIssued(data);
+      setError(null);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError("Failed to load data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, [username]);
 
   useEffect(() => {
     fetchData();
@@ -22,21 +39,7 @@ const TempIssueTable = ({ onEdit }) => {
     return () => {
       delete window.refreshTempIssueTable;
     };
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const data = await getTempIssueApi();
-      setIssued(data);
-      setError(null);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setError("Failed to load data. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchData]); // Re-fetch when username changes
 
   const handleEdit = (issue) => {
     if (onEdit) {
@@ -47,14 +50,24 @@ const TempIssueTable = ({ onEdit }) => {
     }
   };
 
-  const handleDelete = async (entryNo) => {
-    if (!window.confirm("Are you sure you want to delete this record?")) return;
+  const handleDelete = (entryNo) => {
+    setItemToDelete(entryNo);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setShowDeleteModal(false);
+    if (!itemToDelete) return;
+
     try {
-      await deleteTempIssueApi(entryNo);
-      setIssued(issued.filter((item) => item.entry_no !== entryNo));
+      await deleteTempIssueApi(itemToDelete);
+      setIssued(issued.filter((item) => item.entry_no !== itemToDelete));
+      toast.success("Record deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
-      toast.error("Delete Failed!");
+      toast.error("Failed to delete record. Please try again.");
+    } finally {
+      setItemToDelete(null);
     }
   };
 
@@ -157,6 +170,20 @@ const TempIssueTable = ({ onEdit }) => {
           </tbody>
         </table>
       </div>
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete this record? This action cannot be undone.</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { Modal, Button } from "react-bootstrap";
 import toast from "react-hot-toast";
 import {
   getTempReceiveApi,
@@ -11,20 +12,10 @@ const TempReceiveTable = ({ onEdit }) => {
   const [receive, setReceive] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-    
-    // Expose refresh function globally
-    window.refreshTempReceiveTable = fetchData;
-    
-    // Cleanup on unmount
-    return () => {
-      delete window.refreshTempReceiveTable;
-    };
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getTempReceiveApi();
@@ -36,7 +27,19 @@ const TempReceiveTable = ({ onEdit }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+    
+    // Expose refresh function globally
+    window.refreshTempReceiveTable = fetchData;
+    
+    // Cleanup on unmount
+    return () => {
+      delete window.refreshTempReceiveTable;
+    };
+  }, [fetchData]);
 
   const handleEdit = (item) => {
     if (typeof onEdit === "function") {
@@ -47,14 +50,24 @@ const TempReceiveTable = ({ onEdit }) => {
     toast.error("Edit handler is not configured.");
   };
 
-  const handleDelete = async (billNo) => {
-    if (!window.confirm("Are you sure you want to delete this record?")) return;
+  const handleDelete = (billNo) => {
+    setItemToDelete(billNo);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setShowDeleteModal(false);
+    if (!itemToDelete) return;
+
     try {
-      await deleteTempReceiveApi(billNo);
-      setReceive(receive.filter((item) => item.bill_no !== billNo));
+      await deleteTempReceiveApi(itemToDelete);
+      setReceive(receive.filter((item) => item.bill_no !== itemToDelete));
+      toast.success("Record deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);
-      toast.error("Delete Failed!");
+      toast.error("Failed to delete record. Please try again.");
+    } finally {
+      setItemToDelete(null);
     }
   };
 
@@ -133,6 +146,20 @@ const TempReceiveTable = ({ onEdit }) => {
           </tbody>
         </table>
       </div>
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete this record? This action cannot be undone.</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

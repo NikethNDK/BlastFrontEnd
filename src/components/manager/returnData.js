@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import * as XLSX from "xlsx";
+import toast from "react-hot-toast";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { BASE_URL } from "../../services/AppinfoService";
@@ -181,7 +182,7 @@ const ReturnDataTable = () => {
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
-      alert("No data to download!");
+      toast.error("No data to download!");
       return;
     }
 

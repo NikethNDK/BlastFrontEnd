@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Button } from "react-bootstrap";
 import { FaCheck, FaTimes } from "react-icons/fa";
+import toast from "react-hot-toast";
 import AdminApprovalModal from "./AdminApproval";
 import ManagerNavigation from "../manager/ManagerNavigation";
 import { BASE_URL } from "../../services/AppinfoService";
@@ -65,9 +66,10 @@ const Notification = ({
         // The next polling cycle will refresh the data automatically
         const updatedData = note.filter((n) => n.entry_no !== item.entry_no);
         dispatch(setManagerPendingIssues(updatedData));
-        alert("Item has been accepted.");
+        toast.success("Item has been accepted.");
       } else {
         console.error("Failed to accept item:", result.error);
+        toast.error("Failed to accept item.");
       }
     } catch (error) {
       console.error("Error accepting item:", error);
@@ -102,9 +104,10 @@ const Notification = ({
         // The next polling cycle will refresh the data automatically
         const updatedData = note.filter((n) => n.entry_no !== item.entry_no);
         dispatch(setManagerPendingIssues(updatedData));
-        alert("Item has been Declined.");
+        toast.success("Item has been Declined.");
       } else {
-        console.error("Failed to accept item:", result.error);
+        console.error("Failed to decline item:", result.error);
+        toast.error("Failed to decline item.");
       }
     } catch (error) {
       console.error("Error accepting item:", error);

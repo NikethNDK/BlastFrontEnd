@@ -69,7 +69,7 @@ const ReturnDataTableNotification = ({
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
-      alert("No data to download!");
+      toast.error("No data to download!");
       return;
     }
 
