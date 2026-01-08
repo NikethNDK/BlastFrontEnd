@@ -647,9 +647,23 @@ const IssuedProduct = ({
     let hasError = false;
 
     // Validate text inputs - use state values for controlled fields
-    if (!quantityIssued || quantityIssued === 0) {
-      newErrors.quantityIssued = "Please fill this field";
+    // Quantity must be a positive number (greater than 0)
+    if (!quantityIssued || quantityIssued === 0 || quantityIssued === "" || quantityIssued < 1) {
+      newErrors.quantityIssued = "Please enter a positive quantity (greater than 0)";
       hasError = true;
+    }
+    
+    // Validate quantity against available quantity (only if quantity is provided and available quantity is known)
+    const availableQuantity = selectedItemDetails?.quantityIssued;
+    if (quantityIssued && quantityIssued !== "" && quantityIssued !== 0 && 
+        availableQuantity !== null && availableQuantity !== undefined) {
+      const enteredQuantity = parseInt(quantityIssued, 10);
+      if (!isNaN(enteredQuantity) && enteredQuantity > availableQuantity) {
+        newErrors.quantityIssued = `Quantity cannot exceed available quantity (${availableQuantity})`;
+        hasError = true;
+        // Show toast error message
+        toast.error(`Quantity entered (${enteredQuantity}) exceeds available quantity (${availableQuantity}). Please enter a quantity less than or equal to ${availableQuantity}.`);
+      }
     }
     
     if (!instructionSpecification || instructionSpecification.trim() === "") {
@@ -701,7 +715,7 @@ const IssuedProduct = ({
 
     if (hasError) {
       setErrorMessages(newErrors);
-      return;
+      return; // Prevent form submission and modal closing
     }
 
     // Prepare data - use state values for controlled fields
@@ -759,19 +773,50 @@ const IssuedProduct = ({
     }
   };
 
+  // Helper function to validate manufacturer and expiry date for items
+  const validateItemsForSubmission = (items, itemType) => {
+    const invalidItems = items.filter(item => {
+      const missingManufacturer = !item.manufacturer || 
+                                  (typeof item.manufacturer === 'string' && item.manufacturer.trim() === "");
+      const missingExpiryDate = !item.expiry_date || 
+                                item.expiry_date === null || 
+                                item.expiry_date === undefined ||
+                                (typeof item.expiry_date === 'string' && item.expiry_date.trim() === "");
+      return missingManufacturer || missingExpiryDate;
+    });
+
+    if (invalidItems.length > 0) {
+      const itemCodes = invalidItems.map(item => item.item_code || `Entry #${item.entry_no}`).join(", ");
+      toast.error(
+        `Cannot submit: ${invalidItems.length} item(s) are missing manufacturer or expiry date. ` +
+        `Please edit all items to add manufacturer and expiry date before submitting. ` +
+        `Items: ${itemCodes}`
+      );
+      return false;
+    }
+    return true;
+  };
+
   const handleTransferData = async () => {
     try {
       console.log("🔄 [SUBMIT] Starting submit process...");
       
-      // Step 1: Accept all LAB-OPEN items (prepare for researcher confirmation)
+      // Get username from Redux or userDetails for filtering
+      const username = reduxUser?.user_name || effectiveUserDetails.user_name || null;
+      const allTempItems = await getTempIssueApi(username);
+      
+      // Step 1: Validate and Accept all LAB-OPEN items (prepare for researcher confirmation)
       try {
-        // Get username from Redux or userDetails for filtering
-        const username = reduxUser?.user_name || effectiveUserDetails.user_name || null;
-        const labOpenItems = await getTempIssueApi(username);
-        const itemsToAccept = labOpenItems.filter(item => item.status === "LAB-OPEN");
+        const itemsToAccept = allTempItems.filter(item => item.status === "LAB-OPEN");
         
         if (itemsToAccept.length > 0) {
           console.log(`📝 [ACCEPT] Found ${itemsToAccept.length} LAB-OPEN items to accept`);
+          
+          // Validate all LAB-OPEN items have manufacturer and expiry date
+          if (!validateItemsForSubmission(itemsToAccept, "LAB-OPEN")) {
+            console.log("❌ [ACCEPT] Validation failed - missing manufacturer or expiry date");
+            return; // Stop here - atomic operation (all or none)
+          }
           
           // Accept all LAB-OPEN items
           const acceptPromises = itemsToAccept.map(item => 
@@ -803,8 +848,22 @@ const IssuedProduct = ({
         return; // Stop here if accept fails
       }
       
-      // Step 2: Transfer LAB-ACT items (researcher confirmed items)
+      // Step 2: Validate and Transfer LAB-ACT items (researcher confirmed items)
       console.log("🔄 [TRANSFER] Transferring confirmed items to inventory...");
+      
+      // Re-fetch items to get updated status after acceptance
+      const updatedTempItems = await getTempIssueApi(username);
+      const itemsToTransfer = updatedTempItems.filter(item => item.status === "LAB-ACT");
+      
+      if (itemsToTransfer.length > 0) {
+        console.log(`📝 [TRANSFER] Found ${itemsToTransfer.length} LAB-ACT items to transfer`);
+        
+        // Validate all LAB-ACT items have manufacturer and expiry date
+        if (!validateItemsForSubmission(itemsToTransfer, "LAB-ACT")) {
+          console.log("❌ [TRANSFER] Validation failed - missing manufacturer or expiry date");
+          return; // Stop here - atomic operation (all or none)
+        }
+      }
       
       const response = await fetch(`${BASE_URL}/transfer/issue/`, {
         method: "POST",
@@ -1178,7 +1237,9 @@ const IssuedProduct = ({
                             enteredValue,
                             numericValue,
                             maxQuantity,
-                            selectedItemDetails
+                            selectedItemDetails,
+                            selectedExpiryDate: !!selectedExpiryDate,
+                            selectedLocation: !!selectedLocation
                           });
 
                           // Allow empty input for editing
@@ -1194,14 +1255,24 @@ const IssuedProduct = ({
                             return; // Don't update if not a valid number
                           }
 
-                          // Apply constraints
-                          if (numericValue > maxQuantity) {
+                          // First check if expiry date and location are selected
+                          if (!selectedExpiryDate || !selectedLocation) {
+                            console.log("🔢 [QUANTITY INPUT] Expiry date or location not selected");
+                            setQuantityIssued("");
+                            toast.error("Please select expiry date and location first to see available quantity");
+                            return;
+                          }
+
+                          // Apply constraints - only check max quantity if expiry date and location are selected
+                          if (numericValue <= 0) {
+                            console.log("🔢 [QUANTITY INPUT] Zero or negative value - not allowed");
+                            setQuantityIssued("");
+                            toast.error("Quantity must be a positive number (greater than 0)");
+                            return;
+                          } else if (numericValue > maxQuantity && maxQuantity > 0) {
                             console.log("🔢 [QUANTITY INPUT] Exceeds max - setting to max");
                             setQuantityIssued(maxQuantity);
                             toast.error(`Maximum available quantity is ${maxQuantity}`);
-                          } else if (numericValue < 0) {
-                            console.log("🔢 [QUANTITY INPUT] Negative value - setting to 0");
-                            setQuantityIssued(0);
                           } else {
                             console.log("🔢 [QUANTITY INPUT] Valid value - setting to:", numericValue);
                             setQuantityIssued(numericValue);
@@ -1215,13 +1286,16 @@ const IssuedProduct = ({
                             }));
                           }
                         }}
-                        min="0"
+                        min="1"
                         max={selectedItemDetails?.quantityIssued || 0}
+                        disabled={!selectedExpiryDate || !selectedLocation}
                         className="custom-border"
                         style={{ 
-                          borderColor: errorMessages.quantityIssued ? "red" : "black" 
+                          borderColor: errorMessages.quantityIssued ? "red" : "black",
+                          backgroundColor: (!selectedExpiryDate || !selectedLocation) ? "#f5f5f5" : "white",
+                          cursor: (!selectedExpiryDate || !selectedLocation) ? "not-allowed" : "text"
                         }}
-                        placeholder="Enter quantity"
+                        placeholder={(!selectedExpiryDate || !selectedLocation) ? "Select expiry date and location first" : "Enter quantity"}
                       />
                       {errorMessages.quantityIssued && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>

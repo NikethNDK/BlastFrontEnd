@@ -225,6 +225,23 @@ const Notification = ({
                       position: "sticky",
                       top: 0,
                       zIndex: 10,
+                      minWidth: "100px",
+                    }}
+                  >
+                    Quantity
+                  </th>
+                  <th
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
                       minWidth: "120px",
                     }}
                   >
@@ -321,7 +338,7 @@ const Notification = ({
               <tbody>
                 {note.length === 0 ? (
                   <tr>
-                    <td colSpan={9} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                    <td colSpan={10} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
                       No pending issue requests. Data is automatically updated via centralized polling.
                     </td>
                   </tr>
@@ -373,6 +390,17 @@ const Notification = ({
                       }}
                     >
                       {no.item_name || ""}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                        fontSize: "0.875rem",
+                        color: "#475569",
+                      }}
+                    >
+                      {no.quantity_issued || "-"}
                     </td>
                     <td
                       style={{
