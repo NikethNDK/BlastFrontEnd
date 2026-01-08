@@ -6,8 +6,8 @@ import {
   FaBell,
   FaRedo,
   FaSyncAlt,
-  FaUserTie,
-  FaHome,
+  FaUserCircle,
+  FaArrowLeft,
 } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
 import "../../blast/BlastSidebar.css";
@@ -17,6 +17,8 @@ import { logoutUser } from '../../store/slices/userSlice';
 import { markNotificationsRead } from '../../store/slices/notificationSlice';
 import { markNotificationsRead as markNotificationsReadAPI } from '../../services/AppinfoService';
 import useNotificationPolling from '../../hooks/useNotificationPolling';
+
+const UserAvatarIcon = FaUserCircle;
 
 const ManagerNavigation = ({
   children,
@@ -124,12 +126,32 @@ const ManagerNavigation = ({
               {!collapsed && (
                 <div className="blast-sidebar-brand">
                   <button className="modern-sidebar-logo" onClick={() => navigate("/")}>
-                    <FaHome />
+                    <FaArrowLeft />
                   </button>
                   <span>Manager</span>
                 </div>
               )}
             </div>
+          </div>
+
+          {/* User Info Section */}
+          <div className="blast-sidebar-top-meta">
+            {!collapsed && (
+              <div className="blast-sidebar-user">
+                <div className="blast-sidebar-user-avatar">
+                  <UserAvatarIcon />
+                </div>
+                <div className="blast-sidebar-user-info">
+                  <div className="blast-sidebar-user-name">{userDetails.name}</div>
+                  <div className="blast-sidebar-user-role">{userDetails.designation}</div>
+                  <div className="blast-sidebar-user-lab">
+                    {Array.isArray(userDetails.lab) 
+                      ? userDetails.lab.join(', ') 
+                      : userDetails.lab || 'N/A'}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Notification Tab - Above Navigation */}
