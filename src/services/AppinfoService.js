@@ -430,6 +430,7 @@ export function addLoginApi(log) {
     .post(`${BASE_URL}/add_login/`, {
       id: null,
       user_name: log.user_name,
+      name: log.name || null,
       password: log.password,
       role: log.role,
       lab: log.lab,
@@ -438,14 +439,23 @@ export function addLoginApi(log) {
     .then((response) => response.data);
 }
 
-export async function updateLoginApi(id, log) {
+export async function updateLoginApi(user_name, log) {
   return axios
-    .put(`${BASE_URL}/update_login/${id}`, {
+    .put(`${BASE_URL}/update_login/${user_name}`, {
       user_name: log.user_name,
-      password: log.password,
+      name: log.name || null,
       role: log.role,
+      designation: log.designation,
+      lab: log.lab,
     })
-    .then((response) => response.data);
+    .then((response) => response.data)
+    .catch((error) => {
+      // Handle error responses
+      if (error.response && error.response.data) {
+        throw new Error(error.response.data.error || error.response.data || "Failed to update user");
+      }
+      throw error;
+    });
 }
 
 //---------------------------Employee---------------------------//
