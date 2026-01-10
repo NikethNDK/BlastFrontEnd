@@ -290,6 +290,19 @@
   background: var(--color-background-light);
 }
 
+/* Register-specific table wrapper - no inner scrolling */
+.register-table-wrapper {
+  overflow: visible;
+  width: 100%;
+}
+
+/* Register-specific table styling */
+.register-users-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
 .inventory-table {
   width: 100%;
   border-collapse: collapse;

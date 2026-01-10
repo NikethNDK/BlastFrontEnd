@@ -596,6 +596,9 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   // Fetch users
   const fetchUsers = async () => {
@@ -651,21 +654,60 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
       });
   }, []);
 
-  // Filter users based on search term (client-side)
-  const filteredUsers = useMemo(() => {
-    if (!searchTerm) return users;
+  // Handle sorting
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
 
-    const searchLower = searchTerm.toLowerCase();
-    return users.filter((user) => {
-      const usernameMatch = user.username?.toLowerCase().includes(searchLower);
-      const nameMatch = user.name?.toLowerCase().includes(searchLower);
-      const roleMatch = user.role?.toLowerCase().includes(searchLower);
-      const designationMatch = user.designation?.toLowerCase().includes(searchLower);
-      const labsMatch = user.lab?.some((lab) => lab.toLowerCase().includes(searchLower));
-      
-      return usernameMatch || nameMatch || roleMatch || designationMatch || labsMatch;
-    });
-  }, [users, searchTerm]);
+  // Filter and sort users
+  const filteredUsers = useMemo(() => {
+    let filtered = users;
+
+    // Apply search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = users.filter((user) => {
+        const usernameMatch = user.username?.toLowerCase().includes(searchLower);
+        const nameMatch = user.name?.toLowerCase().includes(searchLower);
+        const roleMatch = user.role?.toLowerCase().includes(searchLower);
+        const designationMatch = user.designation?.toLowerCase().includes(searchLower);
+        const labsMatch = user.lab?.some((lab) => lab.toLowerCase().includes(searchLower));
+        
+        return usernameMatch || nameMatch || roleMatch || designationMatch || labsMatch;
+      });
+    }
+
+    // Apply sorting
+    if (sortConfig.key) {
+      filtered = [...filtered].sort((a, b) => {
+        let aValue = a[sortConfig.key] || '';
+        let bValue = b[sortConfig.key] || '';
+        
+        // Handle null/undefined values
+        if (!aValue && !bValue) return 0;
+        if (!aValue) return 1;
+        if (!bValue) return -1;
+        
+        // Convert to string for comparison
+        aValue = String(aValue).toLowerCase();
+        bValue = String(bValue).toLowerCase();
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [users, searchTerm, sortConfig]);
 
   // Paginate filtered users
   const paginatedUsers = useMemo(() => {
@@ -831,13 +873,21 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                 </div>
               </div>
 
-              <div className="table-wrapper" style={{ margin: "0 1.5rem" }}>
+              <div 
+                className="register-table-wrapper" 
+                style={{ 
+                  margin: "0 1.5rem",
+                  overflow: "visible"
+                }}
+              >
                 <Table 
                   hover 
-                  className="inventory-table"
+                  className="register-users-table"
                   style={{ 
                     marginBottom: 0,
-                    fontSize: "0.875rem"
+                    fontSize: "0.875rem",
+                    width: "100%",
+                    tableLayout: "auto"
                   }}
                 >
                   <thead>
@@ -845,70 +895,96 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                       backgroundColor: "#f8f9fa",
                       borderBottom: "2px solid #dee2e6"
                     }}>
-                      <th style={{ 
-                        padding: "14px 16px", 
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#495057",
-                        border: "none"
-                      }}>
+                      <th 
+                        style={{ 
+                          padding: "14px 12px", 
+                          fontWeight: 600,
+                          fontSize: "0.8rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                          color: "#495057",
+                          border: "none",
+                          cursor: "pointer",
+                          userSelect: "none",
+                          width: "15%"
+                        }}
+                        onClick={() => handleSort('username')}
+                      >
                         Username
+                        {sortConfig.key === 'username' && (
+                          <span style={{ marginLeft: "5px" }}>
+                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
                       </th>
-                      <th style={{ 
-                        padding: "14px 16px", 
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#495057",
-                        border: "none"
-                      }}>
+                      <th 
+                        style={{ 
+                          padding: "14px 12px", 
+                          fontWeight: 600,
+                          fontSize: "0.8rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                          color: "#495057",
+                          border: "none",
+                          cursor: "pointer",
+                          userSelect: "none",
+                          width: "15%"
+                        }}
+                        onClick={() => handleSort('name')}
+                      >
                         Name
+                        {sortConfig.key === 'name' && (
+                          <span style={{ marginLeft: "5px" }}>
+                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                          </span>
+                        )}
                       </th>
                       <th style={{ 
-                        padding: "14px 16px", 
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#495057",
-                        border: "none"
-                      }}>
-                        Role
-                      </th>
-                      <th style={{ 
-                        padding: "14px 16px", 
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#495057",
-                        border: "none"
-                      }}>
-                        Designation
-                      </th>
-                      <th style={{ 
-                        padding: "14px 16px", 
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#495057",
-                        border: "none"
-                      }}>
-                        Labs
-                      </th>
-                      <th style={{ 
-                        padding: "14px 16px", 
+                        padding: "14px 12px", 
                         fontWeight: 600,
                         fontSize: "0.8rem",
                         textTransform: "uppercase",
                         letterSpacing: "0.5px",
                         color: "#495057",
                         border: "none",
-                        width: "80px"
+                        width: "12%"
+                      }}>
+                        Role
+                      </th>
+                      <th style={{ 
+                        padding: "14px 12px", 
+                        fontWeight: 600,
+                        fontSize: "0.8rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        color: "#495057",
+                        border: "none",
+                        width: "18%"
+                      }}>
+                        Designation
+                      </th>
+                      <th style={{ 
+                        padding: "14px 12px", 
+                        fontWeight: 600,
+                        fontSize: "0.8rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        color: "#495057",
+                        border: "none",
+                        width: "20%"
+                      }}>
+                        Labs
+                      </th>
+                      <th style={{ 
+                        padding: "14px 12px", 
+                        fontWeight: 600,
+                        fontSize: "0.8rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        color: "#495057",
+                        border: "none",
+                        width: "100px",
+                        minWidth: "100px"
                       }}>
                         Actions
                       </th>
@@ -986,7 +1062,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                           }}
                         >
                           <td style={{ 
-                            padding: "14px 16px",
+                            padding: "14px 12px",
                             verticalAlign: "middle",
                             fontWeight: 500,
                             color: "#212529",
@@ -1003,57 +1079,65 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                                 justifyContent: "center",
                                 color: "#007bff",
                                 fontSize: "0.75rem",
-                                fontWeight: 600
+                                fontWeight: 600,
+                                flexShrink: 0
                               }}>
                                 {user.username?.charAt(0).toUpperCase() || "U"}
                               </div>
-                              {user.username || "N/A"}
+                              <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {user.username || "N/A"}
+                              </span>
                             </div>
                           </td>
                           <td style={{ 
-                            padding: "14px 16px",
+                            padding: "14px 12px",
                             verticalAlign: "middle",
                             fontWeight: 500,
                             color: "#212529",
                             border: "none"
                           }}>
-                            {user.name || (
-                              <span style={{ 
-                                color: "#adb5bd", 
-                                fontStyle: "italic",
-                                fontSize: "0.85rem"
-                              }}>
-                                N/A
-                              </span>
-                            )}
+                            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>
+                              {user.name || (
+                                <span style={{ 
+                                  color: "#adb5bd", 
+                                  fontStyle: "italic",
+                                  fontSize: "0.85rem"
+                                }}>
+                                  N/A
+                                </span>
+                              )}
+                            </span>
                           </td>
                           <td style={{ 
-                            padding: "14px 16px",
+                            padding: "14px 12px",
                             verticalAlign: "middle",
                             border: "none"
                           }}>
                             <Badge 
                               bg="primary" 
                               style={{ 
-                                padding: "6px 12px",
+                                padding: "6px 10px",
                                 fontWeight: 500,
-                                fontSize: "0.75rem",
-                                borderRadius: "6px"
+                                fontSize: "0.7rem",
+                                borderRadius: "6px",
+                                whiteSpace: "nowrap"
                               }}
                             >
                               {user.role || "N/A"}
                             </Badge>
                           </td>
                           <td style={{ 
-                            padding: "14px 16px",
+                            padding: "14px 12px",
                             verticalAlign: "middle",
                             color: "#495057",
                             border: "none"
                           }}>
-                            {user.designation || "N/A"}
+                            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>
+                              {user.designation || "N/A"}
+                            </span>
                           </td>
                           <td style={{ 
-                            padding: "14px 16px",
+                            padding: "14px 12px",
                             verticalAlign: "middle",
                             border: "none"
                           }}>
@@ -1091,7 +1175,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                             )}
                           </td>
                           <td style={{ 
-                            padding: "14px 16px",
+                            padding: "14px 12px",
                             verticalAlign: "middle",
                             border: "none"
                           }}>
@@ -1104,10 +1188,11 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                               }}
                               style={{
                                 padding: "4px 8px",
-                                fontSize: "0.75rem",
+                                fontSize: "0.7rem",
                                 display: "flex",
                                 alignItems: "center",
-                                gap: "4px"
+                                gap: "4px",
+                                whiteSpace: "nowrap"
                               }}
                             >
                               <FaEdit />
