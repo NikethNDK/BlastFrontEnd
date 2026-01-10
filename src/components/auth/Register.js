@@ -4,8 +4,9 @@ import {
   getLabsApi,
   getDesignationsApi,
   getAllUsersApi,
+  updateLoginApi,
 } from "../../services/AppinfoService";
-import { FaEye, FaEyeSlash, FaUserPlus, FaUser, FaLock, FaBriefcase, FaFlask, FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaUserPlus, FaUser, FaLock, FaBriefcase, FaFlask, FaSearch, FaChevronLeft, FaChevronRight, FaEdit } from "react-icons/fa";
 import { Table, Modal, Button, Form, InputGroup, Card, Badge } from "react-bootstrap";
 import Select from "react-select";
 import toast from "react-hot-toast";
@@ -21,6 +22,7 @@ const RegisterModal = ({
   isLoading 
 }) => {
   const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   const [designation, setDesignation] = useState("");
@@ -98,6 +100,7 @@ const RegisterModal = ({
 
     const requestData = {
       user_name: username,
+      name: name || null,
       password,
       role,
       designation: parseInt(designation, 10),
@@ -110,6 +113,7 @@ const RegisterModal = ({
 
       // Reset form
       setUsername("");
+      setName("");
       setPassword("");
       setRole("");
       setDesignation("");
@@ -129,6 +133,7 @@ const RegisterModal = ({
   const handleClose = () => {
     // Reset form when closing
     setUsername("");
+    setName("");
     setPassword("");
     setRole("");
     setDesignation("");
@@ -173,6 +178,21 @@ const RegisterModal = ({
                 className="form-input-register"
                 placeholder="Enter username"
                 onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group-register" style={{ marginBottom: "15px" }}>
+              <label className="form-label-register">
+                <FaUser className="label-icon" />
+                Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                className="form-input-register"
+                placeholder="Enter name (optional)"
+                onChange={(e) => setName(e.target.value)}
               />
             </div>
 
@@ -280,6 +300,287 @@ const RegisterModal = ({
   );
 };
 
+// Edit User Modal Component
+const EditUserModal = ({ 
+  show, 
+  onHide, 
+  onSuccess,
+  user,
+  labs,
+  designations,
+  isLoading 
+}) => {
+  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("");
+  const [designation, setDesignation] = useState("");
+  const [selectedLabs, setSelectedLabs] = useState([]);
+  const [originalUsername, setOriginalUsername] = useState("");
+
+  const customSelectStyles = {
+    control: (base) => ({
+      ...base,
+      backgroundColor: "#fff",
+      borderColor: "#dee2e6",
+      padding: "0.125rem",
+      fontSize: "0.875rem",
+      "&:hover": {
+        borderColor: "#007bff",
+      },
+    }),
+    menu: (base) => ({
+      ...base,
+      backgroundColor: "#fff",
+      fontSize: "0.875rem",
+      zIndex: 9999,
+    }),
+    menuPortal: (base) => ({
+      ...base,
+      zIndex: 9999,
+    }),
+    option: (base, { isFocused, isSelected }) => ({
+      ...base,
+      backgroundColor: isSelected ? "#007bff" : isFocused ? "#f8f9fa" : "#fff",
+      color: isSelected ? "#fff" : "#495057",
+    }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: "#e7f3ff",
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      color: "#007bff",
+    }),
+    multiValueRemove: (base) => ({
+      ...base,
+      color: "#007bff",
+      "&:hover": {
+        backgroundColor: "#007bff",
+        color: "#fff",
+      },
+    }),
+  };
+
+  // Populate form when user prop changes
+  useEffect(() => {
+    if (user && show) {
+      setOriginalUsername(user.username || "");
+      setUsername(user.username || "");
+      setName(user.name || "");
+      setRole(user.role || "");
+      
+      // Find designation ID by title
+      const designationObj = designations.find(des => des.title === user.designation);
+      setDesignation(designationObj ? designationObj.id.toString() : "");
+      
+      // Map lab names to select options
+      if (user.lab && user.lab.length > 0) {
+        const labOptions = user.lab.map(labName => {
+          const labObj = labs.find(lab => lab.label === labName);
+          return labObj ? { value: labObj.value, label: labObj.label } : null;
+        }).filter(Boolean);
+        setSelectedLabs(labOptions);
+      } else {
+        setSelectedLabs([]);
+      }
+    }
+  }, [user, show, labs, designations]);
+
+  const handleUpdate = async () => {
+    if (
+      !username ||
+      !role ||
+      !designation ||
+      selectedLabs.length === 0
+    ) {
+      toast.error("Please fill all required fields.");
+      return;
+    }
+
+    // Add validation for Lab Assistant - must have exactly one lab
+    if (role === "Lab Assistant" && selectedLabs.length !== 1) {
+      toast.error("Lab Assistant must be assigned to exactly one lab.");
+      return;
+    }
+
+    const selectedLabIds = selectedLabs.map((lab) => lab.value);
+
+    if (isNaN(parseInt(designation, 10))) {
+      toast.error("Please select a valid designation.");
+      return;
+    }
+
+    const requestData = {
+      user_name: username,
+      name: name || null,
+      role,
+      designation: parseInt(designation, 10),
+      lab: selectedLabIds,
+    };
+
+    try {
+      await updateLoginApi(originalUsername, requestData);
+      toast.success("User updated successfully");
+
+      // Close modal and refresh
+      onHide();
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error("Failed to update user", error);
+      const errorMessage = error.message || "Failed to update user";
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleClose = () => {
+    // Reset form when closing
+    setUsername("");
+    setName("");
+    setRole("");
+    setDesignation("");
+    setSelectedLabs([]);
+    setOriginalUsername("");
+    onHide();
+  };
+
+  return (
+    <>
+      <style>
+        {`
+          .custom-modal-width .modal-dialog {
+            max-width: 550px;
+            width: 100%;
+          }
+          .custom-modal-width .modal-content {
+            max-width: 550px;
+            width: 100%;
+          }
+          body > div[id*="react-select"] {
+            z-index: 10000 !important;
+          }
+        `}
+      </style>
+      <Modal show={show} onHide={handleClose} centered dialogClassName="custom-modal-width">
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FaEdit style={{ marginRight: "8px" }} />
+            Edit User
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ padding: "20px" }}>
+          <div className="register-form">
+            <div className="form-group-register" style={{ marginBottom: "15px" }}>
+              <label className="form-label-register">
+                <FaUser className="label-icon" />
+                Username
+              </label>
+              <input
+                type="text"
+                value={username}
+                className="form-input-register"
+                placeholder="Enter username"
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="form-group-register" style={{ marginBottom: "15px" }}>
+              <label className="form-label-register">
+                <FaUser className="label-icon" />
+                Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                className="form-input-register"
+                placeholder="Enter name (optional)"
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group-register" style={{ marginBottom: "15px" }}>
+              <label className="form-label-register">
+                <FaBriefcase className="label-icon" />
+                Role
+              </label>
+              <select
+                className="form-select-register"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <option value="">Select Role</option>
+                <option value="Manager">Manager</option>
+                <option value="Lab Assistant">Lab Assistant</option>
+                <option value="Researcher">Researcher</option>
+              </select>
+            </div>
+
+            <div className="form-group-register" style={{ marginBottom: "15px" }}>
+              <label className="form-label-register">
+                <FaBriefcase className="label-icon" />
+                Designation
+              </label>
+              <select
+                className="form-select-register"
+                value={designation}
+                onChange={(e) => setDesignation(e.target.value)}
+              >
+                <option value="">Select Designation</option>
+                {isLoading ? (
+                  <option>Loading...</option>
+                ) : (
+                  designations.map((des) => (
+                    <option key={des.id} value={des.id}>
+                      {des.title}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+
+            <div className="form-group-register" style={{ marginBottom: "15px" }}>
+              <label className="form-label-register">
+                <FaFlask className="label-icon" />
+                Labs
+              </label>
+              <Select
+                options={labs}
+                isMulti={role !== "Lab Assistant"}  // Single select for Lab Assistant
+                styles={customSelectStyles}
+                value={selectedLabs}
+                onChange={(selectedOptions) => {
+                  if (role === "Lab Assistant") {
+                    // For Lab Assistant, only allow single selection
+                    setSelectedLabs(selectedOptions ? [selectedOptions] : []);
+                  } else {
+                    setSelectedLabs(selectedOptions || []);
+                  }
+                }}
+                className="basic-multi-select"
+                classNamePrefix="select"
+                placeholder={role === "Lab Assistant" ? "Select lab..." : "Select labs..."}
+                menuPortalTarget={document.body}
+                menuPosition="fixed"
+              />
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleUpdate}>
+            <FaEdit style={{ marginRight: "8px" }} />
+            Update
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );
+};
+
 function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
   // Form states for labs and designations
   const [designations, setDesignations] = useState([]);
@@ -290,6 +591,8 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -355,11 +658,12 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
     const searchLower = searchTerm.toLowerCase();
     return users.filter((user) => {
       const usernameMatch = user.username?.toLowerCase().includes(searchLower);
+      const nameMatch = user.name?.toLowerCase().includes(searchLower);
       const roleMatch = user.role?.toLowerCase().includes(searchLower);
       const designationMatch = user.designation?.toLowerCase().includes(searchLower);
       const labsMatch = user.lab?.some((lab) => lab.toLowerCase().includes(searchLower));
       
-      return usernameMatch || roleMatch || designationMatch || labsMatch;
+      return usernameMatch || nameMatch || roleMatch || designationMatch || labsMatch;
     });
   }, [users, searchTerm]);
 
@@ -455,7 +759,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
               </InputGroup.Text>
               <Form.Control
                 type="text"
-                placeholder="Search by username, role, designation, or lab..."
+                placeholder="Search by username, name, role, designation, or lab..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ 
@@ -561,6 +865,17 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                         color: "#495057",
                         border: "none"
                       }}>
+                        Name
+                      </th>
+                      <th style={{ 
+                        padding: "14px 16px", 
+                        fontWeight: 600,
+                        fontSize: "0.8rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        color: "#495057",
+                        border: "none"
+                      }}>
                         Role
                       </th>
                       <th style={{ 
@@ -585,13 +900,25 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                       }}>
                         Labs
                       </th>
+                      <th style={{ 
+                        padding: "14px 16px", 
+                        fontWeight: 600,
+                        fontSize: "0.8rem",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.5px",
+                        color: "#495057",
+                        border: "none",
+                        width: "80px"
+                      }}>
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {paginatedUsers.length === 0 ? (
                       <tr>
                         <td 
-                          colSpan="4" 
+                          colSpan="6" 
                           style={{ 
                             textAlign: "center", 
                             padding: "60px 20px",
@@ -686,6 +1013,23 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                           <td style={{ 
                             padding: "14px 16px",
                             verticalAlign: "middle",
+                            fontWeight: 500,
+                            color: "#212529",
+                            border: "none"
+                          }}>
+                            {user.name || (
+                              <span style={{ 
+                                color: "#adb5bd", 
+                                fontStyle: "italic",
+                                fontSize: "0.85rem"
+                              }}>
+                                N/A
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ 
+                            padding: "14px 16px",
+                            verticalAlign: "middle",
                             border: "none"
                           }}>
                             <Badge 
@@ -746,6 +1090,30 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                               </span>
                             )}
                           </td>
+                          <td style={{ 
+                            padding: "14px 16px",
+                            verticalAlign: "middle",
+                            border: "none"
+                          }}>
+                            <Button
+                              variant="outline-primary"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setShowEditModal(true);
+                              }}
+                              style={{
+                                padding: "4px 8px",
+                                fontSize: "0.75rem",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px"
+                              }}
+                            >
+                              <FaEdit />
+                              Edit
+                            </Button>
+                          </td>
                         </tr>
                       ))
                     )}
@@ -804,6 +1172,20 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
           show={showModal}
           onHide={() => setShowModal(false)}
           onSuccess={fetchUsers}
+          labs={labs}
+          designations={designations}
+          isLoading={isLoading}
+        />
+
+        {/* Edit User Modal */}
+        <EditUserModal
+          show={showEditModal}
+          onHide={() => {
+            setShowEditModal(false);
+            setSelectedUser(null);
+          }}
+          onSuccess={fetchUsers}
+          user={selectedUser}
           labs={labs}
           designations={designations}
           isLoading={isLoading}
