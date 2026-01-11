@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Row, Form, Button, Modal } from "react-bootstrap";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import {
   // Keeping all original imports for completeness,
@@ -28,6 +29,9 @@ import { BASE_URL } from "../../../services/AppinfoService";
 const ReceivedProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  // Get user from Redux store (preferred over userDetails prop)
+  const reduxUser = useSelector((state) => state.user.user);
+  
   // --- State Variables ---
   const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false); // Controls the Add form modal visibility
@@ -201,15 +205,19 @@ const ReceivedProduct = ({
       })
       .catch((error) => console.error("Error fetching projects:", error));
 
+    // Get username for filtering (from Redux or userDetails prop)
+    const username = reduxUser?.user_name || userDetails.name;
+    
     const fetchData = async () => {
       const masterData = await getMastertyApi();
       setMasterTypes(masterData);
 
-      const itemData = await getMasterApi();
+      // Pass username to filter items by user's lab
+      const itemData = await getMasterApi(null, username);
       setAllItems(itemData);
     };
     fetchData();
-  }, [userDetails.name]);
+  }, [userDetails.name, reduxUser]);
 
   console.log('all items',allItems)
 
