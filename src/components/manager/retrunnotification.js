@@ -1,75 +1,52 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 import { Button } from "react-bootstrap";
 import { AiOutlineDownload } from "react-icons/ai";
 import { FaCheck, FaTimes } from "react-icons/fa";
-import { getItemReturnsForManager } from "../../services/AppinfoService";
-import ManagerNavigation from "../manager/ManagerNavigation";
 import { BASE_URL } from "../../services/AppinfoService";
+import { setManagerPendingReturns } from "../../store/slices/notificationSlice";
 
 const ReturnDataTableNotification = ({
   managerId,
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
-  const [data, setData] = useState([]);
+  const dispatch = useDispatch();
+  
+  // NOTE: Data is now provided by centralized polling via Redux
+  // The useNotificationPolling hook in ManagerNavigation fetches and dispatches data
+  const data = useSelector((state) => state.notifications.manager.pendingReturns || []);
+  
+  // Get user from Redux store to send username in request
+  const reduxUser = useSelector((state) => state.user.user);
+
   const [filters, setFilters] = useState({});
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!managerId) {
-        console.log("Manager ID not available yet");
-        return;
-      }
-
-      try {
-        console.log("Fetching data for manager ID:", managerId);
-        const fetchedData = await getItemReturnsForManager(managerId);
-        setData(fetchedData);
-      } catch (error) {
-        console.error("Failed to fetch item return data:", error);
-      }
-    };
-
-    fetchData();
-  }, [managerId]);
-
-  const fetchData = async (managerId) => {
-    try {
-      console.log("Fetching data for manager ID:", managerId);
-      const data = await getItemReturnsForManager(managerId);
-      console.log("Fetched data:", data);
-
-      if (!Array.isArray(data)) {
-        console.error("Data is not an array:", data);
-      }
-
-      setData(data || []);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
 
   const handleStatusUpdate = async (entryNo, status) => {
     try {
+      // Guard: Ensure username is available from Redux
+      if (!reduxUser || !reduxUser.user_name) {
+        toast.error("User information not available. Please refresh the page.");
+        return;
+      }
+
       const response = await axios.put(
         `${BASE_URL}/item_return/approve/${entryNo}/`,
-        { status }
+        { 
+          status,
+          username: reduxUser.user_name  // Send username from Redux
+        }
       );
 
       console.log(response.data);
       toast.success(`Item return ${status} successfully!`);
 
-      if (status === "Declined") {
-        setData((prevData) =>
-          prevData.filter((item) => item.entry_no !== entryNo)
-        );
-      } else {
-        setData((prevData) =>
-          prevData.filter((item) => item.entry_no !== entryNo)
-        );
-      }
+      // Remove the item from Redux state after successful update
+      // The next polling cycle will refresh the data automatically
+      const updatedData = data.filter((item) => item.entry_no !== entryNo);
+      dispatch(setManagerPendingReturns(updatedData));
     } catch (error) {
       console.error("Error updating status:", error);
       toast.error("Failed to update item return status.");
@@ -92,7 +69,7 @@ const ReturnDataTableNotification = ({
 
   const handleDownload = () => {
     if (filteredData.length === 0) {
-      alert("No data to download!");
+      toast.error("No data to download!");
       return;
     }
 
@@ -224,9 +201,16 @@ const ReturnDataTableNotification = ({
                 </tr>
               </thead>
               <tbody>
-                {data.map((inven, index) => (
+                {data.length === 0 ? (
+                  <tr>
+                    <td colSpan={columns.length + 1} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                      No pending return requests. Data is automatically updated via centralized polling.
+                    </td>
+                  </tr>
+                ) : (
+                  data.map((inven, index) => (
                   <tr
-                    key={inven.id}
+                    key={inven.entry_no || inven.id || index}
                     style={{
                       transition: "background-color 0.15s",
                       backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
@@ -409,7 +393,8 @@ const ReturnDataTableNotification = ({
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>

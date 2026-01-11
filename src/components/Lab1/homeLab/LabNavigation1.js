@@ -49,69 +49,13 @@ import { BASE_URL } from "../../../services/AppinfoService";
 const LabNavigation1 = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
-  const [notifications, setNotifications] = useState([]); // Store declined notifications
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
-
-  const fetchDeclinedItems = async () => {
-    try {
-      const response = await fetch(
-        `${BASE_URL}/get-issue-items/?status=LAB-OPEN`
-      );
-      const data = await response.json();
-      if (data) {
-        setNotifications(data);
-      } else {
-        setNotifications([]);
-      }
-    } catch (error) {
-      console.error("Error fetching declined items:", error);
-      setNotifications([]);
-    }
-  };
-  useEffect(() => {
-    fetchDeclinedItems();
-  }, []);
-  const cancelNotification = async (entry_no) => {
-    console.log("Sending request with entry_no:", entry_no); // Debugging line
-
-    try {
-      const payload = {
-        id: entry_no, // Dynamically set the id
-        status: "LAB-OPEN",
-      };
-
-      const response = await fetch(
-        `${BASE_URL}/update-issue-items/`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-      const result = await response.json();
-
-      if (response.ok) {
-        // Remove the accepted item from the UI
-        // setNote((prevNotes) =>
-        //   prevNotes.filter((n) => n.entry_no !== entry_no)
-        // );
-        alert("Item has been closed.");
-      } else {
-        console.error("Failed to close item:", result.error);
-      }
-    } catch (error) {
-      console.error("Error close item:", error);
-    }
-    fetchDeclinedItems();
-  };
-  const removeNotification = (id) => {
-    setNotifications((prevNotifications) =>
-      prevNotifications.filter((notif) => notif.id !== id)
-    );
-  };
+  // NOTE: Polling removed - notifications now come from centralized polling via Redux
+  // const [notifications, setNotifications] = useState([]); // Store declined notifications
+  // const [dropdownOpen, setDropdownOpen] = useState(false);
+  // const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+  // NOTE: Notification handling removed - now handled by centralized polling in ModernSidebar
+  // const cancelNotification = async (entry_no) => { ... }
+  // const removeNotification = (id) => { ... }
 
   return (
     // <div>
@@ -284,82 +228,8 @@ const LabNavigation1 = ({
           <CDBSidebarHeader prefix={<i className="fa fa-bars" />}>
             Lab Assistant
           </CDBSidebarHeader>
-          <Dropdown
-            style={{ marginLeft: "37%", marginTop: "8%" }}
-            isOpen={dropdownOpen}
-            toggle={toggleDropdown}
-            className="d-inline ml-3"
-          >
-            <DropdownToggle tag="span" className="position-relative">
-              <FaBell
-                size={22}
-                style={{ cursor: "pointer", color: "yellowgreen" }}
-              />
-
-              {/* Show badge count only if there are notifications */}
-              {notifications.length > 0 && (
-                <Badge
-                  color="danger"
-                  pill
-                  className="position-absolute"
-                  style={{ top: "-5px", right: "-5px" }}
-                >
-                  {notifications.length}
-                </Badge>
-              )}
-            </DropdownToggle>
-
-            <DropdownMenu
-              style={{ width: "250px", height: "200px", overflowY: "auto" }}
-            >
-              {notifications.length === 0 ? (
-                <DropdownItem
-                  style={{
-                    fontSize: "16px",
-                    color: "black",
-                  }}
-                  disabled
-                >
-                  No new notifications
-                </DropdownItem>
-              ) : (
-                notifications.map((notif) => (
-                  <DropdownItem
-                    key={notif.id}
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      padding: "8px 12px",
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <strong>{notif.item_name}</strong>
-                      <small style={{ display: "block", color: "black" }}>
-                        {/* {notif.status} */}
-                      </small>
-                    </div>
-                    <button
-                      onClick={() => cancelNotification(notif.entry_no)}
-                      style={{
-                        border: "none",
-                        cursor: "pointer",
-                        background: "grey",
-                        padding: "1px 5px",
-                        fontSize: "20px",
-                        display: "inline-flex",
-                        alignItems: "left",
-                        width: "50px",
-                      }}
-                    >
-                      <span style={{ marginLeft: "5px", marginTop: "8%" }}>
-                        ❌{" "}
-                      </span>
-                    </button>
-                  </DropdownItem>
-                ))
-              )}
-            </DropdownMenu>
-          </Dropdown>
+          {/* NOTE: Notification UI removed - notifications now handled by centralized polling in ModernSidebar */}
+          {/* <Dropdown ... /> */}
           <CDBSidebarContent>
             <CDBSidebarMenu>
               <NavLink exact to="/master" activeClassName="activeClicked">

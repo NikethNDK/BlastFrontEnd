@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { getItemIssueApi } from "../../../services/AppinfoService";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "../../../components/Lab1/homeLab/inventory.css";
 
 const IssuedFilter = () => {
+  // Get user from Redux store to get username and labs
+  const reduxUser = useSelector((state) => state.user.user);
+  const username = reduxUser?.user_name || reduxUser?.name || null;
+  
+  // Get manager's assigned labs from Redux
+  const userLabs = reduxUser?.lab || [];
+  const managerLabs = Array.isArray(userLabs) ? userLabs : (userLabs ? [userLabs] : []);
+
   const [issued, setIssued] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [selectedLab, setSelectedLab] = useState("All"); // Lab filter state
 
   // Filter States
   const [entryNoFilter, setEntryNoFilter] = useState("");
@@ -22,10 +32,19 @@ const IssuedFilter = () => {
 
   useEffect(() => {
     let mounted = true;
-    getItemIssueApi()
+    
+    // Guard: Ensure username is available
+    if (!username) {
+      console.error("Username not available. Please ensure user is logged in.");
+      return;
+    }
+
+    // Pass lab parameter if a specific lab is selected (not "All")
+    const labParam = selectedLab !== "All" ? selectedLab : null;
+    getItemIssueApi(username, labParam)
       .then((data) => {
         if (mounted) {
-          setIssued(data);
+          setIssued(Array.isArray(data) ? data : []);
         }
       })
       .catch((error) => {
@@ -33,7 +52,7 @@ const IssuedFilter = () => {
       });
 
     return () => (mounted = false);
-  }, []);
+  }, [username, selectedLab]);
 
   // Filtering Logic
   useEffect(() => {
@@ -119,6 +138,30 @@ const IssuedFilter = () => {
 
   return (
     <div className="master-list-container" style={{ width: "100%", padding: "24px" }}>
+      {/* --- Lab Filter Dropdown --- */}
+      <div style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
+        <label style={{ fontWeight: "500", fontSize: "14px" }}>Lab Name:</label>
+        <select
+          value={selectedLab}
+          onChange={(e) => setSelectedLab(e.target.value)}
+          style={{
+            padding: "8px 12px",
+            fontSize: "14px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            minWidth: "200px",
+            cursor: "pointer"
+          }}
+        >
+          <option value="All">All</option>
+          {managerLabs.map((lab, index) => (
+            <option key={index} value={lab}>
+              {lab}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* --- Pagination Controls (Top) --- */}
       <div className="pagination-controls top">
         <div className="pagination-info">

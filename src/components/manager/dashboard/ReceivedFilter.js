@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { useSelector } from "react-redux";
+import { getItemReceiveApi } from "../../../services/AppinfoService";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "../../../components/Lab1/homeLab/inventory.css";
 
 const ReceivedFilter = ({ setReceivedCount }) => {
+  // Get user from Redux store to get username and labs
+  const reduxUser = useSelector((state) => state.user.user);
+  const username = reduxUser?.user_name || reduxUser?.name || null;
+  
+  // Get manager's assigned labs from Redux
+  const userLabs = reduxUser?.lab || [];
+  const managerLabs = Array.isArray(userLabs) ? userLabs : (userLabs ? [userLabs] : []);
+
   const [receive, setReceive] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [selectedLab, setSelectedLab] = useState("All"); // Lab filter state
 
   // Filter States
   const [itemCodeFilter, setItemCodeFilter] = useState("");
@@ -25,12 +35,22 @@ const ReceivedFilter = ({ setReceivedCount }) => {
   const [remarksFilter, setRemarksFilter] = useState("");
 
   useEffect(() => {
+    // NOTE: Polling removed - data now fetched once on mount
+    // For notification updates, see centralized polling in ManagerNavigation
     const fetchData = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:8000/itemreceive/");
-        const { new_data, all_data } = response.data;
+      // Guard: Ensure username is available
+      if (!username) {
+        console.error("Username not available. Please ensure user is logged in.");
+        return;
+      }
 
-        setReceive(all_data);
+      try {
+        // Pass lab parameter if a specific lab is selected (not "All")
+        const labParam = selectedLab !== "All" ? selectedLab : null;
+        const response = await getItemReceiveApi(username, labParam);
+        const { new_data, all_data } = response;
+
+        setReceive(all_data || []);
 
         if (new_data && new_data.length > 0) {
           setReceivedCount(new_data.length);
@@ -40,10 +60,11 @@ const ReceivedFilter = ({ setReceivedCount }) => {
       }
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
-  }, [setReceivedCount]);
+    // Fetch data when username or selectedLab changes
+    if (username) {
+      fetchData();
+    }
+  }, [setReceivedCount, username, selectedLab]);
 
   // Filtering Logic
   useEffect(() => {
@@ -153,6 +174,30 @@ const ReceivedFilter = ({ setReceivedCount }) => {
 
   return (
     <div className="master-list-container" style={{ width: "100%", padding: "24px" }}>
+      {/* --- Lab Filter Dropdown --- */}
+      <div style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
+        <label style={{ fontWeight: "500", fontSize: "14px" }}>Lab Name:</label>
+        <select
+          value={selectedLab}
+          onChange={(e) => setSelectedLab(e.target.value)}
+          style={{
+            padding: "8px 12px",
+            fontSize: "14px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            minWidth: "200px",
+            cursor: "pointer"
+          }}
+        >
+          <option value="All">All</option>
+          {managerLabs.map((lab, index) => (
+            <option key={index} value={lab}>
+              {lab}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* --- Pagination Controls (Top) --- */}
       <div className="pagination-controls top">
         <div className="pagination-info">

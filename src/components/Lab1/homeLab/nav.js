@@ -54,9 +54,13 @@ const LabNavigatio = ({
 
   const fetchDeclinedItems = async () => {
     try {
-      const response = await fetch(
-        `${BASE_URL}/get-issue-items/?status=LAB-OPEN`
-      );
+      // Get username from userDetails for filtering
+      const username = userDetails?.name || userDetails?.user_name || null;
+      const url = username
+        ? `${BASE_URL}/get-issue-items/?status=LAB-OPEN&username=${username}`
+        : `${BASE_URL}/get-issue-items/?status=LAB-OPEN`;
+      
+      const response = await fetch(url);
       const data = await response.json();
       if (data) {
         setNotifications(data);

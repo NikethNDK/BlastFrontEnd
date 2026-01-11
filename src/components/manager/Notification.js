@@ -1,44 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Button } from "react-bootstrap";
 import { FaCheck, FaTimes } from "react-icons/fa";
-import { getIssueItems } from "../../services/AppinfoService";
+import toast from "react-hot-toast";
 import AdminApprovalModal from "./AdminApproval";
 import ManagerNavigation from "../manager/ManagerNavigation";
 import { BASE_URL } from "../../services/AppinfoService";
+import { setManagerPendingIssues } from "../../store/slices/notificationSlice";
 
 const Notification = ({
   no,
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
-  const [note, setNote] = useState([]);
+  const dispatch = useDispatch();
+  const reduxUser = useSelector((state) => state.user.user);
+  
+  // NOTE: Data is now provided by centralized polling via Redux
+  // The useNotificationPolling hook in ManagerNavigation fetches and dispatches data
+  const note = useSelector((state) => state.notifications.manager.pendingIssues || []);
+
   const [addModalShow, setAddModalShow] = useState(false);
   const [editModalShow, setEditModalShow] = useState(false);
   const [editNotes, setEditNotes] = useState([]);
-  const [isUpdated, setIsUpdated] = useState(false);
   const [notifications, setNotifications] = useState([]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    if (note.length && !isUpdated) {
-      return;
-    }
-
-    getIssueItems()
-      .then((data) => {
-        if (mounted) {
-          setNote(data);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-      });
-
-    return () => {
-      mounted = false;
-      setIsUpdated(false);
-    };
-  }, [isUpdated, note]);
 
   const handleUpdate = (e, item) => {
     e.preventDefault();
@@ -58,9 +42,11 @@ const Notification = ({
     console.log("Sending request with entry_no:", item.entry_no);
 
     try {
+      const username = reduxUser?.user_name || userDetails.name;
       const payload = {
         id: item.entry_no,
         status: "LAB-OPEN",
+        username: username, // Add username for notification creation
       };
 
       const response = await fetch(
@@ -76,12 +62,14 @@ const Notification = ({
       const result = await response.json();
 
       if (response.ok) {
-        setNote((prevNotes) =>
-          prevNotes.filter((n) => n.entry_no !== item.entry_no)
-        );
-        alert("Item has been accepted.");
+        // Remove the item from Redux state after successful update
+        // The next polling cycle will refresh the data automatically
+        const updatedData = note.filter((n) => n.entry_no !== item.entry_no);
+        dispatch(setManagerPendingIssues(updatedData));
+        toast.success("Item has been accepted.");
       } else {
         console.error("Failed to accept item:", result.error);
+        toast.error("Failed to accept item.");
       }
     } catch (error) {
       console.error("Error accepting item:", error);
@@ -92,9 +80,11 @@ const Notification = ({
     console.log("Sending request with entry_no:", item.entry_no);
 
     try {
+      const username = reduxUser?.user_name || userDetails.name;
       const payload = {
         id: item.entry_no,
         status: "MGR-DCL",
+        username: username, // Add username for notification creation
       };
 
       const response = await fetch(
@@ -110,12 +100,14 @@ const Notification = ({
       const result = await response.json();
 
       if (response.ok) {
-        setNote((prevNotes) =>
-          prevNotes.filter((n) => n.entry_no !== item.entry_no)
-        );
-        alert("Item has been Declined.");
+        // Remove the item from Redux state after successful update
+        // The next polling cycle will refresh the data automatically
+        const updatedData = note.filter((n) => n.entry_no !== item.entry_no);
+        dispatch(setManagerPendingIssues(updatedData));
+        toast.success("Item has been Declined.");
       } else {
-        console.error("Failed to accept item:", result.error);
+        console.error("Failed to decline item:", result.error);
+        toast.error("Failed to decline item.");
       }
     } catch (error) {
       console.error("Error accepting item:", error);
@@ -140,7 +132,7 @@ const Notification = ({
             color: "#1e293b",
           }}
         >
-          NOTIFICATION
+          REQUEST NOTIFICATION
         </h2>
       </div>
 
@@ -220,6 +212,23 @@ const Notification = ({
                     }}
                   >
                     Item Name
+                  </th>
+                  <th
+                    style={{
+                      backgroundColor: "#f8fafc",
+                      padding: "14px 12px",
+                      textAlign: "center",
+                      border: "1px solid #e2e8f0",
+                      fontWeight: 600,
+                      fontSize: "0.875rem",
+                      color: "#1e293b",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
+                      minWidth: "100px",
+                    }}
+                  >
+                    Quantity
                   </th>
                   <th
                     style={{
@@ -327,7 +336,14 @@ const Notification = ({
                 </tr>
               </thead>
               <tbody>
-                {note.map((no, index) => (
+                {note.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
+                      No pending issue requests. Data is automatically updated via centralized polling.
+                    </td>
+                  </tr>
+                ) : (
+                  note.map((no, index) => (
                   <tr
                     key={no.id}
                     style={{
@@ -374,6 +390,17 @@ const Notification = ({
                       }}
                     >
                       {no.item_name || ""}
+                    </td>
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: "1px solid #e2e8f0",
+                        padding: "12px",
+                        fontSize: "0.875rem",
+                        color: "#475569",
+                      }}
+                    >
+                      {no.quantity_issued || "-"}
                     </td>
                     <td
                       style={{
@@ -508,7 +535,8 @@ const Notification = ({
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>

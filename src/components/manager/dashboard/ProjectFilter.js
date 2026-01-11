@@ -1,24 +1,46 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { getProjectApi } from "../../../services/AppinfoService";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "../../../components/Lab1/homeLab/inventory.css";
 
 const ProjectManage = () => {
+  // Get user from Redux store to get username and labs
+  const reduxUser = useSelector((state) => state.user.user);
+  const username = reduxUser?.user_name || reduxUser?.name || null;
+  
+  // Get manager's assigned labs from Redux
+  const userLabs = reduxUser?.lab || [];
+  const managerLabs = Array.isArray(userLabs) ? userLabs : (userLabs ? [userLabs] : []);
+  
   const [projects, setProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [selectedLab, setSelectedLab] = useState("All"); // Lab filter state
 
   useEffect(() => {
+    // Guard: Ensure username is available
+    if (!username) {
+      console.error("Username not available. Please ensure user is logged in.");
+      return;
+    }
+
+    // NOTE: Polling removed - data now fetched once on mount
+    // For notification updates, see centralized polling in ManagerNavigation
     const fetchData = () => {
-      getProjectApi()
-        .then((data) => setProjects(data))
+      // Pass lab parameter if a specific lab is selected (not "All")
+      const labParam = selectedLab !== "All" ? selectedLab : null;
+      getProjectApi(username, labParam)
+        .then((data) => {
+          setProjects(Array.isArray(data) ? data : []);
+          setCurrentPage(1); // Reset to first page when filter changes
+        })
         .catch((error) => console.error("Error fetching data:", error));
     };
 
+    // Fetch data when username or selectedLab changes
     fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [username, selectedLab]);
 
   // Pagination calculations
   const totalItems = projects.length;
@@ -38,6 +60,34 @@ const ProjectManage = () => {
 
   return (
     <div className="master-list-container" style={{ width: "100%", padding: "24px" }}>
+      {/* --- Lab Filter --- */}
+      {managerLabs.length > 0 && (
+        <div style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
+          <label style={{ fontWeight: "500", fontSize: "14px" }}>
+            Filter by Lab:
+          </label>
+          <select
+            value={selectedLab}
+            onChange={(e) => setSelectedLab(e.target.value)}
+            style={{
+              padding: "6px 12px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              fontSize: "14px",
+              minWidth: "150px",
+              cursor: "pointer"
+            }}
+          >
+            <option value="All">All</option>
+            {managerLabs.map((lab, index) => (
+              <option key={index} value={lab}>
+                {lab}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* --- Pagination Controls (Top) --- */}
       <div className="pagination-controls top">
         <div className="pagination-info">

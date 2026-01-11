@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import "./TransferredDataTable.css"; // Use the new CSS file
 import * as XLSX from "xlsx";
@@ -8,10 +8,38 @@ import { AiOutlineDownload } from "react-icons/ai";
 import { getmanagerEmployeeApi } from "../../../services/AppinfoService";
 import LabNavigation1 from "../homeLab/LabNavigation1";
 import { BASE_URL } from "../../../services/AppinfoService";
+import { useSelector } from "react-redux";
+import { Modal, Button, Form } from "react-bootstrap";
 
 const TransferredDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  // Get user from Redux store
+  const reduxUser = useSelector((state) => state.user.user);
+  
+  // Merge userDetails prop with Redux user data (Redux takes priority) - memoized to prevent infinite loops
+  const effectiveUserDetails = useMemo(() => {
+    return reduxUser ? {
+      name: reduxUser.user_name || userDetails.name || "",
+      user_name: reduxUser.user_name || userDetails.user_name || userDetails.name || "",
+      lab: reduxUser.lab || userDetails.lab || "N/A",
+      designation: reduxUser.designation || userDetails.designation || "Not Assigned",
+      role: reduxUser.role || userDetails.role || ""
+    } : userDetails;
+  }, [reduxUser, userDetails]);
+
+  // Extract username and lab for dependency tracking
+  const username = useMemo(() => 
+    effectiveUserDetails.user_name || effectiveUserDetails.name || null,
+    [effectiveUserDetails.user_name, effectiveUserDetails.name]
+  );
+  const labName = useMemo(() => 
+    effectiveUserDetails.lab && effectiveUserDetails.lab !== 'N/A' 
+      ? (Array.isArray(effectiveUserDetails.lab) ? effectiveUserDetails.lab[0] : effectiveUserDetails.lab)
+      : null,
+    [effectiveUserDetails.lab]
+  );
+
   const [data, setData] = useState([]);
   const [filters, setFilters] = useState({});
   const [selectedItem, setSelectedItem] = useState(null);
@@ -26,30 +54,55 @@ const TransferredDataTable = ({
   );
 
   useEffect(() => {
-    if (userDetails.lab) {
-      getmanagerEmployeeApi(userDetails.lab)
-        .then((data) => {
-          console.log("Received manager data:", data);
-          setManagerNames(data.map((item) => ({ value: item, label: item })));
-        })
-        .catch((error) => console.error("Error fetching Manager Names:", error));
+    const lab = labName || effectiveUserDetails.lab;
+    if (lab && lab !== 'N/A') {
+      // Send all labs - backend will return managers with ANY matching lab
+      let labsToSend = null;
+      if (Array.isArray(lab)) {
+        labsToSend = lab.filter(l => l && l !== 'N/A');
+      } else if (typeof lab === 'string') {
+        labsToSend = [lab];
+      }
+      
+      if (labsToSend && labsToSend.length > 0) {
+        getmanagerEmployeeApi(labsToSend)
+          .then((data) => {
+            console.log("Received manager data:", data);
+            setManagerNames(data.map((item) => ({ value: item, label: item })));
+          })
+          .catch((error) => console.error("Error fetching Manager Names:", error));
+      }
     }
-  }, [userDetails.lab]);
+  }, [labName, effectiveUserDetails.lab]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username, labName]);
 
   const fetchData = async () => {
     try {
+      // Build query parameters
+      const params = {};
+      if (username) {
+        params.username = username;
+      }
+      if (labName) {
+        params.lab = labName;
+      }
+
+      console.log("🔍 [FRONTEND] get_inventory_data called with:", { username, lab: labName, params });
+
       const response = await axios.get(
-        `${BASE_URL}/api/inventoryReceive/`
+        `${BASE_URL}/api/inventoryReceive/`,
+        { params }
       );
       console.log("🔍 [FRONTEND] Fetched data:", response.data);
       console.log("🔍 [FRONTEND] Sample item (entry 20):", response.data.find(item => item.entry_no === 20));
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
+      toast.error("Failed to fetch inventory data. Please try again.");
     }
   };
 
@@ -111,11 +164,18 @@ const TransferredDataTable = ({
       const returnQuantity = updatedQuantity;
       const remainingQuantity = selectedItem.stock - returnQuantity;
 
+      // Guard: Ensure username is available from Redux
+      if (!reduxUser || !reduxUser.user_name) {
+        toast.error("User information not available. Please refresh the page.");
+        return;
+      }
+
       console.log("🔍 [FRONTEND] Return attempt:", {
         returnQuantity,
         selectedItem: selectedItem,
         selectedManager,
-        remainingQuantity
+        remainingQuantity,
+        username: reduxUser.user_name
       });
 
       if (!selectedManager) {
@@ -133,15 +193,25 @@ const TransferredDataTable = ({
         return;
       }
 
-      await axios.put(
+      const response = await axios.put(
         `${BASE_URL}/update_transfer/${selectedItem.entry_no}/`,
         {
           quantity_returned: returnQuantity,
           manager_username: selectedManager,
+          username: reduxUser.user_name,  // Send username from Redux
         }
       );
 
-      toast.success(`Return processed successfully! Removed ${returnQuantity} items from inventory.`);
+      // Update toast message based on response status
+      const responseStatus = response.data?.status;
+      if (responseStatus === "Pending") {
+        toast.success(`Return request sent for approval. Awaiting manager approval.`);
+      } else if (responseStatus === "Accepted") {
+        toast.success(`Return approved and inventory updated. Removed ${returnQuantity} items from inventory.`);
+      } else {
+        toast.success(response.data?.message || `Return processed successfully!`);
+      }
+
       fetchData();
       setSelectedItem(null);
       closePopup();
@@ -222,175 +292,187 @@ const TransferredDataTable = ({
   ];
   console.log(data)
   return (
-    <div>
-      <div className="table-container">
-        <h2>Add Return</h2>
-
-        {/* Header Controls */}
-        <div className="table-header-controls">
-          <button
-            className={`return-button ${!selectedItem ? 'disabled' : ''}`}
-            disabled={!selectedItem}
+    <div style={{ marginTop: "1px", width: "100%" }}>
+      <div>
+        <h1 style={{
+          fontSize: "var(--lab-text-3xl, 1.8rem)",
+          fontWeight: 700,
+          color: "var(--lab-neutral-800, #1e293b)",
+          margin: 0,
+          textAlign: "left",
+        }}>
+          TRANSFERRED ITEMS
+          <Button
+            variant="primary"
             onClick={openPopup}
+            disabled={!selectedItem}
+            style={{
+              width: "100px",
+              float: "right",
+              marginLeft: "8px",
+            }}
           >
             Return
-          </button>
-          
-          <button
-            className="download-button"
+          </Button>
+          <Button
+            variant="secondary"
             onClick={handleDownload}
+            style={{ float: "right" }}
             title="Download Excel"
           >
-            <AiOutlineDownload size={20} />
-          </button>
-        </div>
+            <AiOutlineDownload size={18} style={{ marginRight: "4px" }} />
+            Download
+          </Button>
+        </h1>
+      </div>
+      <p></p>
 
-        {/* Table Wrapper */}
-        <div className="table-wrapper">
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th className="table-header select-column">
-                  Select
-                </th>
-                {tableHeadings.map(({ label, key, className }, index) => (
-                  <th
-                    key={index}
-                    className={`table-header ${className}`}
-                  >
-                    {label}
-                    <br />
-                    <input
-                      type="text"
-                      placeholder="Filter"
-                      className="filter-input"
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          [key]: e.target.value,
-                        })
-                      }
-                    />
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.length > 0 ? (
-                filteredData.map((item) => (
-                  <tr key={item.entry_no}>
-                    <td className="table-cell select-column">
-                      <input
-                        type="radio"
-                        name="selectedRow"
-                        value={item.entry_no}
-                        checked={selectedItem?.entry_no === item.entry_no}
-                        onChange={() => handleSelect(item.entry_no, item)}
-                      />
-                    </td>
-                    <td className="table-cell entry-no-column">{item.entry_no}</td>
-                    <td className="table-cell item-code-column">{item.item_code}</td>
-                    <td className="table-cell item-name-column">{item.item_name}</td>
-                    <td className="table-cell price-column">{item.price_unit}</td>
-                    <td className="table-cell quantity-column">{item.quantity_received}</td>
-                    <td className="table-cell batch-column">{item.batch_number}</td>
-                    <td className="table-cell remarks-column">{item.remarks}</td>
-                    <td className="table-cell date-column">{item.receipt_date}</td>
-                    <td className="table-cell date-column">{item.expiry_date}</td>
-                    <td className="table-cell manufacturer-column">{item.manufacturer}</td>
-                    <td className="table-cell supplier-column">{item.supplier}</td>
-                    <td className="table-cell project-column">{item.project_name}</td>
-                    <td className="table-cell invoice-column">{item.invoice_no}</td>
-                    <td className="table-cell catalogue-column">{item.bill_no}</td>
-                    <td className="table-cell po-column">{item.po_number}</td>
-                    <td className="table-cell location-column">{item.location}</td>
-                  </tr>
-                ))
-              ) : (
+      <div style={{ paddingTop: "10px" }}>
+        <div className="transferred-table-container">
+
+          {/* Table Wrapper */}
+          <div className="transferred-table-wrapper">
+            <table className="transferred-data-table">
+              <thead>
                 <tr>
-                  <td colSpan="17" className="no-data-state">
-                    No records found
-                  </td>
+                  <th className="table-header select-column">
+                    Select
+                  </th>
+                  {tableHeadings.map(({ label, key, className }, index) => (
+                    <th
+                      key={index}
+                      className={`table-header ${className}`}
+                    >
+                      {label}
+                      <br />
+                      <input
+                        type="text"
+                        placeholder="Filter"
+                        className="filter-input"
+                        onChange={(e) =>
+                          setFilters({
+                            ...filters,
+                            [key]: e.target.value,
+                          })
+                        }
+                      />
+                    </th>
+                  ))}
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredData.length > 0 ? (
+                  filteredData.map((item) => (
+                    <tr key={item.entry_no}>
+                      <td className="table-cell select-column">
+                        <input
+                          type="radio"
+                          name="selectedRow"
+                          value={item.entry_no}
+                          checked={selectedItem?.entry_no === item.entry_no}
+                          onChange={() => handleSelect(item.entry_no, item)}
+                        />
+                      </td>
+                      <td className="table-cell entry-no-column">{item.entry_no}</td>
+                      <td className="table-cell item-code-column">{item.item_code}</td>
+                      <td className="table-cell item-name-column">{item.item_name}</td>
+                      <td className="table-cell price-column">{item.price_unit}</td>
+                      <td className="table-cell quantity-column">{item.quantity_received}</td>
+                      <td className="table-cell batch-column">{item.batch_number}</td>
+                      <td className="table-cell remarks-column">{item.remarks}</td>
+                      <td className="table-cell date-column">{item.receipt_date}</td>
+                      <td className="table-cell date-column">{item.expiry_date}</td>
+                      <td className="table-cell manufacturer-column">{item.manufacturer}</td>
+                      <td className="table-cell supplier-column">{item.supplier}</td>
+                      <td className="table-cell project-column">{item.project_name}</td>
+                      <td className="table-cell invoice-column">{item.invoice_no}</td>
+                      <td className="table-cell catalogue-column">{item.bill_no}</td>
+                      <td className="table-cell po-column">{item.po_number}</td>
+                      <td className="table-cell location-column">{item.location}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="17" className="no-data-state">
+                      No records found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        {/* Popup Window */}
-        {isPopupOpen && (
-          <div className="popup-overlay" onClick={closePopup}>
-            <div className="popup-content" onClick={(e) => e.stopPropagation()}>
-              <h3>Return Item</h3>
-              
-              <p>
-                <strong>Item Name:</strong> {selectedItem.item_name}
-              </p>
-              
-              <p>
-                <strong>Item Code:</strong> {selectedItem.item_code}
-              </p>
+        {/* React Bootstrap Modal for Return */}
+        <Modal show={isPopupOpen} onHide={closePopup} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Return Item</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label><strong>Item Name:</strong></Form.Label>
+                <Form.Control plaintext readOnly value={selectedItem?.item_name || ""} />
+              </Form.Group>
 
-              <p>
-                <strong>Available Stock (Can Return):</strong> {selectedItem.quantity_received}
-              </p>
+              <Form.Group className="mb-3">
+                <Form.Label><strong>Item Code:</strong></Form.Label>
+                <Form.Control plaintext readOnly value={selectedItem?.item_code || ""} />
+              </Form.Group>
 
-              {/* <p>
-                <strong>Total Received:</strong> {selectedItem.quantity_received}
-              </p> */}
+              <Form.Group className="mb-3">
+                <Form.Label><strong>Available Stock (Can Return):</strong></Form.Label>
+                <Form.Control plaintext readOnly value={selectedItem?.quantity_received || 0} />
+              </Form.Group>
 
-              <div className="popup-form-group">
-                <label className="popup-form-label">Select Manager:</label>
-                <select
-                  className="popup-form-select"
+              <Form.Group className="mb-3">
+                <Form.Label>Select Manager:</Form.Label>
+                <Form.Select
                   value={selectedManager}
                   onChange={(e) => setSelectedManager(e.target.value)}
                 >
                   <option value="">Select Manager</option>
                   {managerNames.map((manager) => (
-                    <option key={manager.value} value={manager.value[0]}>
-                      {manager.label[0]}
+                    <option key={manager.value} value={manager.value}>
+                      {manager.label}
                     </option>
                   ))}
-                </select>
-              </div>
+                </Form.Select>
+              </Form.Group>
 
-              <div className="popup-form-group">
-                <label className="popup-form-label">Quantity To Be Returned:</label>
-                <input
+              <Form.Group className="mb-3">
+                <Form.Label>Quantity To Be Returned:</Form.Label>
+                <Form.Control
                   type="number"
-                  className="popup-form-control"
                   value={updatedQuantity}
                   min="0"
-                  max={selectedItem.quantity_received}
+                  max={selectedItem?.quantity_received || 0}
                   onChange={handleQuantityChange}
                   onBlur={handleQuantityBlur}
                 />
-              </div>
+              </Form.Group>
 
-              <div className="quantity-display">
-                <strong>Stock After Return:</strong>{" "}
-                {selectedItem.quantity_received - updatedQuantity}
-              </div>
-
-              <div className="mt-2">
-                <button
-                  className="popup-button popup-button-primary"
-                  onClick={handleUpdate}
-                >
-                  Update Quantity
-                </button>
-                
-                <button
-                  className="popup-button popup-button-secondary"
-                  onClick={closePopup}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+              <Form.Group className="mb-3">
+                <Form.Label><strong>Stock After Return:</strong></Form.Label>
+                <Form.Control 
+                  plaintext 
+                  readOnly 
+                  value={selectedItem ? (selectedItem.quantity_received - (parseInt(updatedQuantity) || 0)) : 0} 
+                  className="text-success"
+                  style={{ fontWeight: 600 }}
+                />
+              </Form.Group>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={closePopup}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleUpdate}>
+              Update Quantity
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );

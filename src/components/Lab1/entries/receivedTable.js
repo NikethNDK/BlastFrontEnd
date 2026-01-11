@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import "./TransferredDataTable.css";
 import * as XLSX from "xlsx";
@@ -7,10 +7,39 @@ import { AiOutlineDownload } from "react-icons/ai";
 import LabNavigation1 from "../homeLab/LabNavigation1";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../services/AppinfoService";
+import { useSelector } from "react-redux";
+import { Button } from "react-bootstrap";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const ReceivedDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  // Get user from Redux as fallback/primary source
+  const reduxUser = useSelector((state) => state.user.user);
+  
+  // Merge userDetails prop with Redux user data (Redux takes priority) - memoized to prevent infinite loops
+  const effectiveUserDetails = useMemo(() => {
+    return reduxUser ? {
+      name: reduxUser.user_name || userDetails.name || "",
+      user_name: reduxUser.user_name || userDetails.user_name || userDetails.name || "",
+      lab: reduxUser.lab || userDetails.lab || "N/A",
+      designation: reduxUser.designation || userDetails.designation || "Not Assigned",
+      role: reduxUser.role || userDetails.role || ""
+    } : userDetails;
+  }, [reduxUser, userDetails]);
+
+  // Extract username and lab for dependency tracking
+  const username = useMemo(() => 
+    effectiveUserDetails.user_name || effectiveUserDetails.name || null,
+    [effectiveUserDetails.user_name, effectiveUserDetails.name]
+  );
+  const labName = useMemo(() => 
+    effectiveUserDetails.lab && effectiveUserDetails.lab !== 'N/A' 
+      ? effectiveUserDetails.lab 
+      : null,
+    [effectiveUserDetails.lab]
+  );
+
   const [data, setData] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false); // Popup state
@@ -20,15 +49,30 @@ const ReceivedDataTable = ({
   const [toDate, setToDate] = useState("");
   const [fromToDate, setFromToDate] = useState("");
   const [toFromDate, setToFromDate] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username, labName]);
 
   const fetchData = async () => {
     try {
+      // Build query parameters
+      const params = {};
+      if (username) {
+        params.username = username;
+      }
+      if (labName) {
+        params.lab = labName;
+      }
+
+      console.log("🌐 [API] get_transferred_data called with:", { username, lab: labName, params });
+
       const response = await axios.get(
-        `${BASE_URL}/api/transfer_data/`
+        `${BASE_URL}/api/transfer_data/`,
+        { params: params }
       );
       setData(response.data);
     } catch (error) {
@@ -131,6 +175,21 @@ const ReceivedDataTable = ({
     0
   );
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, fromDate, toDate, fromToDate, toFromDate]);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   const tableHeadings = [
     { label: "Entry No", key: "entry_no", className: "entry-no-column" },
     { label: "Item Code", key: "item_code", className: "item-code-column" },
@@ -152,10 +211,30 @@ const ReceivedDataTable = ({
   ];
 
   return (
-    <div>
-      <div className="table-container">
-        <h2>Received Data</h2>
-        
+    <div style={{ marginTop: "1px", width: "100%" }}>
+      <div>
+        <h1 style={{
+          fontSize: "var(--lab-text-3xl, 1.8rem)",
+          fontWeight: 700,
+          color: "var(--lab-neutral-800, #1e293b)",
+          margin: 0,
+          textAlign: "left",
+        }}>
+          RECEIVED DATA
+          <Button
+            variant="secondary"
+            onClick={handleDownload}
+            style={{ float: "right" }}
+            title="Download Excel"
+          >
+            <AiOutlineDownload size={18} style={{ marginRight: "4px" }} />
+            Download
+          </Button>
+        </h1>
+      </div>
+      <p></p>
+
+      <div style={{ paddingTop: "10px" }}>
         {/* Total Summary */}
         <div className="total-summary" style={{ 
           marginBottom: "1rem", 
@@ -174,22 +253,10 @@ const ReceivedDataTable = ({
           </p>
         </div>
 
-        {/* Header Controls */}
-        <div className="table-header-controls">
-          <div></div> {/* Empty div for spacing */}
-          
-          <button
-            className="download-button"
-            onClick={handleDownload}
-            title="Download Excel"
-          >
-            <AiOutlineDownload size={20} />
-          </button>
-        </div>
-
-        {/* Table Wrapper */}
-        <div className="table-wrapper">
-          <table className="data-table">
+        <div className="received-table-container">
+          {/* Table Wrapper */}
+          <div className="received-table-wrapper">
+            <table className="received-data-table">
             <thead>
               <tr>
                 {tableHeadings.map(({ label, key, className }, index) => (
@@ -265,8 +332,8 @@ const ReceivedDataTable = ({
               </tr>
             </thead>
             <tbody>
-              {filteredData.length > 0 ? (
-                filteredData.map((item) => (
+              {currentData.length > 0 ? (
+                currentData.map((item) => (
                   <tr key={item.entry_no}>
                     <td className="table-cell entry-no-column">{item.entry_no}</td>
                     <td className="table-cell item-code-column">{item.item_code}</td>
@@ -297,7 +364,48 @@ const ReceivedDataTable = ({
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="pagination-controls bottom">
+            <div className="pagination-navigation">
+              <button
+                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="pagination-btn prev-btn"
+              >
+                <FaChevronLeft size={14} />
+                Previous
+              </button>
+              <div className="pagination-numbers">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`pagination-btn page-btn ${
+                      currentPage === page ? "active" : ""
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className="pagination-btn next-btn"
+              >
+                Next
+                <FaChevronRight size={14} />
+              </button>
+            </div>
+            <div className="pagination-summary">
+              Page {currentPage} of {totalPages} ({filteredData.length} items)
+            </div>
+          </div>
+        )}
       </div>
+    </div>
     </div>
   );
 };

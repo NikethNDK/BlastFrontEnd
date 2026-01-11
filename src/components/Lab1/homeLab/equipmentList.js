@@ -5,6 +5,7 @@ import LabNavigation1 from "./LabNavigation1";
 import "../entries/TransferredDataTable.css";
 import { AiOutlineDownload } from "react-icons/ai";
 import toast from "react-hot-toast";
+import { BASE_URL } from "../../../services/AppinfoService";
 
 const EquipmentList = () => {
   const [equipmentData, setEquipmentData] = useState([]);
@@ -28,7 +29,7 @@ const EquipmentList = () => {
     const fetchEquipmentData = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/equipment/get/"
+          `${BASE_URL}/equipment/get/`
         );
         if (response.data && response.data.data) {
           setEquipmentData(response.data.data);

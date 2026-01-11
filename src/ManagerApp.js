@@ -1,5 +1,6 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { Toaster } from "react-hot-toast";
 import Home from "./components/Home";
 import ManagerNavigation from "./components/manager/ManagerNavigation";
 import AppinfoManager from "./components/manager/AppinfoManager";
@@ -37,7 +38,7 @@ function Layout({ userId, userDetails }) {
         </Routes>
       ) : (
         // Wrap everything else with ManagerNavigation
-        <ManagerNavigation userDetails={userDetails}>
+        <ManagerNavigation userId={userId} userDetails={userDetails}>
           <Routes>
             <Route path="/dashboard" element={<Dasboard userId={userId} userDetails={userDetails} />} />
             <Route path="/project" element={<Project />} />
@@ -69,6 +70,30 @@ function ManagerApp({ userId, userDetails = {} }) {
   return (
     <BrowserRouter>
       <Layout userId={userId} userDetails={userDetails} />
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </BrowserRouter>
   );
 }

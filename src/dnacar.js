@@ -1,8 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import "./styles/lab-design-system.css";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { logoutUser } from './store/slices/userSlice';
+import { Toaster } from "react-hot-toast";
+import ModernSidebar from "./components/common/ModernSidebar";
+import Header from "./components/Lab1/homeLab/Header";
 import HomeLab from "../src/components/Lab1/homeLab/HomeLab";
-import LabNavigatio from "./components/Lab1/homeLab/nav";
 import AddProduct from "./components/Lab1/addProduct/AddProduct";
 import ReceivedProduct from "./components/Lab1/receive/ReceivedProduct";
 import IssuedProduct from "./components/Lab1/issue/IssuedProduct";
@@ -21,51 +26,29 @@ import ReturnDataTable from "./components/Lab1/entries/return";
 import ChangePassword from "./components/Lab1/homeLab/ChangePassword";
 import JoinLab from "./lab_join";
 import EquipmentList from "./components/Lab1/homeLab/equipmentList";
-import "./styles/lab-design-system.css";
-import Header from "./components/Lab1/homeLab/Header";
-import ModernSidebar from "./components/common/ModernSidebar";
-import { BASE_URL } from "./services/AppinfoService";
 
-function Layout({ userDetails }) {
-  const [notifications, setNotifications] = useState([]);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+function Layout({ userDetails, userId }) {
   const location = useLocation();
-
-  const handleLogout = () => {
-    // Add logout logic here
-    window.location.href = '/';
-  };
-
-  const handleNotificationClick = async (notification) => {
-    try {
-      const payload = {
-        id: notification.entry_no,
-        status: "LAB-OPEN",
-      };
-
-      const response = await fetch(`${BASE_URL}/update-issue-items/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        alert("Item has been closed.");
-        // Remove notification from state
-        setNotifications(prev => prev.filter(n => n.entry_no !== notification.entry_no));
-      } else {
-        console.error("Failed to close item");
-      }
-    } catch (error) {
-      console.error("Error closing item:", error);
-    }
-  };  
+  // NOTE: Polling removed - notifications now come from centralized polling via Redux
 
   // Hide navigation only on JoinLab ("/") route
-  const hiddenPaths = ["/", "/add_blast","/dna","/add_dna"];
+  const hiddenPaths = ["/", "/add_blast", "/dna", "/add_dna"];
   const hideNavigation = hiddenPaths.includes(location.pathname);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logoutUser())
+      .unwrap()
+      .then(() => {
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error('Logout failed:', err);
+        navigate('/');
+      });
+  };
 
   if (hideNavigation) {
     return (
@@ -79,20 +62,23 @@ function Layout({ userDetails }) {
   }
 
   return (
-    <>
-      <div className="lab-app">
-        < Header />
-        <div className="lab-body-container"> 
-          <ModernSidebar
-            userDetails={userDetails}
-            notifications={notifications}
-            onNotificationClick={handleNotificationClick}
-            onLogout={handleLogout}
-          />
-          <div className={`lab-main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
+    <div className="lab-app">
+      <Header />
+      <div className="lab-body-container">
+        <ModernSidebar
+          userDetails={userDetails}
+          userId={userId}
+          onLogout={handleLogout}
+        />
+
+        <div className="lab-main-content">
+          <div className="lab-content-container">
             <Routes>
-              <Route path="/" element={<JoinLab />} />
-              <Route path="/master" element={<HomeLab userDetails={userDetails} />} />
+              <Route path="/master" element={
+                <div>
+                  <HomeLab userDetails={userDetails} />
+                </div>
+              } />
               <Route path="/add_product" element={<AddProduct userDetails={userDetails} />} />
               <Route path="/received_product" element={<ReceivedProduct userDetails={userDetails} />} />
               <Route path="/issued_product" element={<IssuedProduct userDetails={userDetails} />} />
@@ -103,7 +89,7 @@ function Layout({ userDetails }) {
               <Route path="/received_issue" element={<ChemicalIssuePage userDetails={userDetails} />} />
               <Route path="/returntable" element={<ReceivedDataTable userDetails={userDetails} />} />
               <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
-              <Route path="/common_name" element={<CommonNameDna userDetails={userDetails}/>} />
+              <Route path="/common_name" element={<CommonNameDna userDetails={userDetails} />} />
               <Route path="/scientific_name" element={<ScientificNameDna userDetails={userDetails} />} />
               <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
               <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
@@ -114,14 +100,38 @@ function Layout({ userDetails }) {
           </div>
         </div>
       </div>
-    </>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+    </div>
   );
 }
 
-function CareApp({ userDetails = { name: '', lab: '', designation: '' } }) {
+function CareApp({ userDetails = { name: '', lab: '', designation: '' }, userId }) {
   return (
     <BrowserRouter>
-      <Layout userDetails={userDetails} />
+      <Layout userDetails={userDetails} userId={userId} />
     </BrowserRouter>
   );
 }

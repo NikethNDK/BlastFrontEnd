@@ -6,7 +6,9 @@ import {
   CDBSidebarMenu,
   CDBSidebarMenuItem,
 } from "cdbreact";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../../store/slices/userSlice';
 import { Button, Navbar } from "react-bootstrap";
 import TN_Transparent_Logo from "../../assets/TN_Transparent_Logo.png";
 import "../../App.css";
@@ -18,6 +20,21 @@ import { FcBarChart } from "react-icons/fc";
 import { FcHome, FcDown, FcExternal } from "react-icons/fc";
 
 const LabNavigation = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logoutUser())
+      .unwrap()
+      .then(() => {
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error('Logout failed:', err);
+        navigate('/');
+      });
+  };
+
   return (
     <div>
       <Navbar
@@ -37,7 +54,7 @@ const LabNavigation = () => {
           />{" "}
           INVENTORY MANAGEMENT SYSTEM
         </Navbar.Brand>
-        <Button href="./Login">Logout</Button>
+        <Button onClick={handleLogout}>Logout</Button>
       </Navbar>
       <div className="sidebar" style={{ height: "530px" }}>
         <CDBSidebar

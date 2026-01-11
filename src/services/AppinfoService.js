@@ -1,8 +1,8 @@
 import axios from "axios";
 import { API_ENDPOINTS, API_BASE_URL } from "../config/api";
 
-// Base URL for all API calls
-export const BASE_URL = "http://127.0.0.1:8000";
+// Base URL for all API calls - exported for use in other files
+export const BASE_URL = API_BASE_URL;
 
 export function getAppinfo() {
   return axios
@@ -57,9 +57,21 @@ export async function updateAppinfo(infoid, appinfo) {
 
 // ------------------------------Chemical---------------------------------------------------
 
-export function getMasterApi() {
+export function getMasterApi(labName = null, username = null) {
+  const params = new URLSearchParams();
+  if (labName) {
+    params.append('lab', labName);
+  }
+  if (username) {
+    params.append('username', username);
+  }
+
+  const url = params.toString()
+    ? `${BASE_URL}/master/?${params.toString()}`
+    : `${BASE_URL}/master/`;
+
   return axios
-    .get(`${BASE_URL}/master/`)
+    .get(url)
     .then((response) => response.data);
 }
 
@@ -162,9 +174,16 @@ export const getStockLevelApi = () => {
 
 // --------------------------------Project Master------------------------------------------
 
-export function getProjectApi() {
+export function getProjectApi(username = null, lab = null) {
+  const params = {};
+  if (username) {
+    params.username = username;
+  }
+  if (lab && lab !== 'All') {
+    params.lab = lab;
+  }
   return axios
-    .get(`${BASE_URL}/project/`)
+    .get(`${BASE_URL}/project/`, { params })
     .then((response) => response.data);
 }
 
@@ -303,7 +322,7 @@ export async function updateInventoryApi(enNo, inventory) {
 
 export async function loginUserApi(credentials) {
   try {
-    const response = await axios.post(`${BASE_URL}/login-view/`, credentials);
+    const response = await axios.post(`${BASE_URL}/login-view/`, credentials, { withCredentials: true });
     return response.data;
   } catch (error) {
     console.error("Error logging in:", error);
@@ -411,6 +430,7 @@ export function addLoginApi(log) {
     .post(`${BASE_URL}/add_login/`, {
       id: null,
       user_name: log.user_name,
+      name: log.name || null,
       password: log.password,
       role: log.role,
       lab: log.lab,
@@ -419,21 +439,54 @@ export function addLoginApi(log) {
     .then((response) => response.data);
 }
 
-export async function updateLoginApi(id, log) {
+export async function updateLoginApi(user_name, log) {
   return axios
-    .put(`${BASE_URL}/update_login/${id}`, {
+    .put(`${BASE_URL}/update_login/${user_name}`, {
       user_name: log.user_name,
-      password: log.password,
+      name: log.name || null,
       role: log.role,
+      designation: log.designation,
+      lab: log.lab,
     })
-    .then((response) => response.data);
+    .then((response) => response.data)
+    .catch((error) => {
+      // Handle error responses
+      if (error.response && error.response.data) {
+        throw new Error(error.response.data.error || error.response.data || "Failed to update user");
+      }
+      throw error;
+    });
 }
 
 //---------------------------Employee---------------------------//
 
-export function getEmployeeApi() {
+export function getEmployeeApi(username = null, lab = null, role = null) {
+  const params = {};
+  if (username) {
+    params.username = username;
+  }
+  if (lab) {
+    params.lab = lab;
+  }
+  if (role) {
+    params.role = role;
+  }
   return axios
-    .get(`${BASE_URL}/emp/`)
+    .get(`${BASE_URL}/emp/`, { params })
+    .then((response) => response.data);
+}
+
+export function getUsersForAssignProjectApi(lab, role) {
+  return axios
+    .get(`${BASE_URL}/emp/assign-project-users/`, {
+      params: { lab, role }
+    })
+    .then((response) => response.data);
+}
+
+export function getEmployeeByUsernameApi(username) {
+  return axios
+    .get(`${BASE_URL}/emp/?username=${encodeURIComponent(username)}`)
     .then((response) => response.data);
 }
 
@@ -504,11 +557,11 @@ export async function updateEmployeeApi(emp_id, employee) {
 
 export const inactiveEmployeeApi = async (emp_id) => {
   try {
-    await axios.post(`${BASE_URL}/inactive_emp/${emp_id}`);
-    alert("Employee deactivated successfully and cannot log in again.");
-    // Optionally update UI state here
+    const response = await axios.post(`${BASE_URL}/inactive_emp/${emp_id}`);
+    return response.data;
   } catch (error) {
-    alert("Failed to deactivate employee");
+    console.error("Error deactivating employee:", error);
+    throw error;
   }
 };
 
@@ -628,7 +681,7 @@ export function getDistinctRoleApi() {
 
 //---------------------------------Newvwrsion Lab Assistant------------------//
 
-export function addLabMasterApi(lab) {
+export function addLabMasterApi(lab, userDetails) {
   return axios
     .post(`${BASE_URL}/master_inventory/create/`, {
       c_id: null,
@@ -644,6 +697,7 @@ export function addLabMasterApi(lab) {
       // instruction_specification: lab.instruction_specification,
       min_req_stock: lab.min_req_stock,
       // remarks: lab.remarks,
+      lab: lab.lab, // Include lab ID
     })
     .then((response) => response.data);
 }
@@ -725,17 +779,33 @@ export function getTempReceiveApi() {
     .then((response) => response.data);
 }
 
-export function getTempIssueApi() {
+export function getTempIssueApi(username = null) {
+  // Build URL with optional username parameter (backward compatible)
+  const url = username
+    ? `${BASE_URL}/get-issue-items?status=LAB-OPEN&username=${username}`
+    : `${BASE_URL}/get-issue-items?status=LAB-OPEN`;
+  
   return (
     axios
-      // .get("${BASE_URL}/get-issue-items/")
-      .get(`${BASE_URL}/get-issue-items?status=LAB-OPEN`)
+      .get(url)
       .then((response) => response.data)
   );
 }
-export function getTempReturnApi() {
+export function getTempReturnApi(username = null, lab = null) {
+  const params = new URLSearchParams();
+  if (username) {
+    params.append('username', username);
+  }
+  if (lab) {
+    params.append('lab', lab);
+  }
+
+  const url = params.toString()
+    ? `${BASE_URL}/temp_return?${params.toString()}`
+    : `${BASE_URL}/temp_return`;
+
   return axios
-    .get(`${BASE_URL}/temp_return`)
+    .get(url)
     .then((response) => response.data);
 }
 
@@ -759,16 +829,29 @@ export function addItemIssueApi(data) {
 
 //---------------------------ITEM RECEIVE---------------------------//
 
-export function getItemReceiveApi() {
+export function getItemReceiveApi(username, lab = null) {
+  if (!username) {
+    return Promise.reject(new Error("Username is required"));
+  }
+  
+  const params = {
+    username: username
+  };
+  
+  if (lab) {
+    params.lab = lab;
+  }
+  
   return axios
-    .get(`${BASE_URL}/itemreceive/`)
+    .get(`${BASE_URL}/itemreceive/`, {
+      params: params
+    })
     .then((response) => response.data);
 }
 
-export function addTempItemReceiveApi(receive) {
+export function addTempItemReceiveApi(receive, username = null) {
   const currentDate = new Date().toISOString();
-  return axios
-    .post(`${BASE_URL}/add_temp_receive_item`, {
+  const payload = {
       entry_no: null,
       bill_no: receive.bill_no,
       c_id: receive.c_id,
@@ -787,21 +870,41 @@ export function addTempItemReceiveApi(receive) {
       receipt_date: currentDate,
       quantity_received: receive.quantity_received,
       po_number: receive.po_number,
-      batch_number: receive.batch_number, 
+      batch_number: receive.batch_number,
       remarks: receive.remarks,
       master_type: receive.master_type,
       min_req_stock: receive.min_req_stock,
       unit_measure: receive.unit_measure,
       // stock: receive.stock,
-    })
+  };
+  
+  // Add username if provided (for notification creation)
+  if (username) {
+    payload.username = username;
+  }
+  
+  return axios
+    .post(`${BASE_URL}/add_temp_receive_item`, payload)
     .then((response) => response.data);
 }
 
 //---------------------------ITEM ISSUE---------------------------//
 
-export function getItemIssueApi() {
+export function getItemIssueApi(username = null, lab = null) {
+  const params = {};
+  
+  if (username) {
+    params.username = username;
+  }
+  
+  if (lab) {
+    params.lab = lab;
+  }
+  
   return axios
-    .get(`${BASE_URL}/api/issue_data/`)
+    .get(`${BASE_URL}/api/issue_data/`, {
+      params: params
+    })
     .then((response) => response.data);
 }
 
@@ -830,6 +933,7 @@ export function addTempItemIssueApi(receive) {
       location: receive.location,
       status: "LAB-OPEN",
       instruction_specification: receive.instruction_specification,
+      lab_assistant_name: receive.lab_assistant_name || null,
     })
     .then((response) => response.data);
 }
@@ -1243,6 +1347,16 @@ export function updateTempIssueApi(entry_no, updatedData) {
     });
 }
 
+export function acceptTempIssueApi(entry_no) {
+  return axios
+    .post(`${BASE_URL}/temp_issue/accept/`, { entry_no })
+    .then((response) => response.data)
+    .catch((error) => {
+      console.error("Error accepting item:", error);
+      throw error;
+    });
+}
+
 export function updateTempReceiveApi(billNo, updatedData) {
   return axios
     .put(`${BASE_URL}/temp-receive/update/${billNo}/`, updatedData)
@@ -1285,7 +1399,7 @@ export function addIssueResearcherApi(receive) {
       // bill_no: receive.bill_no,
       c_id: receive.c_id,
       issue_date: currentDate,
-      // quantity_issued: receive.quantity_issued,
+      quantity_issued: receive.quantity_issued || null,
       issued_to: receive.issued_to,
       project_code: receive.project_code,
       project_name: receive.project_name,
@@ -1305,31 +1419,75 @@ export function addIssueResearcherApi(receive) {
     .then((response) => response.data);
 }
 
-export function getmanagerEmployeeApi(userDetails) {
+export function getmanagerEmployeeApi(labNameOrArray) {
+  // Build URL with optional lab parameter(s)
+  // Accepts both single lab (string) for backward compatibility and multiple labs (array)
+  // If labNameOrArray is provided, add it/them as query param(s); otherwise omit it
+  let url = `${BASE_URL}/managerEmpName/`;
+  
+  if (labNameOrArray) {
+    const params = new URLSearchParams();
+    
+    // Handle both array and single value
+    if (Array.isArray(labNameOrArray) && labNameOrArray.length > 0) {
+      // Multiple labs: add each as separate 'lab' parameter
+      labNameOrArray.forEach(lab => {
+        if (lab && lab !== 'N/A') {
+          params.append('lab', lab);
+        }
+      });
+    } else if (typeof labNameOrArray === 'string' && labNameOrArray !== 'N/A') {
+      // Single lab: backward compatibility
+      params.append('lab', labNameOrArray);
+    }
+    
+    // Only add params if we have valid labs
+    if (params.toString()) {
+      url = `${BASE_URL}/managerEmpName/?${params.toString()}`;
+    }
+  }
+  
   return axios
-    .get(`${BASE_URL}/managerEmpName/?lab=${userDetails}`)
+    .get(url)
     .then((response) => response.data);
 }
 
-export function getLabassistantEmployeeApi() {
+export function getLabassistantEmployeeApi(labName, projectCodes) {
+  // Build URL with optional lab and project_code parameters
+  const params = new URLSearchParams();
+  if (labName) {
+    params.append('lab', labName);
+  }
+  if (projectCodes && projectCodes.length > 0) {
+    // Join multiple project codes with comma
+    params.append('project_code', projectCodes.join(','));
+  }
+  
+  const url = params.toString()
+    ? `${BASE_URL}/lab-assistants/?${params.toString()}`
+    : `${BASE_URL}/lab-assistants/`;
+  
   return axios
-    .get(`${BASE_URL}/lab-assistants/`)
+    .get(url)
     .then((response) => response.data);
 }
-export const fetchMasterListByType = async (masterType, lab = null) => {
+export const fetchMasterListByType = async (masterType, lab = null, username = null) => {
   try {
     const params = { master_type: masterType };
     if (lab) {
       params.lab = lab;
     }
-    
-    console.log("🌐 [API] fetchMasterListByType called with:", { masterType, lab, params });
+    if (username) {
+      params.username = username;
+    }
+
+    console.log("🌐 [API] fetchMasterListByType called with:", { masterType, lab, username, params });
     console.log("🌐 [API] Making request to:", `${BASE_URL}/api/master-list-by-type/`);
-    
+
     const response = await axios.get(`${BASE_URL}/api/master-list-by-type/`, {
       params: params,
     });
-    
+
     console.log("🌐 [API] fetchMasterListByType response:", response.data);
     return response.data;
   } catch (error) {
@@ -1341,11 +1499,11 @@ export const fetchMasterListByType = async (masterType, lab = null) => {
 export const fetchItemExpiryDates = async (itemCode) => {
   try {
     console.log("🌐 [API] fetchItemExpiryDates called with itemCode:", itemCode);
-    
+
     const response = await axios.get(`${BASE_URL}/api/item-expiry-dates/`, {
       params: { item_code: itemCode },
     });
-    
+
     console.log("🌐 [API] fetchItemExpiryDates response:", response.data);
     return response.data;
   } catch (error) {
@@ -1357,11 +1515,11 @@ export const fetchItemExpiryDates = async (itemCode) => {
 export const fetchItemLocations = async (itemCode) => {
   try {
     console.log("🌐 [API] fetchItemLocations called with itemCode:", itemCode);
-    
+
     const response = await axios.get(`${BASE_URL}/api/item-locations/`, {
       params: { item_code: itemCode },
     });
-    
+
     console.log("🌐 [API] fetchItemLocations response:", response.data);
     return response.data;
   } catch (error) {
@@ -1369,15 +1527,18 @@ export const fetchItemLocations = async (itemCode) => {
     throw error;
   }
 };
-export function getTemptReceiveApi(lab = null) {
+export function getTemptReceiveApi(lab = null, username = null) {
   const params = {};
   if (lab) {
     params.lab = lab;
   }
-  
-  console.log("🌐 [API] getTemptReceiveApi called with:", { lab, params });
+  if (username) {
+    params.username = username;
+  }
+
+  console.log("🌐 [API] getTemptReceiveApi called with:", { lab, username, params });
   console.log("🌐 [API] Making request to:", `${BASE_URL}/api/inventoryReceive/`);
-  
+
   return axios
     .get(`${BASE_URL}/api/inventoryReceive/`, { params })
     .then((response) => {
@@ -1405,6 +1566,30 @@ export const createEquipmentDetails = async (equipmentData) => {
   } catch (error) {
     console.error(
       "Error creating equipment details:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const getEquipmentDetailsByEntryNo = async (entryNo) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/equipment/get/?entry_no=${entryNo}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data; // Return response data
+  } catch (error) {
+    // If equipment not found, return null instead of throwing
+    if (error.response?.status === 404) {
+      return null;
+    }
+    console.error(
+      "Error fetching equipment details:",
       error.response?.data || error.message
     );
     throw error;
@@ -1654,16 +1839,50 @@ export const updateItemStatus = async (entry_no, status) => {
 //   }
 // };
 
-export const getIssueItems = async () => {
+export const getIssueItems = async (username = null) => {
   try {
-    const response = await axios.get(
-      `${BASE_URL}/get-issue-items?status=RCH-OPEN`
-      // `${BASE_URL}/get-issue-items`
-    );
+    // Build URL with optional username parameter (backward compatible)
+    const url = username 
+      ? `${BASE_URL}/get-issue-items?status=RCH-OPEN&username=${username}`
+      : `${BASE_URL}/get-issue-items?status=RCH-OPEN`;
+    
+    const response = await axios.get(url);
     return response.data; // Returning response data
   } catch (error) {
     console.error("Error fetching issue items:", error);
     throw error; // Throwing error to handle in the frontend
+  }
+};
+
+export const getIssueItemsByStatus = async (status, username = null) => {
+  try {
+    // Build URL with optional username parameter (backward compatible)
+    const url = username
+      ? `${BASE_URL}/get-issue-items?status=${status}&username=${username}`
+      : `${BASE_URL}/get-issue-items?status=${status}`;
+    
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching issue items with status ${status}:`, error);
+    throw error;
+  }
+};
+
+export const confirmIssue = async (entryNo, action, username) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/issue/confirm/`,
+      {
+        entry_no: entryNo,
+        action: action, // 'accept' or 'decline'
+        username: username
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error confirming issue:", error);
+    throw error;
   }
 };
 
@@ -1697,5 +1916,40 @@ export const getItemReturnsForManager = async (managerId) => {
   } catch (error) {
     console.error("Error fetching item returns:", error);
     return []; // Return empty array on error
+  }
+};
+
+/**
+ * Fetch all notifications for the logged-in user
+ * @returns {Promise<Array>} Array of notification objects with is_read status
+ */
+export const getUserNotifications = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/app-notifications/`, {
+      withCredentials: true, // Send cookies for JWT authentication
+    });
+    return response.data; // Return the fetched notifications
+  } catch (error) {
+    console.error("Error fetching user notifications:", error);
+    return []; // Return empty array on error
+  }
+};
+
+/**
+ * Mark notifications as read for the logged-in user
+ * @param {Array<number>} notificationIds - Array of notification IDs to mark as read
+ * @returns {Promise<Object>} Response with message and updated_count
+ */
+export const markNotificationsRead = async (notificationIds) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/app-notifications/mark-read/`,
+      { notification_ids: notificationIds },
+      { withCredentials: true } // Send cookies for JWT authentication
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error marking notifications as read:", error);
+    throw error;
   }
 };

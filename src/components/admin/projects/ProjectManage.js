@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaEdit, FaPlus, FaEye, FaSearch, FaDownload, FaFilter, FaSort, FaTrash, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import { FaEdit, FaPlus, FaEye, FaSearch, FaDownload, FaFilter, FaSort, FaTrash, FaCheckCircle, FaTimesCircle, FaExclamationTriangle } from "react-icons/fa";
+import { Modal, Button } from "react-bootstrap";
 import AddProjectModal from "./AddProjectModal";
 import UpdateProjectModal from "./UpdateProjectModal";
 import {
@@ -22,6 +23,8 @@ const ProjectManage = () => {
   const [pageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [confirmModalShow, setConfirmModalShow] = useState(false);
+  const [projectToInactivate, setProjectToInactivate] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -66,22 +69,36 @@ const ProjectManage = () => {
     setEditProjects(stu);
   };
 
-  const handleInactive = async (project_code) => {
+  const handleInactiveClick = (project) => {
+    setProjectToInactivate(project);
+    setConfirmModalShow(true);
+  };
+
+  const handleConfirmInactive = async () => {
+    if (!projectToInactivate) return;
+    
     try {
-      await inactiveProjectApi(project_code);
+      await inactiveProjectApi(projectToInactivate.project_code);
       toast.success("Project Inactivated");
       
       setProjects((prevProjects) =>
         prevProjects.map((proj) =>
-          proj.project_code === project_code
+          proj.project_code === projectToInactivate.project_code
             ? { ...proj, deleted: 1 }
             : proj
         )
       );
+      setConfirmModalShow(false);
+      setProjectToInactivate(null);
     } catch (error) {
       console.error("Failed to inactivate project:", error);
       toast.error("Failed to Inactivate Project");
     }
+  };
+
+  const handleCloseConfirmModal = () => {
+    setConfirmModalShow(false);
+    setProjectToInactivate(null);
   };
 
   const handleSearch = (searchValue) => {
@@ -337,7 +354,13 @@ const ProjectManage = () => {
                             </td>
                             <td>
                               <small style={{ color: '#6c757d' }}>
-                                {new Date().toLocaleDateString()}
+                                {project.created_at 
+                                  ? new Date(project.created_at).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric'
+                                    })
+                                  : 'N/A'}
                               </small>
                             </td>
                             <td>
@@ -352,11 +375,7 @@ const ProjectManage = () => {
                                 {project.deleted === 0 && (
                                   <button
                                     className="project-btn project-btn-outline-danger project-btn-sm"
-                                    onClick={() => {
-                                      if (window.confirm('Are you sure you want to inactivate this project?')) {
-                                        handleInactive(project.project_code);
-                                      }
-                                    }}
+                                    onClick={() => handleInactiveClick(project)}
                                     title="Inactivate Project"
                                   >
                                     <FaTrash />
@@ -449,6 +468,52 @@ const ProjectManage = () => {
           editProjects={editProjects}
           projects={projects || []}
         />
+
+        {/* Confirmation Modal */}
+        <Modal
+          show={confirmModalShow}
+          onHide={handleCloseConfirmModal}
+          centered
+          backdrop="static"
+        >
+          <Modal.Header closeButton style={{ borderBottom: '1px solid #dee2e6' }}>
+            <Modal.Title style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <FaExclamationTriangle style={{ color: '#dc3545' }} />
+              Confirm Inactivation
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body style={{ padding: '1.5rem' }}>
+            <p style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>
+              Are you sure you want to inactivate this project?
+            </p>
+            {projectToInactivate && (
+              <div style={{ 
+                backgroundColor: '#f8f9fa', 
+                padding: '0.75rem', 
+                borderRadius: '0.25rem',
+                marginTop: '1rem'
+              }}>
+                <p style={{ margin: 0, fontWeight: '600', color: '#495057' }}>
+                  Project Code: <span style={{ color: '#007bff' }}>{projectToInactivate.project_code}</span>
+                </p>
+                <p style={{ margin: '0.25rem 0 0 0', color: '#6c757d' }}>
+                  Project Name: {projectToInactivate.project_name}
+                </p>
+              </div>
+            )}
+            <p style={{ marginTop: '1rem', marginBottom: 0, fontSize: '0.875rem', color: '#6c757d' }}>
+              This action will mark the project as inactive. You can reactivate it later if needed.
+            </p>
+          </Modal.Body>
+          <Modal.Footer style={{ borderTop: '1px solid #dee2e6' }}>
+            <Button variant="secondary" onClick={handleCloseConfirmModal}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={handleConfirmInactive}>
+              Inactivate Project
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     </div>
   );

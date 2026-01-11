@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Row, Form, Button, Modal } from "react-bootstrap";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import {
   // Keeping all original imports for completeness,
@@ -12,10 +13,12 @@ import {
   getMasterChemicalApi,
   getMasterLabwareApi,
   addTempItemReceiveApi,
+  updateTempReceiveApi,
   getUnitsApi,
   getMastertyApi,
   getSuppliersApi,
   getLocationsApi,
+  getLabsApi,
 } from "../../../services/AppinfoService";
 import "../../inventory/formBorder.css";
 import Select from "react-select";
@@ -26,9 +29,28 @@ import { BASE_URL } from "../../../services/AppinfoService";
 const ReceivedProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  // Get user from Redux store (preferred over userDetails prop)
+  const reduxUser = useSelector((state) => state.user.user);
+  const [tableItemCount, setTableItemCount] = useState(0);
+  
   // --- State Variables ---
   const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false); // Controls the Add form modal visibility
+  const [modalMode, setModalMode] = useState("add"); // 'add' | 'edit'
+  const [editingItem, setEditingItem] = useState(null); // Original temp_receive row for edit
+  const [pendingEditItem, setPendingEditItem] = useState(null); // Used to prefill selects after options load
+  const [formDefaults, setFormDefaults] = useState({
+    invoiceNumber: "",
+    poNumber: "",
+    bill: "",
+    unitprice: "",
+    quantityReceived: "",
+    batchNumber: "",
+    expiryDate: "",
+    instructionSpecification: "",
+    remarks: "",
+  });
+  const [formInstanceKey, setFormInstanceKey] = useState(0); // Forces <Form> remount to apply defaultValue
   const [message, setMessage] = useState("");
   const [masterTypes, setMasterTypes] = useState([]);
   const [itemsCodes, setItemsCodes] = useState([]);
@@ -51,7 +73,71 @@ const ReceivedProduct = ({
   const [errorMessages, setErrorMessages] = useState({}); // Moved here for clarity
 
   // --- Modal Handlers ---
-  const handleShow = () => setShowModal(true);
+  const handleShowAdd = () => {
+    setModalMode("add");
+    setEditingItem(null);
+    setPendingEditItem(null);
+    setMasterType("");
+    setSelectedItemCode(null);
+    setSelectedItemName(null);
+    setSelectedItemDetails(null);
+    setSelectedminDetails(null);
+    setSelectedManufacturer(null);
+    setSelectedSuppliers(null);
+    setSelectedLocations(null);
+    setSelectedCodes(null);
+    setSelectedProject("");
+    setErrorMessages({});
+    setFormDefaults({
+      invoiceNumber: "",
+      poNumber: "",
+      bill: "",
+      unitprice: "",
+      quantityReceived: "",
+      batchNumber: "",
+      expiryDate: "",
+      instructionSpecification: "",
+      remarks: "",
+    });
+    setFormInstanceKey((k) => k + 1);
+    setShowModal(true);
+  };
+
+  const openEditModal = (item) => {
+    setModalMode("edit");
+    setEditingItem(item || null);
+    setPendingEditItem(item || null);
+    setErrorMessages({});
+
+    // Prefill basic input fields via defaultValue (Form remount)
+    setFormDefaults({
+      invoiceNumber: item?.invoice_number || "",
+      poNumber: item?.po_number || "",
+      bill: item?.bill_no || "",
+      unitprice: item?.price_unit || "",
+      quantityReceived: item?.quantity_received || "",
+      batchNumber: item?.batch_number || "",
+      expiryDate: item?.expiry_date || "",
+      instructionSpecification: item?.instruction_specification || "",
+      remarks: item?.remarks || "",
+    });
+    setFormInstanceKey((k) => k + 1);
+
+    // Try set project selections immediately (if options already loaded we'll map precisely below as well)
+    setSelectedProject(item?.project_name || "");
+    if (item?.project_code) {
+      setSelectedCodes({ value: item.project_code, label: item.project_code });
+    } else {
+      setSelectedCodes(null);
+    }
+
+    // Set master type early; item code/name selects depend on this
+    setMasterType(item?.master_type || "");
+
+    // Manufacturer/supplier/location can be mapped once option arrays are ready
+    setShowModal(true);
+  };
+
   const handleClose = () => {
     // Also reset form state when closing the modal, regardless of success/error
     setSelectedItemCode(null);
@@ -64,6 +150,20 @@ const ReceivedProduct = ({
     setMasterType("");
     setSelectedminDetails(null);
     setSelectedProject("");
+    setModalMode("add");
+    setEditingItem(null);
+    setPendingEditItem(null);
+    setFormDefaults({
+      invoiceNumber: "",
+      poNumber: "",
+      bill: "",
+      unitprice: "",
+      quantityReceived: "",
+      batchNumber: "",
+      expiryDate: "",
+      instructionSpecification: "",
+      remarks: "",
+    });
     setErrorMessages({}); // Clear validation errors
     if (formRef.current) {
         formRef.current.reset(); // Reset form fields
@@ -93,7 +193,7 @@ const ReceivedProduct = ({
       );
     });
 
-    getProjectApi()
+    getProjectApi(userDetails.name)
       .then((data) => {
         const activeProjects = data.filter((item) => item.deleted === 0);
         setProjects(
@@ -106,15 +206,19 @@ const ReceivedProduct = ({
       })
       .catch((error) => console.error("Error fetching projects:", error));
 
+    // Get username for filtering (from Redux or userDetails prop)
+    const username = reduxUser?.user_name || userDetails.name;
+    
     const fetchData = async () => {
       const masterData = await getMastertyApi();
       setMasterTypes(masterData);
 
-      const itemData = await getMasterApi();
+      // Pass username to filter items by user's lab
+      const itemData = await getMasterApi(null, username);
       setAllItems(itemData);
     };
     fetchData();
-  }, [userDetails.name]);
+  }, [userDetails.name, reduxUser]);
 
   console.log('all items',allItems)
 
@@ -220,9 +324,104 @@ const ReceivedProduct = ({
     }
   };
 
-  // --- Add Handler (remains the same, but includes modal closure) ---
-  const handleAdd = (e) => {
-    e.preventDefault(); // Prevent default form submission since we are using an API call
+  // When opening edit modal, we may need to wait for dropdown options to load before mapping selections.
+  useEffect(() => {
+    if (!showModal || modalMode !== "edit" || !pendingEditItem) return;
+
+    // If master_type isn't present in the temp row, infer it from the master list by item_code/name
+    if (!masterType && allItems.length > 0) {
+      const match = allItems.find((x) => {
+        const code = x.item_code || x.code;
+        const name = x.item_name || x.name;
+        return (
+          (pendingEditItem.item_code && code === pendingEditItem.item_code) ||
+          (pendingEditItem.item_name && name === pendingEditItem.item_name)
+        );
+      });
+      if (match?.master_type) {
+        setMasterType(match.master_type);
+      }
+    }
+
+    // Map manufacturer/supplier/location once options available
+    if (!selectedManufacturer && pendingEditItem.manufacturer && manufacturers.length > 0) {
+      const match = manufacturers.find((m) => m.label === pendingEditItem.manufacturer);
+      if (match) setSelectedManufacturer(match);
+    }
+    if (!selectedSuppliers && pendingEditItem.supplier && suppliers.length > 0) {
+      const match = suppliers.find((s) => s.label === pendingEditItem.supplier);
+      if (match) setSelectedSuppliers(match);
+    }
+    if (!selectedLocations && pendingEditItem.location && locations.length > 0) {
+      const match = locations.find((l) => l.label === pendingEditItem.location);
+      if (match) setSelectedLocations(match);
+    }
+
+    // Map project name/code once projects loaded
+    if (projects.length > 0) {
+      if (pendingEditItem.project_name && !selectedProject) {
+        setSelectedProject(pendingEditItem.project_name);
+      }
+      if (pendingEditItem.project_code && !selectedCodes) {
+        setSelectedCodes({ value: pendingEditItem.project_code, label: pendingEditItem.project_code });
+      }
+    }
+
+    // Map item selections once masterType filtering has produced options
+    if (itemsCodes.length > 0 && pendingEditItem.item_code && !selectedItemCode) {
+      const match = itemsCodes.find((x) => x.label === pendingEditItem.item_code);
+      if (match) {
+        setSelectedItemCode(match);
+        setSelectedItemName({ value: match.value, label: match.itemName });
+        setSelectedItemDetails(match.details);
+        setSelectedminDetails(match.details);
+      }
+    }
+    if (itemsNames.length > 0 && pendingEditItem.item_name && !selectedItemName) {
+      const match = itemsNames.find((x) => x.label === pendingEditItem.item_name);
+      if (match) {
+        setSelectedItemName(match);
+        setSelectedItemCode({ value: match.value, label: match.itemCode });
+        setSelectedItemDetails(match.details);
+        setSelectedminDetails(match.details);
+      }
+    }
+
+    // Once critical mappings are done, clear pending to avoid repeated work
+    // (keep it if we still can't map due to missing masterType/options)
+    const canClear =
+      (!!selectedManufacturer || !pendingEditItem.manufacturer) &&
+      (!!selectedSuppliers || !pendingEditItem.supplier) &&
+      (!!selectedLocations || !pendingEditItem.location) &&
+      (!!selectedCodes || !pendingEditItem.project_code) &&
+      (!!selectedItemCode || !pendingEditItem.item_code) &&
+      (!!selectedItemName || !pendingEditItem.item_name);
+
+    if (canClear) {
+      setPendingEditItem(null);
+    }
+  }, [
+    showModal,
+    modalMode,
+    pendingEditItem,
+    manufacturers,
+    suppliers,
+    locations,
+    projects,
+    itemsCodes,
+    itemsNames,
+    selectedManufacturer,
+    selectedSuppliers,
+    selectedLocations,
+    selectedCodes,
+    selectedItemCode,
+    selectedItemName,
+    selectedProject,
+  ]);
+
+  // --- Add/Edit Submit Handler ---
+  const handleSubmit = async (e) => {
+    if (e?.preventDefault) e.preventDefault(); // Prevent default form submission if called as a submit handler
 
     const formData = new FormData(formRef.current);
     const newErrorMessages = {};
@@ -288,6 +487,21 @@ const ReceivedProduct = ({
       return;
     }
 
+    // Get lab ID from userDetails
+    let labId = null;
+    if (userDetails.lab && Array.isArray(userDetails.lab) && userDetails.lab.length > 0) {
+      const labName = userDetails.lab[0];
+      try {
+        const labsResponse = await getLabsApi();
+        const userLab = labsResponse.data.find(l => l.name === labName);
+        if (userLab) {
+          labId = userLab.id;
+        }
+      } catch (error) {
+        console.error("Error fetching lab:", error);
+      }
+    }
+
     // Prepare data for API
     const receiveData = {
       bill_no: formData.get("bill"),
@@ -306,39 +520,61 @@ const ReceivedProduct = ({
       location: selectedLocations.label,
       invoice_number: formData.get("invoiceNumber"),
       project_code: selectedCodes.value,
-      // The original code set project_name to project_code, I'll keep that behavior.
-      project_name: selectedCodes.label, // Using label (which is the code) or maybe selectedProject
+      project_name: selectedProject || selectedCodes.label || "",
       master_type: masterType || "",
       unit_measure: selectedItemDetails.units,
       min_req_stock: selectedStockDetails?.requiredStock || "",
+      lab_id: labId, // Add lab ID for backend to assign to Master
     };
 
-    // API call
-    addTempItemReceiveApi(receiveData, userDetails.name)
-      .then(() => {
-        console.log("✅ [FORM SUBMIT] Received data added successfully, refreshing table...");
+    try {
+      if (modalMode === "edit" && editingItem?.bill_no) {
+        // Keep unedited fields (like receipt_date/entry_no) from the original object
+        const updatedPayload = {
+          ...editingItem,
+          ...receiveData,
+          bill_no: editingItem.bill_no, // enforce stable key
+        };
+
+        await updateTempReceiveApi(editingItem.bill_no, updatedPayload);
+        toast.success("Received Data updated successfully");
+      } else {
+        await addTempItemReceiveApi(receiveData, userDetails.name);
         toast.success("Received Data added successfully");
-        // Reset all state and close modal
-        handleClose();
-        
-        // Refresh the temp receive table
-        if (window.refreshTempReceiveTable) {
-          window.refreshTempReceiveTable();
-        }
-      })
-      .catch((error) => {
-        console.error("💥 [FORM SUBMIT] Add Error:", error);
-        toast.error("Failed to add received data. Please check console.");
-      });
+      }
+
+      handleClose();
+
+      // Refresh the temp receive table
+      if (window.refreshTempReceiveTable) {
+        window.refreshTempReceiveTable();
+      }
+    } catch (error) {
+      console.error("💥 [FORM SUBMIT] Error:", error);
+      toast.error(
+        modalMode === "edit"
+          ? "Failed to update received data. Please check console."
+          : "Failed to add received data. Please check console."
+      );
+    }
   };
 
   // --- Transfer Data Handler (remains the same) ---
   const handleTransferData = async () => {
     try {
       console.log("🔄 [TRANSFER] Starting receive data transfer...");
+      // Get username for notification
+      const username = reduxUser?.user_name || userDetails.name;
+      
       // NOTE: This uses a hardcoded URL. In a real application, this should be configurable.
       const response = await fetch(`${BASE_URL}/transfer/receive/`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+        }),
       });
 
       // Assuming success is based on a 200-series status code
@@ -376,12 +612,16 @@ const ReceivedProduct = ({
             RECEIVED PRODUCT
             <Button
               variant="primary"
-              onClick={handleShow} // Open the modal
+              onClick={handleShowAdd} // Open the modal (add mode)
               style={{ width: "70px", float: "right", marginLeft: "8px" }}
             >
               Add
             </Button>
-            <Button onClick={handleTransferData} style={{ float: "right" }}>
+            <Button 
+              onClick={handleTransferData} 
+              style={{ float: "right" }}
+              disabled={tableItemCount === 0}
+            >
               Submit
             </Button>
           </h1>
@@ -389,20 +629,23 @@ const ReceivedProduct = ({
         <p></p>
         <div>
           {/* The form section is now moved into the Modal component */}
-          <TempReceiveTable />
+          <TempReceiveTable 
+            onEdit={openEditModal} 
+            onItemCountChange={setTableItemCount}
+          />
         </div>
       </div>
 
       {/* --- Modal Component for Add Receive Form --- */}
       <Modal show={showModal} onHide={handleClose} size="xl" scrollable className="modal-xl">
         <Modal.Header closeButton>
-          <Modal.Title>Add Receive Item</Modal.Title>
+          <Modal.Title>{modalMode === "edit" ? "Edit Receive Item" : "Add Receive Item"}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
             <Col sm={12}>
               {/* NOTE: We call handleAdd on button click now, but attach ref to form */}
-              <Form ref={formRef}>
+              <Form key={formInstanceKey} ref={formRef} onSubmit={handleSubmit}>
                 <Row>
                   <Col>
                     <Form.Group controlId="masterType">
@@ -564,6 +807,7 @@ const ReceivedProduct = ({
                         className="custom-border"
                         style={{ borderColor: errorMessages.invoiceNumber ? "red" : "black" }}
                         onChange={() => setErrorMessages(prev => ({...prev, invoiceNumber: ""}))}
+                        defaultValue={formDefaults.invoiceNumber}
                       />
                       {errorMessages.invoiceNumber && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -583,6 +827,7 @@ const ReceivedProduct = ({
                         className="custom-border"
                         style={{ borderColor: errorMessages.poNumber ? "red" : "black" }}
                         onChange={() => setErrorMessages(prev => ({...prev, poNumber: ""}))}
+                        defaultValue={formDefaults.poNumber}
                       />
                       {errorMessages.poNumber && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -605,6 +850,8 @@ const ReceivedProduct = ({
                         className="custom-border"
                         style={{ borderColor: errorMessages.bill ? "red" : "black" }}
                         onChange={() => setErrorMessages(prev => ({...prev, bill: ""}))}
+                        defaultValue={formDefaults.bill}
+                        readOnly={modalMode === "edit"}
                       />
                       {errorMessages.bill && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -624,6 +871,7 @@ const ReceivedProduct = ({
                         className="custom-border"
                         style={{ borderColor: errorMessages.unitprice ? "red" : "black" }}
                         onChange={() => setErrorMessages(prev => ({...prev, unitprice: ""}))}
+                        defaultValue={formDefaults.unitprice}
                       />
                       {errorMessages.unitprice && (
                         <span style={{ color: "red", float: "right" }}>
@@ -643,6 +891,7 @@ const ReceivedProduct = ({
                         className="custom-border"
                         style={{ borderColor: errorMessages.quantityReceived ? "red" : "black" }}
                         onChange={() => setErrorMessages(prev => ({...prev, quantityReceived: ""}))}
+                        defaultValue={formDefaults.quantityReceived}
                       />
                       {errorMessages.quantityReceived && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -662,6 +911,7 @@ const ReceivedProduct = ({
                         className="custom-border"
                         style={{ borderColor: errorMessages.batchNumber ? "red" : "black" }}
                         onChange={() => setErrorMessages(prev => ({...prev, batchNumber: ""}))}
+                        defaultValue={formDefaults.batchNumber}
                       />
                       {errorMessages.batchNumber && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -684,6 +934,7 @@ const ReceivedProduct = ({
                         className="custom-border"
                         style={{ borderColor: errorMessages.expiryDate ? "red" : "black" }}
                         onChange={() => setErrorMessages(prev => ({...prev, expiryDate: ""}))}
+                        defaultValue={formDefaults.expiryDate}
                       />
                       {errorMessages.expiryDate && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -781,6 +1032,7 @@ const ReceivedProduct = ({
                         className="custom-border"
                         style={{ borderColor: errorMessages.instructionSpecification ? "red" : "black" }}
                         onChange={() => setErrorMessages(prev => ({...prev, instructionSpecification: ""}))}
+                        defaultValue={formDefaults.instructionSpecification}
                       />
                       {errorMessages.instructionSpecification && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -800,6 +1052,7 @@ const ReceivedProduct = ({
                         className="custom-border"
                         style={{ borderColor: errorMessages.remarks ? "red" : "black" }}
                         onChange={() => setErrorMessages(prev => ({...prev, remarks: ""}))}
+                        defaultValue={formDefaults.remarks}
                       />
                       {errorMessages.remarks && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -817,8 +1070,8 @@ const ReceivedProduct = ({
           <Button variant="secondary" onClick={handleClose}>
             Close
           </Button>
-          <Button variant="primary" onClick={handleAdd}>
-            Add Item
+          <Button variant="primary" onClick={handleSubmit}>
+            {modalMode === "edit" ? "Save Changes" : "Add Item"}
           </Button>
         </Modal.Footer>
       </Modal>

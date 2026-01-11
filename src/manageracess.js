@@ -1,8 +1,6 @@
-
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Home from "./components/Home";
-import ManagerAccessNavigation from "./components/manager/acessnavigation";
+import { Toaster } from "react-hot-toast";
 import AppinfoManager from "./components/manager/AppinfoManager";
 import ChemicalManager from "./components/manager/ChemicalManager";
 import InventoryManager from "./components/manager/InventoryManager";
@@ -25,7 +23,6 @@ import ManagerNavigation from "./components/manager/ManagerNavigation";
 
 function Layout({ userId, userDetails }) {
   const location = useLocation();
-  // Hide navigation only on JoinLab ("/") route
   const hiddenPaths = ["/", "/add_blast","/dna","/add_dna"];
   const hideNavigation = hiddenPaths.includes(location.pathname);
   return (
@@ -34,10 +31,13 @@ function Layout({ userId, userDetails }) {
         // Directly render routes without ManagerNavigation
         <Routes>
           <Route path="/" element={<Join />} />
+          <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
+          <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
+          <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
         </Routes>
       ) : (
         // Wrap everything else with ManagerNavigation
-        <ManagerNavigation userDetails={userDetails}>
+        <ManagerNavigation userId={userId} userDetails={userDetails}>
           <Routes>
             <Route path="/dashboard" element={<Dasboard userId={userId} userDetails={userDetails} />} />
             <Route path="/project" element={<Project />} />
@@ -65,10 +65,34 @@ function Layout({ userId, userDetails }) {
   );
 }
 
-function ManagerAccessApp({ userId, userDetails = { userDetails } }) {
+function ManagerAccessApp({ userId, userDetails = {} }) {
   return (
     <BrowserRouter>
       <Layout userId={userId} userDetails={userDetails} />
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
     </BrowserRouter>
   );
 }

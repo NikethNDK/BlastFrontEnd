@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useCookies } from "react-cookie";
-import { getLoginApi, registerUserApi } from "../../services/AppinfoService";
+import { getLoginApi, loginUserApi } from "../../services/AppinfoService";
+import { setUser, clearUser } from "../../store/slices/userSlice";
 import AIWC_LIMS from "../../assets/AIWC_LIMS.png";
 import AdminApp from "../../AdminApp";
 import ManagerApp from "../../ManagerApp";
@@ -15,58 +17,95 @@ import toast, { Toaster } from "react-hot-toast";
 
 // Temporary flag to enable all features (BLAST, Repository, Inventory) for all users regardless of labs
 // Set to false to restore lab-based routing
-const ENABLE_ALL_FEATURES = true;
+const ENABLE_ALL_FEATURES = false;
 
-function Login() {
+function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
+  const dispatch = useDispatch();
+  const reduxUser = useSelector((state) => state.user.user);
+  const isReduxAuthenticated = useSelector((state) => state.user.isAuthenticated);
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useCookies(["mytoken"]);
-  const [isLoggedIn, setLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState("");
-  const [userLabs, setUserLabs] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
-  const [userId, setUserId] = useState("");
+
+  // Use Redux state or initial state for authentication
+  const [isLoggedIn, setLoggedIn] = useState(initialAuthState.isAuthenticated);
+  const [userRole, setUserRole] = useState(initialAuthState.user?.role || "");
+  const [userLabs, setUserLabs] = useState(initialAuthState.user?.lab || []);
+  const [userId, setUserId] = useState(initialAuthState.user?.id || "");
   const [userDetails, setUserDetails] = useState({
-    name: "",
-    lab: "",
-    designation: ""
+    name: initialAuthState.user?.user_name || "",
+    lab: initialAuthState.user?.lab || "N/A",
+    designation: initialAuthState.user?.designation || "Not Assigned"
   });
+
+  // Sync with Redux state changes (for page refresh)
+  // Sync with Redux state changes (for page refresh and logout)
+  useEffect(() => {
+    setLoggedIn(isReduxAuthenticated);
+
+    if (isReduxAuthenticated && reduxUser) {
+      setUserRole(reduxUser.role || "");
+      setUserLabs(reduxUser.lab || []);
+      setUserId(reduxUser.id || "");
+      setUserDetails({
+        name: reduxUser.user_name || "",
+        lab: reduxUser.lab || "N/A",
+        designation: reduxUser.designation || "Not Assigned"
+      });
+    }
+  }, [isReduxAuthenticated, reduxUser]);
 
   const handleLogin = async () => {
     if (!username?.trim()) {
       toast.error("Please enter username");
       return;
     }
-  
+
     if (!password?.trim()) {
       toast.error("Please enter password");
       return;
     }
-  
+
     try {
+      // First, try server-side login to set JWT cookie
+      try {
+        await loginUserApi({ user_name: username, password: password });
+      } catch (loginErr) {
+        // If server login fails, still try the old flow for backward compatibility
+        console.log("Server login returned error, trying fallback:", loginErr);
+      }
+
+      // Get user details (keeping existing flow for backward compatibility)
       const response = await getLoginApi();
-      console.log("API Response:", response);
-  
+      // console.log("API Response:", response);
+
       if (response.length > 0) {
         let foundUser = response.find(
           (user) => user.user_name === username && user.password === password
         );
-        if(!foundUser.is_active){
-          toast.error("You are blocked")
-        }else if (foundUser) {
+        if (!foundUser) {
+          toast.error("The username or password you entered is incorrect. Please try again.");
+        } else if (!foundUser.is_active) {
+          toast.error("You are blocked");
+        } else {
           console.log("Logged in User:", foundUser);
+
+          // Dispatch to Redux store
+          dispatch(setUser(foundUser));
+
+          // Keep existing local state for backward compatibility with props
           setLoggedIn(true);
           setUserRole(foundUser.role);
           setUserLabs(foundUser.lab || []);
           setUserId(foundUser.id);
-  
+
           setUserDetails({
             name: foundUser.user_name,
             lab: foundUser.lab || "N/A",
             designation: foundUser.designation || "Not Assigned"
           });
-        } else {
-          toast.error("The username or password you entered is incorrect. Please try again.");
         }
       } else {
         toast.error("No user found in system");
@@ -82,35 +121,47 @@ function Login() {
   };
 
   return (
-    <div className="App" style={{ 
-      backgroundColor: "#f2f5e6", 
-      minHeight: "100vh", 
-      display: "flex", 
+    <div className="App" style={{
+      backgroundColor: "#f2f5e6",
+      minHeight: "100vh",
+      display: "flex",
       flexDirection: "column",
     }}>
       {isLoggedIn ? (
         (() => {
           switch (userRole) {
             case "Admin":
-              return <AdminApp userDetails={userDetails}/>;
+              return <AdminApp userDetails={userDetails} />;
             case "Manager":
-              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab)))) {
-                return <ManagerApp userId={userId} userDetails={userDetails}/>;
-              } 
+              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => 
+                ["DNA", "Animal Care"].some(allowedLab => 
+                  lab?.toLowerCase() === allowedLab.toLowerCase()
+                )
+              ))) {
+                return <ManagerApp userId={userId} userDetails={userDetails} />;
+              }
               else {
-                return <ManagerAccessApp userId={userId} userDetails={userDetails}/>;
+                return <ManagerAccessApp userId={userId} userDetails={userDetails} />;
               }
             case "Lab Assistant":
-              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab)))) {
-                return <LabApp userDetails={userDetails}/>;
+              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => 
+                ["DNA", "Animal Care"].some(allowedLab => 
+                  lab?.toLowerCase() === allowedLab.toLowerCase()
+                )
+              ))) {
+                return <LabApp userId={userId} userDetails={userDetails} />;
               } else {
-                return <CareApp userDetails={userDetails}/>;
+                return <CareApp userId={userId} userDetails={userDetails} />;
               }
             case "Researcher":
-              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab)))) {
+              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => 
+                ["DNA", "Animal Care"].some(allowedLab => 
+                  lab?.toLowerCase() === allowedLab.toLowerCase()
+                )
+              ))) {
                 return <ResearcherApp userDetails={userDetails} />;
               } else {
-                return <ResearcherAccessApp userDetails={userDetails}/>;
+                return <ResearcherAccessApp userDetails={userDetails} />;
               }
             default:
               toast.error("Something went wrong. Please contact support.");
@@ -121,8 +172,8 @@ function Login() {
       ) : (
         <>
           <div className="login-container">
-            <Header/>
-            
+            <Header />
+
             <div className="login-content">
               <div className="login-grid">
                 {/* Left side - Image */}
@@ -187,7 +238,7 @@ function Login() {
             </div>
           </div>
 
-          <style jsx>{`
+          <style>{`
             .login-container {
               height: 100vh;
               background: #f5f5f5; 
@@ -432,7 +483,7 @@ function Login() {
               }
             }
           `}</style>
-          <Toaster 
+          <Toaster
             position="top-right"
             toastOptions={{
               duration: 4000,

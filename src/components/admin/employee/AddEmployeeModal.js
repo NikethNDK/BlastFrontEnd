@@ -5,7 +5,9 @@ import {
   getDistinctRoleApi,
   getProjectApi,
   getLabsApi,
-  fetchUsernames,
+  getAllUsersApi,
+  getEmployeeApi,
+  getUsersForAssignProjectApi,
 } from "../../../services/AppinfoService";
 import toast from "react-hot-toast";
 
@@ -15,8 +17,10 @@ const AssignProjectModal = (props) => {
   const [projects, setProjects] = useState([]);
   const [labs, setLabs] = useState([]);
   const [selectedLab, setSelectedLab] = useState("");
+  const [selectedLabId, setSelectedLabId] = useState(null);
   const [selectedRole, setSelectedRole] = useState("");
   const [usernames, setUsernames] = useState([]);
+  const [selectedUsername, setSelectedUsername] = useState("");
   const [empId, setEmpId] = useState("");
 
   useEffect(() => {
@@ -56,14 +60,29 @@ const AssignProjectModal = (props) => {
         console.error("Error fetching labs data", error);
       });
 
+  }, []);
+
+  // Fetch usernames when both lab and role are selected
+  useEffect(() => {
     if (selectedLab && selectedRole) {
-      fetchUsernames(selectedLab, selectedRole)
-        .then((data) => {
-          setUsernames(data);
+      // Fetch users from LoginCre filtered by lab and role using new dedicated endpoint
+      getUsersForAssignProjectApi(selectedLab, selectedRole)
+        .then((users) => {
+          // Handle both array and single object responses
+          const userList = Array.isArray(users) ? users : [users];
+          setUsernames(
+            userList.map((user) => user.emp_name).filter(Boolean)
+          );
         })
-        .catch((error) => console.error("Error fetching usernames:", error));
+        .catch((error) => {
+          console.error("Error fetching users for assign project:", error);
+          setUsernames([]);
+        });
+    } else {
+      setUsernames([]);
+      setSelectedUsername(""); // Clear selected username when lab or role changes
     }
-  }, [selectedLab, selectedRole]); // Empty dependency array ensures this runs once when the component mounts
+  }, [selectedLab, selectedRole]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -73,11 +92,8 @@ const AssignProjectModal = (props) => {
       emp_name: formData.get("username"),
       designation: selectedRole,
       project_code: selectedProjects,
-      // project_code: Array.isArray(selectedProjects) ? selectedProjects : [],
-      // project_code: formData.get("project"),
-      // lab_id: selectedLab,
-      // designation_id: designations.find((d) => d.value === selectedRole)?.id,
-      lab_id: labs.find((l) => l.name === selectedLab)?.id,
+      // Use auto-populated lab_id from employee record
+      lab_id: selectedLabId || labs.find((l) => l.name === selectedLab)?.id,
       role: selectedRole,
     };
 
@@ -88,8 +104,10 @@ const AssignProjectModal = (props) => {
         props.onHide();
         setEmpId("");
         setSelectedLab("");
+        setSelectedLabId(null);
         setSelectedRole("");
         setSelectedProjects([]);
+        setSelectedUsername("");
       })
       .catch((error) => {
         console.error("Employee ID already exist", error);
@@ -139,13 +157,18 @@ const AssignProjectModal = (props) => {
                         as="select"
                         name="lab"
                         required
-                        onChange={(e) => setSelectedLab(e.target.value)} // Update selected lab
+                        value={selectedLab}
+                        onChange={(e) => {
+                          setSelectedLab(e.target.value);
+                          const selectedLabObj = labs.find((l) => l.name === e.target.value);
+                          setSelectedLabId(selectedLabObj ? selectedLabObj.id : null);
+                        }}
                         style={{ border: "1px solid black" }}
                       >
                         <option value="">Select Lab</option>
-                        {labs.map((item) => (
-                          <option key={item.id} value={item.name}>
-                            {item.name}
+                        {labs.map((lab) => (
+                          <option key={lab.id} value={lab.name}>
+                            {lab.name}
                           </option>
                         ))}
                       </Form.Control>
@@ -160,7 +183,8 @@ const AssignProjectModal = (props) => {
                         as="select"
                         name="designation"
                         required
-                        onChange={(e) => setSelectedRole(e.target.value)} // Update selected role
+                        value={selectedRole}
+                        onChange={(e) => setSelectedRole(e.target.value)}
                         style={{ border: "1px solid black" }}
                       >
                         <option value="">Select Role</option>
@@ -184,23 +208,29 @@ const AssignProjectModal = (props) => {
                         as="select"
                         name="username"
                         required
-                        style={{ border: "1px solid black" }}
+                        value={selectedUsername}
+                        onChange={(e) => setSelectedUsername(e.target.value)}
+                        disabled={!selectedLab || !selectedRole}
+                        style={{ 
+                          border: "1px solid black",
+                          backgroundColor: (!selectedLab || !selectedRole) ? "#e9ecef" : "white",
+                          cursor: (!selectedLab || !selectedRole) ? "not-allowed" : "pointer"
+                        }}
                       >
-                        <option value="">Select Username</option>
-                        {/* {usernames.map((username, index) => (
-                          <option key={index} value={username}>
-                            {username}
-                          </option>
-                        ))} */}
-                        {usernames && usernames.length > 0 ? (
+                        <option value="">
+                          {!selectedLab || !selectedRole 
+                            ? "Select Lab and Role first" 
+                            : usernames.length === 0 
+                            ? "No Users Available" 
+                            : "Select Username"}
+                        </option>
+                        {usernames && usernames.length > 0 && (selectedLab && selectedRole) ? (
                           usernames.map((username, index) => (
                             <option key={index} value={username}>
                               {username}
                             </option>
                           ))
-                        ) : (
-                          <option value="">No Users Available</option>
-                        )}
+                        ) : null}
                       </Form.Control>
                     </Form.Group>
                   </Col>

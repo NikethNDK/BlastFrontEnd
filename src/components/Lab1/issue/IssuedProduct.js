@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Modal, Col, Row, Form, Button } from "react-bootstrap";
 import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 import {
   addItemIssueApi,
   getSuppliersApi,
@@ -16,6 +17,9 @@ import {
   getIssuesByResearcher,
   fetchItemExpiryDates,
   fetchItemLocations,
+  updateTempIssueApi,
+  acceptTempIssueApi,
+  getTempIssueApi,
 } from "../../../services/AppinfoService";
 import "../../inventory/formBorder.css";
 import Select from "react-select";
@@ -26,10 +30,22 @@ import { BASE_URL } from "../../../services/AppinfoService";
 const IssuedProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
-  console.log("🏗️ [COMPONENT] IssuedProduct component initialized with userDetails:", userDetails);
+  // Get user from Redux as fallback/primary source
+  const reduxUser = useSelector((state) => state.user.user);
+  
+  // Merge userDetails prop with Redux user data (Redux takes priority)
+  const effectiveUserDetails = reduxUser ? {
+    name: reduxUser.user_name || userDetails.name || "",
+    user_name: reduxUser.user_name || userDetails.user_name || userDetails.name || "",
+    lab: reduxUser.lab || userDetails.lab || "N/A",
+    designation: reduxUser.designation || userDetails.designation || "Not Assigned",
+    role: reduxUser.role || userDetails.role || ""
+  } : userDetails;
+  
   const [masterTypes, setMasterTypes] = useState([]);
   const [issues, setIssues] = useState([]);
   const [message, setMessage] = useState("");
+  const [tableItemCount, setTableItemCount] = useState(0);
   const [itemsCodes, setItemsCodes] = useState([]);
   const [itemsNames, setItemsNames] = useState([]);
   const [selectedItemCode, setSelectedItemCode] = useState(null);
@@ -41,6 +57,7 @@ const IssuedProduct = ({
   const [masterType, setMasterType] = useState("");
   const [projects, setProjects] = useState([]);
   const formRef = useRef(null);
+  const populateFormRef = useRef(false);
   const [selectedProject, setSelectedProject] = useState("");
   const [selectedProjectCode, setSelectedProjectCode] = useState(null);
   const [resNames, setResNames] = useState([]);
@@ -56,6 +73,8 @@ const IssuedProduct = ({
   const [selectedunits, setSelectedunits] = useState(null);
   const [expiryDate, setExpiryDate] = useState("");
   const [quantityIssued, setQuantityIssued] = useState(0);
+  const [instructionSpecification, setInstructionSpecification] = useState("");
+  const [remarks, setRemarks] = useState("");
   const [selectedItem, setSelectedItem] = useState({
     code: null,
     name: null,
@@ -65,7 +84,7 @@ const IssuedProduct = ({
     quantityIssued: "",
     batchNumber: "",
     manufacturer: "",
-    issuedTo: "",
+    instruction_specification: "",
     supplier: "",
     expiryDate: "",
     location: "",
@@ -75,13 +94,26 @@ const IssuedProduct = ({
     units: "",
   });
 
-  // Modal state
+  // Modal state - single source of truth
   const [showModal, setShowModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingIssue, setEditingIssue] = useState(null);
 
 
   // --- Modal Handlers ---
   const handleShow = () => {
-    console.log("📝 [MODAL] Opening issue form modal");
+    console.log("📝 [MODAL] Opening issue form modal (Add mode)");
+    setIsEditMode(false);
+    setEditingIssue(null);
+    setShowModal(true);
+  };
+
+  // Function to open modal in Edit mode - exposed to child components
+  const openIssueEditor = (issue) => {
+    console.log("📝 [MODAL] Opening issue form modal (Edit mode)", issue);
+    setIsEditMode(true);
+    setEditingIssue(issue);
+    populateFormFromIssue(issue);
     setShowModal(true);
   };
   
@@ -98,12 +130,155 @@ const IssuedProduct = ({
     setExpiryDate("");
     setQuantityIssued(0);
     setSelectedItemDetails(null);
+    setExpiryDates([]);
+    setLocations([]);
+    setSelectedExpiryDate(null);
+    setSelectedLocation(null);
+    setInstructionSpecification("");
+    setRemarks("");
     setErrorMessages({});
+    setIsEditMode(false);
+    setEditingIssue(null);
+    populateFormRef.current = false; // Reset populate flag
     if (formRef.current) {
       formRef.current.reset();
     }
     setShowModal(false);
   };
+
+  // Populate form fields from issue data for Edit mode
+  const populateFormFromIssue = (issue) => {
+    console.log("📝 [POPULATE] Populating form from issue:", issue);
+    
+    // Reset form first
+    if (formRef.current) {
+      formRef.current.reset();
+    }
+
+    // Set master type first (this triggers item list fetch via useEffect)
+    if (issue.master_type) {
+      setMasterType(issue.master_type);
+    }
+
+    // Set quantity issued (doesn't depend on dropdowns)
+    if (issue.quantity_issued) {
+      setQuantityIssued(issue.quantity_issued);
+    }
+
+    // Set instruction_specification in state
+    if (issue.instruction_specification) {
+      setInstructionSpecification(issue.instruction_specification);
+    } else {
+      setInstructionSpecification("");
+    }
+
+    // Set remarks in state
+    if (issue.remarks) {
+      setRemarks(issue.remarks);
+    } else {
+      setRemarks("");
+    }
+
+    // Store issue data for useEffect to complete population
+    // The useEffect below will handle dropdown-dependent fields
+  };
+
+  // useEffect to complete form population when dropdowns are ready
+  useEffect(() => {
+    if (!isEditMode || !editingIssue) {
+      populateFormRef.current = false;
+      return;
+    }
+
+    // Wait for itemsCodes to be populated (triggered by masterType change)
+    if (itemsCodes.length === 0 || itemsNames.length === 0) {
+      return; // Not ready yet
+    }
+
+    // Prevent multiple population attempts
+    if (populateFormRef.current) {
+      return;
+    }
+
+    console.log("📝 [POPULATE-EFFECT] Completing form population");
+    populateFormRef.current = true;
+
+    // Set item code and name
+    if (editingIssue.item_code && editingIssue.c_id) {
+      const matchingItemCode = itemsCodes.find(
+        (item) => item.label === editingIssue.item_code || item.value === editingIssue.c_id
+      );
+      if (matchingItemCode && !selectedItemCode) {
+        setSelectedItemCode(matchingItemCode);
+        // Trigger item code change to fetch expiry dates and locations
+        handleItemCodeChange(matchingItemCode).then(() => {
+          // After expiry dates and locations are loaded, set them
+          setTimeout(() => {
+            // Set expiry date
+            if (editingIssue.expiry_date) {
+              const matchingExpiry = expiryDates.find(
+                (exp) => exp.value === editingIssue.expiry_date || 
+                         exp.raw_date === editingIssue.expiry_date ||
+                         exp.label === editingIssue.expiry_date
+              );
+              if (matchingExpiry) {
+                setSelectedExpiryDate(matchingExpiry);
+              }
+            }
+
+            // Set location
+            if (editingIssue.location) {
+              const matchingLocation = locations.find(
+                (loc) => loc.value === editingIssue.location || loc.label === editingIssue.location
+              );
+              if (matchingLocation) {
+                setSelectedLocation(matchingLocation);
+              }
+            }
+          }, 500);
+        });
+      }
+
+      const matchingItemName = itemsNames.find(
+        (item) => item.label === editingIssue.item_name || item.value === editingIssue.c_id
+      );
+      if (matchingItemName && !selectedItemName) {
+        setSelectedItemName(matchingItemName);
+      }
+    }
+
+    // Set project
+    if (editingIssue.project_code && projects.length > 0 && !selectedCodes) {
+      const matchingProject = projects.find(
+        (proj) => proj.code === editingIssue.project_code
+      );
+      if (matchingProject) {
+        setSelectedProject(matchingProject.value);
+        setSelectedCodes({ value: matchingProject.code, label: matchingProject.code });
+      }
+    }
+
+    // Set researcher/issued to
+    if ((editingIssue.issued_to || editingIssue.researcher_name) && resNames.length > 0 && !selectedNames) {
+      const researcherName = editingIssue.issued_to || editingIssue.researcher_name;
+      const matchingResearcher = resNames.find(
+        (res) => res.value === researcherName || res.label === researcherName
+      );
+      if (matchingResearcher) {
+        setSelectedNames(matchingResearcher);
+      }
+    }
+  }, [isEditMode, editingIssue, itemsCodes, itemsNames, projects, resNames, expiryDates, locations, selectedItemCode, selectedItemName, selectedCodes, selectedNames]);
+
+  // Set default project when modal opens in Add mode and only one project is available
+  useEffect(() => {
+    if (showModal && !isEditMode && projects.length === 1 && !selectedProject && !editingIssue) {
+      console.log("🔍 [PROJECT] Modal opened in Add mode with single project, setting default:", projects[0]);
+      setSelectedProject(projects[0].value);
+      setSelectedCodes({ value: projects[0].code, label: projects[0].code });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal, isEditMode, projects.length, selectedProject, editingIssue]);
 
   useEffect(() => {
     getManufacturersApi().then((data) => {
@@ -168,10 +343,15 @@ const IssuedProduct = ({
         selectedProject: selectedProject.value,
         selectedExpiryDate: selectedExpiryDate.value,
         selectedLocation: selectedLocation.value,
-        userLab: userDetails.lab
+        userLab: effectiveUserDetails.lab,
+        isEditMode: isEditMode
       });
 
-      getTemptReceiveApi(userDetails.lab)
+      const username = effectiveUserDetails.user_name || effectiveUserDetails.name || null;
+      const labName = Array.isArray(effectiveUserDetails.lab) 
+        ? effectiveUserDetails.lab[0] 
+        : (effectiveUserDetails.lab !== 'N/A' ? effectiveUserDetails.lab : null);
+      getTemptReceiveApi(labName, username)
         .then((data) => {
           console.log("📊 [QUANTITY FETCH] Raw API response data:", data);
           console.log("📊 [QUANTITY FETCH] Data length:", data.length);
@@ -220,16 +400,24 @@ const IssuedProduct = ({
           if (matchedItem) {
             // Use stock field for available quantity, fallback to quantity_received
             const availableQuantity = matchedItem.stock || matchedItem.quantity_received || 0;
-            console.log("✅ [QUANTITY FETCH] Setting quantity:", {
+            console.log("✅ [QUANTITY FETCH] Available quantity:", {
               stock: matchedItem.stock,
               quantity_received: matchedItem.quantity_received,
-              availableQuantity
+              availableQuantity,
+              isEditMode: isEditMode
             });
             
-            setQuantityIssued(availableQuantity);
+            // Update selectedItemDetails to show available stock as hint
             setSelectedItemDetails({
               quantityIssued: availableQuantity,
             });
+            
+            // Only set quantity if NOT in edit mode (preserve existing quantity in edit mode)
+            if (!isEditMode) {
+              setQuantityIssued(availableQuantity);
+            } else {
+              console.log("📝 [QUANTITY FETCH] Edit mode: preserving existing quantity:", quantityIssued);
+            }
           } else {
             console.log("❌ [QUANTITY FETCH] No exact match found, trying fallback matching...");
             
@@ -242,14 +430,27 @@ const IssuedProduct = ({
             if (itemCodeMatch) {
               console.log("🔄 [QUANTITY FETCH] Found item by code only:", itemCodeMatch);
               const availableQuantity = itemCodeMatch.stock || itemCodeMatch.quantity_received || 0;
-              setQuantityIssued(availableQuantity);
+              
+              // Update selectedItemDetails to show available stock as hint
               setSelectedItemDetails({
                 quantityIssued: availableQuantity,
               });
+              
+              // Only set quantity if NOT in edit mode
+              if (!isEditMode) {
+                setQuantityIssued(availableQuantity);
+              }
             } else {
               console.log("❌ [QUANTITY FETCH] No fallback match found either");
-              setQuantityIssued("");
-              setSelectedItemDetails(null);
+              
+              // Only clear quantity if NOT in edit mode
+              if (!isEditMode) {
+                setQuantityIssued("");
+                setSelectedItemDetails(null);
+              } else {
+                // In edit mode, just clear the hint but preserve quantity
+                setSelectedItemDetails(null);
+              }
             }
           }
         })
@@ -264,7 +465,7 @@ const IssuedProduct = ({
         selectedLocation: !!selectedLocation
       });
     }
-  }, [selectedItemCode, selectedProject, selectedExpiryDate, selectedLocation, userDetails.lab]);
+  }, [selectedItemCode, selectedProject, selectedExpiryDate, selectedLocation, effectiveUserDetails.lab, isEditMode]);
 
   useEffect(() => {
     if (!masterType) {
@@ -274,11 +475,15 @@ const IssuedProduct = ({
 
     console.log("🔍 [ITEM LIST FETCH] Starting item list fetch with:", {
       masterType,
-      userLab: userDetails.lab,
-      userDetails: userDetails
+      userLab: effectiveUserDetails.lab,
+      userDetails: effectiveUserDetails
     });
 
-    getTemptReceiveApi(userDetails.lab)
+    const username = effectiveUserDetails.user_name || effectiveUserDetails.name || null;
+    const labName = Array.isArray(effectiveUserDetails.lab) 
+      ? effectiveUserDetails.lab[0] 
+      : (effectiveUserDetails.lab !== 'N/A' ? effectiveUserDetails.lab : null);
+    getTemptReceiveApi(labName, username)
       .then((data) => {
         console.log("📊 [ITEM LIST FETCH] Raw API response data:", data);
         console.log("📊 [ITEM LIST FETCH] Data length:", data.length);
@@ -341,16 +546,24 @@ const IssuedProduct = ({
         console.error("💥 [ITEM LIST FETCH] Error fetching project codes:", error);
       });
 
-    getProjectApi()
+    // Use the same username and labName already declared above for project filtering
+    getProjectApi(username, labName)
       .then((data) => {
         const activeProjects = data.filter((item) => item.deleted === 0);
-        setProjects(
-          activeProjects.map((item) => ({
-            value: item.project_code,
-            label: item.project_name,
-            code: item.project_code,
-          }))
-        );
+        const formattedProjects = activeProjects.map((item) => ({
+          value: item.project_code,
+          label: item.project_name,
+          code: item.project_code,
+        }));
+        
+        setProjects(formattedProjects);
+        
+        // If only one project is available and not in edit mode, set it as default
+        if (formattedProjects.length === 1 && !isEditMode && !selectedProject) {
+          console.log("🔍 [PROJECT] Auto-selecting single available project:", formattedProjects[0]);
+          setSelectedProject(formattedProjects[0].value);
+          setSelectedCodes({ value: formattedProjects[0].code, label: formattedProjects[0].code });
+        }
       })
       .catch((error) => console.error("Error fetching projects:", error));
 
@@ -372,7 +585,7 @@ const IssuedProduct = ({
           console.error("Error fetching issues:", error);
         });
     }
-  }, [masterType, selectedNames, userDetails.lab]);
+  }, [masterType, selectedNames, effectiveUserDetails.lab]);
 
   const handleItemCodeChange = async (selectedOption) => {
     console.log("🔍 [ITEM SELECTION] Item code changed to:", selectedOption);
@@ -452,20 +665,41 @@ const IssuedProduct = ({
     const newErrors = {};
     let hasError = false;
 
-    // Validate text inputs
-    const requiredFields = [
-      "quantityIssued",
-      "project",
-      "remarks",
-      "issuedTo",
-    ];
-    requiredFields.forEach((field) => {
-      const value = formData.get(field);
-      if (!value || value.trim() === "") {
-        newErrors[field] = "Please fill this field";
+    // Validate text inputs - use state values for controlled fields
+    // Quantity must be a positive number (greater than 0)
+    if (!quantityIssued || quantityIssued === 0 || quantityIssued === "" || quantityIssued < 1) {
+      newErrors.quantityIssued = "Please enter a positive quantity (greater than 0)";
+      hasError = true;
+    }
+    
+    // Validate quantity against available quantity (only if quantity is provided and available quantity is known)
+    const availableQuantity = selectedItemDetails?.quantityIssued;
+    if (quantityIssued && quantityIssued !== "" && quantityIssued !== 0 && 
+        availableQuantity !== null && availableQuantity !== undefined) {
+      const enteredQuantity = parseInt(quantityIssued, 10);
+      if (!isNaN(enteredQuantity) && enteredQuantity > availableQuantity) {
+        newErrors.quantityIssued = `Quantity cannot exceed available quantity (${availableQuantity})`;
         hasError = true;
+        // Show toast error message
+        toast.error(`Quantity entered (${enteredQuantity}) exceeds available quantity (${availableQuantity}). Please enter a quantity less than or equal to ${availableQuantity}.`);
       }
-    });
+    }
+    
+    if (!instructionSpecification || instructionSpecification.trim() === "") {
+      newErrors.instruction_specification = "Please fill this field";
+      hasError = true;
+    }
+    
+    if (!remarks || remarks.trim() === "") {
+      newErrors.remarks = "Please fill this field";
+      hasError = true;
+    }
+    
+    const projectValue = formData.get("project");
+    if (!projectValue || projectValue.trim() === "") {
+      newErrors.project = "Please fill this field";
+      hasError = true;
+    }
 
     // Validate dropdown/select fields
     if (!selectedItemCode) {
@@ -500,62 +734,183 @@ const IssuedProduct = ({
 
     if (hasError) {
       setErrorMessages(newErrors);
-      return;
+      return; // Prevent form submission and modal closing
     }
 
-    // Prepare data
+    // Prepare data - use state values for controlled fields
     const issueData = {
       c_id: selectedItemCode.value,
-      quantity_issued: formData.get("quantityIssued"),
+      quantity_issued: quantityIssued,
       issued_to: selectedNames.value,
       project_code: selectedCodes.value,
       researcher_name: selectedNames.value,
-      remarks: formData.get("remarks"),
-      instruction_specification: formData.get("issuedTo"),
+      remarks: remarks,
+      instruction_specification: instructionSpecification,
       master_type: masterType || "",
       item_name: selectedItemName ? selectedItemName.label : "",
       item_code: selectedItemCode ? selectedItemCode.label : "",
       expiry_date: selectedExpiryDate ? selectedExpiryDate.value : "",
       location: selectedLocation ? selectedLocation.value : "",
+      lab_assistant_name: effectiveUserDetails.user_name || null,
     };
 
-    // Submit data
-    addTempItemIssueApi(issueData)
-      .then(() => {
-        console.log("✅ [FORM SUBMIT] Issue added successfully, refreshing table...");
-        toast.success("Issue added successfully");
-        handleClose(); // Close modal and reset form
-        
-        // Refresh the temp issue table
-        if (window.refreshTempIssueTable) {
-          window.refreshTempIssueTable();
-        }
-      })
-      .catch((error) => {
-        console.error("💥 [FORM SUBMIT] Failed to Add Inventory Data", error);
-        toast.error("Failed to Add Inventory. Check console for details.");
-      });
+    // Submit data - unified handler for both Add and Edit
+    if (isEditMode && editingIssue) {
+      // Edit mode: Update existing issue
+      updateTempIssueApi(editingIssue.entry_no, issueData)
+        .then(() => {
+          console.log("✅ [FORM SUBMIT] Issue updated successfully, refreshing table...");
+          toast.success("Issue updated successfully");
+          handleClose(); // Close modal and reset form
+          
+          // Refresh the temp issue table
+          if (window.refreshTempIssueTable) {
+            window.refreshTempIssueTable();
+          }
+        })
+        .catch((error) => {
+          console.error("💥 [FORM SUBMIT] Failed to Update Issue", error);
+          toast.error("Failed to Update Issue. Check console for details.");
+        });
+    } else {
+      // Add mode: Create new issue
+      addTempItemIssueApi(issueData)
+        .then(() => {
+          console.log("✅ [FORM SUBMIT] Issue added successfully, refreshing table...");
+          toast.success("Issue added successfully");
+          handleClose(); // Close modal and reset form
+          
+          // Refresh the temp issue table
+          if (window.refreshTempIssueTable) {
+            window.refreshTempIssueTable();
+          }
+        })
+        .catch((error) => {
+          console.error("💥 [FORM SUBMIT] Failed to Add Inventory Data", error);
+          toast.error("Failed to Add Inventory. Check console for details.");
+        });
+    }
+  };
+
+  // Helper function to validate expiry date for items
+  const validateItemsForSubmission = (items, itemType) => {
+    const invalidItems = items.filter(item => {
+      const missingExpiryDate = !item.expiry_date || 
+                                item.expiry_date === null || 
+                                item.expiry_date === undefined ||
+                                (typeof item.expiry_date === 'string' && item.expiry_date.trim() === "");
+      return missingExpiryDate;
+    });
+
+    if (invalidItems.length > 0) {
+      const itemCodes = invalidItems.map(item => item.item_code || `Entry #${item.entry_no}`).join(", ");
+      toast.error(
+        `Cannot submit: ${invalidItems.length} item(s) are missing expiry date. ` +
+        `Please edit all items to add expiry date before submitting. ` +
+        `Items: ${itemCodes}`
+      );
+      return false;
+    }
+    return true;
   };
 
   const handleTransferData = async () => {
     try {
-      console.log("🔄 [TRANSFER] Starting data transfer...");
+      console.log("🔄 [SUBMIT] Starting submit process...");
+      
+      // Get username from Redux or userDetails for filtering
+      const username = reduxUser?.user_name || effectiveUserDetails.user_name || null;
+      const allTempItems = await getTempIssueApi(username);
+      
+      // Step 1: Validate and Accept all LAB-OPEN items (prepare for researcher confirmation)
+      try {
+        const itemsToAccept = allTempItems.filter(item => item.status === "LAB-OPEN");
+        
+        if (itemsToAccept.length > 0) {
+          console.log(`📝 [ACCEPT] Found ${itemsToAccept.length} LAB-OPEN items to accept`);
+          
+          // Validate all LAB-OPEN items have expiry date
+          if (!validateItemsForSubmission(itemsToAccept, "LAB-OPEN")) {
+            console.log("❌ [ACCEPT] Validation failed - missing expiry date");
+            return; // Stop here - atomic operation (all or none)
+          }
+          
+          // Accept all LAB-OPEN items
+          const acceptPromises = itemsToAccept.map(item => 
+            acceptTempIssueApi(item.entry_no).catch(err => {
+              console.error(`💥 [ACCEPT] Failed to accept item ${item.entry_no}:`, err);
+              return { error: true, entry_no: item.entry_no };
+            })
+          );
+          
+          const acceptResults = await Promise.all(acceptPromises);
+          const failed = acceptResults.filter(r => r && r.error);
+          const succeeded = acceptResults.filter(r => !r || !r.error);
+          
+          if (succeeded.length > 0) {
+            console.log(`✅ [ACCEPT] Successfully accepted ${succeeded.length} items`);
+            toast.success(`${succeeded.length} item(s) prepared and sent to researcher for confirmation`);
+          }
+          
+          if (failed.length > 0) {
+            console.warn(`⚠️ [ACCEPT] Failed to accept ${failed.length} items`);
+            toast.warning(`Some items could not be accepted. Please try again.`);
+          }
+        } else {
+          console.log("📝 [ACCEPT] No LAB-OPEN items to accept");
+        }
+      } catch (error) {
+        console.error("💥 [ACCEPT] Error accepting items:", error);
+        toast.error("Error accepting items. Please try again.");
+        return; // Stop here if accept fails
+      }
+      
+      // Step 2: Validate and Transfer LAB-ACT items (researcher confirmed items)
+      console.log("🔄 [TRANSFER] Transferring confirmed items to inventory...");
+      
+      // Re-fetch items to get updated status after acceptance
+      const updatedTempItems = await getTempIssueApi(username);
+      const itemsToTransfer = updatedTempItems.filter(item => item.status === "LAB-ACT");
+      
+      if (itemsToTransfer.length > 0) {
+        console.log(`📝 [TRANSFER] Found ${itemsToTransfer.length} LAB-ACT items to transfer`);
+        
+        // Validate all LAB-ACT items have expiry date
+        if (!validateItemsForSubmission(itemsToTransfer, "LAB-ACT")) {
+          console.log("❌ [TRANSFER] Validation failed - missing expiry date");
+          return; // Stop here - atomic operation (all or none)
+        }
+      }
+      
       const response = await fetch(`${BASE_URL}/transfer/issue/`, {
         method: "POST",
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Transfer failed");
+      }
+
       const data = await response.json();
       setMessage(data.message);
-      toast.success("Data transferred successfully");
+      
+      // Check if backend actually processed items
+      // If processed_count is provided, use it; otherwise assume success
+      if (data.processed_count !== undefined && data.processed_count === 0) {
+        toast.info("No confirmed items ready for transfer. Waiting for researcher confirmation.");
+      } else {
+        toast.success("Confirmed items transferred successfully");
+      }
       
       // Refresh the temp issue table after transfer
       if (window.refreshTempIssueTable) {
         window.refreshTempIssueTable();
       }
     } catch (error) {
-      console.error("💥 [TRANSFER] Error:", error);
-      setMessage("An error occurred. Please try again.");
-      toast.error("An error occurred. Please try again.");
+      console.error("💥 [SUBMIT] Error:", error);
+      const errorMessage = error.message || "An error occurred. Please try again.";
+      setMessage(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -584,6 +939,8 @@ const IssuedProduct = ({
           <Button
             onClick={handleTransferData}
             style={{ float: "right" }}
+            title="Accept LAB-OPEN items and transfer LAB-ACT items"
+            disabled={tableItemCount === 0}
           >
             Submit
           </Button>
@@ -592,13 +949,17 @@ const IssuedProduct = ({
       <p></p>
 
       <div style={{ paddingTop: "10px" }}>
-        <TempIssueTable />
+        <TempIssueTable 
+          onEdit={openIssueEditor} 
+          username={effectiveUserDetails.user_name || null}
+          onItemCountChange={setTableItemCount}
+        />
       </div>
 
       {/* --- Modal Component for Add Issue Form --- */}
       <Modal show={showModal} onHide={handleClose} size="xl" scrollable className="modal-xl">
         <Modal.Header closeButton>
-          <Modal.Title>Add Issue Item</Modal.Title>
+          <Modal.Title>{isEditMode ? "Edit Issue Item" : "Add Issue Item"}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
@@ -895,7 +1256,9 @@ const IssuedProduct = ({
                             enteredValue,
                             numericValue,
                             maxQuantity,
-                            selectedItemDetails
+                            selectedItemDetails,
+                            selectedExpiryDate: !!selectedExpiryDate,
+                            selectedLocation: !!selectedLocation
                           });
 
                           // Allow empty input for editing
@@ -911,14 +1274,24 @@ const IssuedProduct = ({
                             return; // Don't update if not a valid number
                           }
 
-                          // Apply constraints
-                          if (numericValue > maxQuantity) {
+                          // First check if expiry date and location are selected
+                          if (!selectedExpiryDate || !selectedLocation) {
+                            console.log("🔢 [QUANTITY INPUT] Expiry date or location not selected");
+                            setQuantityIssued("");
+                            toast.error("Please select expiry date and location first to see available quantity");
+                            return;
+                          }
+
+                          // Apply constraints - only check max quantity if expiry date and location are selected
+                          if (numericValue <= 0) {
+                            console.log("🔢 [QUANTITY INPUT] Zero or negative value - not allowed");
+                            setQuantityIssued("");
+                            toast.error("Quantity must be a positive number (greater than 0)");
+                            return;
+                          } else if (numericValue > maxQuantity && maxQuantity > 0) {
                             console.log("🔢 [QUANTITY INPUT] Exceeds max - setting to max");
                             setQuantityIssued(maxQuantity);
                             toast.error(`Maximum available quantity is ${maxQuantity}`);
-                          } else if (numericValue < 0) {
-                            console.log("🔢 [QUANTITY INPUT] Negative value - setting to 0");
-                            setQuantityIssued(0);
                           } else {
                             console.log("🔢 [QUANTITY INPUT] Valid value - setting to:", numericValue);
                             setQuantityIssued(numericValue);
@@ -932,13 +1305,16 @@ const IssuedProduct = ({
                             }));
                           }
                         }}
-                        min="0"
+                        min="1"
                         max={selectedItemDetails?.quantityIssued || 0}
+                        disabled={!selectedExpiryDate || !selectedLocation}
                         className="custom-border"
                         style={{ 
-                          borderColor: errorMessages.quantityIssued ? "red" : "black" 
+                          borderColor: errorMessages.quantityIssued ? "red" : "black",
+                          backgroundColor: (!selectedExpiryDate || !selectedLocation) ? "#f5f5f5" : "white",
+                          cursor: (!selectedExpiryDate || !selectedLocation) ? "not-allowed" : "text"
                         }}
-                        placeholder="Enter quantity"
+                        placeholder={(!selectedExpiryDate || !selectedLocation) ? "Select expiry date and location first" : "Enter quantity"}
                       />
                       {errorMessages.quantityIssued && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -954,22 +1330,26 @@ const IssuedProduct = ({
                   </Col>
 
                   <Col>
-                    <Form.Group controlId="issuedTo">
+                    <Form.Group controlId="instruction_specification">
                       <Form.Label>Instruction and Specification</Form.Label>
                       <Form.Control
                         as="textarea"
-                        name="issuedTo"
+                        name="instruction_specification"
                         required
+                        value={instructionSpecification}
                         placeholder=""
                         className="custom-border"
                         style={{
-                          borderColor: errorMessages.issuedTo ? "red" : "black",
+                          borderColor: errorMessages.instruction_specification ? "red" : "black",
                         }}
-                        onChange={() => setErrorMessages(prev => ({...prev, issuedTo: ""}))}
+                        onChange={(e) => {
+                          setInstructionSpecification(e.target.value);
+                          setErrorMessages(prev => ({...prev, instruction_specification: ""}));
+                        }}
                       />
-                      {errorMessages.issuedTo && (
+                      {errorMessages.instruction_specification && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.issuedTo}
+                          {errorMessages.instruction_specification}
                         </span>
                       )}
                     </Form.Group>
@@ -982,12 +1362,16 @@ const IssuedProduct = ({
                         as="textarea"
                         name="remarks"
                         required
+                        value={remarks}
                         placeholder=""
                         className="custom-border"
                         style={{
                           borderColor: errorMessages.remarks ? "red" : "black",
                         }}
-                        onChange={() => setErrorMessages(prev => ({...prev, remarks: ""}))}
+                        onChange={(e) => {
+                          setRemarks(e.target.value);
+                          setErrorMessages(prev => ({...prev, remarks: ""}));
+                        }}
                       />
                       {errorMessages.remarks && (
                         <span style={{ color: "red", fontSize: "0.85rem" }}>
@@ -1006,7 +1390,7 @@ const IssuedProduct = ({
             Close
           </Button>
           <Button variant="primary" onClick={handleAdd}>
-            Add Item
+            {isEditMode ? "Update Item" : "Add Item"}
           </Button>
         </Modal.Footer>
       </Modal>

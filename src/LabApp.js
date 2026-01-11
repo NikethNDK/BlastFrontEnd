@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/lab-design-system.css";
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { logoutUser } from './store/slices/userSlice';
 import { Toaster } from "react-hot-toast";
 import ModernSidebar from "./components/common/ModernSidebar";
 import ModernHeader from "./components/common/ModernHeader";
@@ -28,99 +30,29 @@ import JoinLab from "./lab_jump";
 import EquipmentList from "./components/Lab1/homeLab/equipmentList";
 import { BASE_URL } from "./services/AppinfoService";
 
-function Layout({ userDetails }) {
+function Layout({ userDetails, userId }) {
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  // const [stats, setStats] = useState({});
-  // const [loading, setLoading] = useState(true);
+  // NOTE: Polling removed - notifications now come from centralized polling via Redux
+  // const [notifications, setNotifications] = useState([]);
 
   // Hide navigation only on JoinLab ("/") route
   const hiddenPaths = ["/", "/add_blast", "/dna", "/add_dna"];
   const hideNavigation = hiddenPaths.includes(location.pathname);
 
-  // Fetch notifications
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const response = await fetch(`${BASE_URL}/get-issue-items/?status=LAB-OPEN`);
-        const data = await response.json();
-        if (data) {
-          setNotifications(data);
-        } else {
-          setNotifications([]);
-        }
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-        setNotifications([]);
-      }
-    };
-
-    if (!hideNavigation) {
-      fetchNotifications();
-    }
-  }, [hideNavigation]);
-
-  // Fetch stats
-  // useEffect(() => {
-  //   const fetchStats = async () => {
-  //     setLoading(true);
-  //     try {
-  //       // Mock stats for now - replace with actual API calls
-  //       const mockStats = {
-  //         totalItems: 1250,
-  //         receivedItems: 45,
-  //         issuedItems: 32,
-  //         returnedItems: 8,
-  //         lowStockItems: 12,
-  //         dnaSequences: 89,
-  //         equipmentCount: 156,
-  //         pendingRequests: 5
-  //       };
-  //       setStats(mockStats);
-  //     } catch (error) {
-  //       console.error("Error fetching stats:", error);
-  //       setStats({});
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   if (!hideNavigation) {
-  //     fetchStats();
-  //   }
-  // }, [hideNavigation]);
-
-  const handleNotificationClick = async (notification) => {
-    try {
-      const payload = {
-        id: notification.entry_no,
-        status: "LAB-OPEN",
-      };
-
-      const response = await fetch(`${BASE_URL}/update-issue-items/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        alert("Item has been closed.");
-        // Remove notification from state
-        setNotifications(prev => prev.filter(n => n.entry_no !== notification.entry_no));
-      } else {
-        console.error("Failed to close item");
-      }
-    } catch (error) {
-      console.error("Error closing item:", error);
-    }
-  };
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    // Add logout logic here
-    window.location.href = '/';
+    dispatch(logoutUser())
+      .unwrap()
+      .then(() => {
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error('Logout failed:', err);
+        navigate('/');
+      });
   };
 
   const getPageTitle = (pathname) => {
@@ -184,23 +116,22 @@ function Layout({ userDetails }) {
 
   return (
     <div className="lab-app">
-      <Header/>
+      <Header />
       <div className="lab-body-container">
         <ModernSidebar
           userDetails={userDetails}
-          notifications={notifications}
-          onNotificationClick={handleNotificationClick}
+          userId={userId}
           onLogout={handleLogout}
         />
-        
+
         <div className={`lab-main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
-          
+
           <div className="lab-content-container">
             <Routes>
               <Route path="/master" element={
                 <div>
                   {/* <StatsDashboard stats={stats} loading={loading} /> */}
-                  
+
                   <HomeLab userDetails={userDetails} />
                 </div>
               } />
@@ -214,7 +145,7 @@ function Layout({ userDetails }) {
               <Route path="/received_issue" element={<ChemicalIssuePage userDetails={userDetails} />} />
               <Route path="/returntable" element={<ReceivedDataTable userDetails={userDetails} />} />
               <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
-              <Route path="/common_name" element={<CommonNameDna userDetails={userDetails}/>} />
+              <Route path="/common_name" element={<CommonNameDna userDetails={userDetails} />} />
               <Route path="/scientific_name" element={<ScientificNameDna userDetails={userDetails} />} />
               <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
               <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
@@ -225,7 +156,7 @@ function Layout({ userDetails }) {
           </div>
         </div>
       </div>
-      <Toaster 
+      <Toaster
         position="top-center"
         toastOptions={{
           duration: 4000,
@@ -253,10 +184,10 @@ function Layout({ userDetails }) {
   );
 }
 
-function LabApp({ userDetails = { name: '', lab: '', designation: '' } }) {
+function LabApp({ userDetails = { name: '', lab: '', designation: '' }, userId }) {
   return (
     <BrowserRouter>
-      <Layout userDetails={userDetails} />
+      <Layout userDetails={userDetails} userId={userId} />
     </BrowserRouter>
   );
 }

@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Modal, Col, Row, Form, Button } from "react-bootstrap";
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
 // import {FormControl, FormGroup, FormLabel} from 'react-bootstrap';
 import {
   addItemIssueApi,
@@ -14,6 +16,8 @@ import {
   getResEmployeeApi,
   addTempItemIssueApi,
   addTempToIssueApi,
+  getEmployeeApi,
+  getEmployeeByUsernameApi,
 } from "../../services/AppinfoService";
 // import '../../inventory/formBorder.css';
 import Select from "react-select";
@@ -23,6 +27,8 @@ import { Heading2 } from "lucide-react";
 const AddProductListReq = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
+  // Get user from Redux store (preferred over userDetails prop)
+  const reduxUser = useSelector((state) => state.user.user);
   const [selectedLabAssistant, setSelectedLabAssistant] = useState("");
   const [labassistantNames, setLabassistantNames] = useState([]);
   const [selectedProject, setSelectedProject] = useState("");
@@ -45,12 +51,16 @@ const AddProductListReq = ({
   const [selectedNames, setSelectedNames] = useState(null);
   const [managerNames, setManagerNames] = useState([]);
   const [selectedmanNames, setSelectedmanNames] = useState(null);
+  const [managerProjects, setManagerProjects] = useState([]);
+  const [filteredProjectsMap, setFilteredProjectsMap] = useState([]);
+  const [hasProjects, setHasProjects] = useState(true);
   const [selectedSuppliers, setSelectedSuppliers] = useState(null);
   const [selectedManufacturer, setSelectedManufacturer] = useState(null);
   const [manufacturers, setManufacturers] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [selectedunits, setSelectedunits] = useState(null);
   const [units, setUnits] = useState([]);
+  const [quantityIssued, setQuantityIssued] = useState('');
   const [errorMessages, setErrorMessages] = useState({
     issuedTo: "",
     remarks: "",
@@ -78,22 +88,56 @@ const AddProductListReq = ({
       );
     });
   }, []);
-  useEffect(() => {
-    getLabassistantEmployeeApi()
+  // Function to fetch lab assistants based on lab and project
+  const fetchLabAssistants = (labName, projectCode) => {
+    // If researcher has no project assigned, show empty list
+    if (!projectCode) {
+      setLabassistantNames([]);
+      return;
+    }
+    
+    // Pass lab name and selected project code to filter lab assistants
+    // Backend filters by both lab AND project (intersection)
+    getLabassistantEmployeeApi(labName || null, projectCode ? [projectCode] : [])
       .then((data) => {
         console.log("Lab Assistants API Response:", data);
         setLabassistantNames(
           data.map((item) => ({ value: item, label: item }))
         );
       })
-      .catch((error) =>
-        console.error("Error fetching Lab Assistants Names:", error)
-      );
-  }, []);
+      .catch((error) => {
+        console.error("Error fetching Lab Assistants Names:", error);
+        setLabassistantNames([]);
+      });
+  };
+
+  // Fetch lab assistants when project is selected or researcher data changes
+  useEffect(() => {
+    // Get researcher's lab(s)
+    const researcherLabs = reduxUser?.lab || userDetails.lab || [];
+    let labName = null;
+    
+    if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
+      // Use first lab if multiple labs (backend uses icontains, so this should work)
+      labName = researcherLabs[0];
+    } else if (typeof researcherLabs === 'string' && researcherLabs !== 'N/A') {
+      labName = researcherLabs;
+    }
+    
+    // Get selected project code from form
+    const selectedProjectCode = selectedCodes?.value || null;
+    
+    // Fetch lab assistants filtered by lab and selected project
+    fetchLabAssistants(labName, selectedProjectCode);
+  }, [selectedCodes, reduxUser?.lab, userDetails.lab]);
 
   useEffect(() => {
+    // Get username for filtering (used in both API calls)
+    const username = reduxUser?.user_name || userDetails.name;
+    
     // Fetch project codes
-    getMasterApi()
+    // Pass username to filter items by researcher's lab and projects
+    getMasterApi(null, username)
       .then((data) => {
         // Filter data based on masterType
         console.log("Before selection master type",data)
@@ -125,21 +169,74 @@ const AddProductListReq = ({
       })
       .catch((error) => console.error("Error fetching project codes:", error));
     //Fetch Projects codes
-    getProjectApi().then((data) => {
-      console.log("All Projects:", data); // Log full response to check structure
+    
+    // Fetch all projects and employee data in parallel
+    Promise.all([getProjectApi(), getEmployeeApi()])
+      .then(([projectsData, employeesData]) => {
+        console.log("All Projects:", projectsData);
+        console.log("All Employees:", employeesData);
 
-      const activeProjects = data.filter((item) => item.deleted === 0); // Filter only active projects
+        // Filter only active projects
+        const activeProjects = projectsData.filter((item) => item.deleted === 0);
 
-      console.log("Active Projects:", activeProjects); // Log filtered response to verify
+        // Get researcher's assigned project codes
+        let assignedProjectCodes = [];
+        
+        if (username) {
+          // Try to find employee record (EmpDet) - preferred source
+          const employee = employeesData.find(
+            (emp) => emp.emp_name === username && emp.is_active !== false
+          );
+          
+          if (employee && employee.project_code && employee.project_code.length > 0) {
+            // Use EmpDet.project_code (authoritative source)
+            assignedProjectCodes = Array.isArray(employee.project_code)
+              ? employee.project_code
+              : [employee.project_code];
+            console.log("Using EmpDet project codes:", assignedProjectCodes);
+          } else if (reduxUser && reduxUser.project_code) {
+            // Fallback to LoginCre.project_code if EmpDet not found
+            assignedProjectCodes = Array.isArray(reduxUser.project_code)
+              ? reduxUser.project_code
+              : [reduxUser.project_code];
+            console.log("Using LoginCre project codes (fallback):", assignedProjectCodes);
+          }
+        }
 
-      setProjectsMap(
-        activeProjects.map((item) => ({
+        // Filter projects to only show assigned ones
+        let filteredProjects = [];
+        if (assignedProjectCodes.length > 0) {
+          filteredProjects = activeProjects.filter((project) =>
+            assignedProjectCodes.includes(project.project_code)
+          );
+          console.log("Filtered Projects (assigned only):", filteredProjects);
+          setHasProjects(true);
+        } else {
+          console.log("No assigned projects found - showing empty dropdown");
+          // Set empty arrays when researcher has no projects
+          setProjectsMap([]);
+          setFilteredProjectsMap([]);
+          setHasProjects(false);
+          return; // Exit early - no need to process further
+        }
+
+        const projectsMapData = filteredProjects.map((item) => ({
           value: item.project_code,
           label: item.project_name,
           code: item.project_code,
-        }))
-      );
-    });
+        }));
+        
+        setProjectsMap(projectsMapData);
+        // Initialize filteredProjectsMap with all researcher's projects (no manager selected yet)
+        setFilteredProjectsMap(projectsMapData);
+      })
+      .catch((error) => {
+        console.error("Error fetching projects or employees:", error);
+        // On error, set empty projects and mark as no projects
+        setProjectsMap([]);
+        setFilteredProjectsMap([]);
+        setHasProjects(false);
+      });
     //Fetch Projects codes
     getResEmployeeApi()
       .then((data) => {
@@ -149,15 +246,89 @@ const AddProductListReq = ({
       .catch((error) =>
         console.error("Error fetching Researcher Names:", error)
       );
-    getmanagerEmployeeApi()
+    // Get researcher's lab(s) for filtering managers
+    // Redux user.lab is an array of lab names (from LoginSerializer)
+    // userDetails.lab might be string or array
+    const researcherLabs = reduxUser?.lab || userDetails.lab || [];
+    let labsToSend = null;
+    
+    if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
+      // Send all labs - backend will return managers with ANY matching lab
+      labsToSend = researcherLabs.filter(lab => lab && lab !== 'N/A');
+    } else if (typeof researcherLabs === 'string' && researcherLabs !== 'N/A') {
+      // Single lab as string - convert to array for consistency
+      labsToSend = [researcherLabs];
+    }
+    
+    // Pass all labs to filter managers - returns managers who have ANY of the researcher's labs
+    // Backend returns all managers if lab param is missing (optional filtering)
+    getmanagerEmployeeApi(labsToSend && labsToSend.length > 0 ? labsToSend : null)
       .then((data) => {
-        console.log("Received data:", data); // Log received data
+        console.log("Received manager data:", data); // Log received data
         setManagerNames(data.map((item) => ({ value: item, label: item })));
       })
       .catch((error) =>
-        console.error("Error fetching Researcher Names:", error)
+        console.error("Error fetching Manager Names:", error)
       );
-  }, [masterType]);
+  }, [masterType, reduxUser?.user_name, userDetails.name]);
+
+  // Fetch manager's projects when manager is selected and filter projects accordingly
+  useEffect(() => {
+    if (!selectedmanNames || !selectedmanNames.value) {
+      // No manager selected - show all researcher's projects
+      setFilteredProjectsMap(projectsMap);
+      setManagerProjects([]);
+      return;
+    }
+
+    // Fetch manager's employee data to get their projects
+    getEmployeeByUsernameApi(selectedmanNames.value)
+      .then((employeeData) => {
+        console.log("Manager employee data:", employeeData);
+        
+        // Get manager's project codes from the response
+        let managerProjectCodes = [];
+        if (employeeData && employeeData.length > 0) {
+          const manager = employeeData[0]; // Should be single employee record
+          if (manager.project_code) {
+            // project_code can be array or single value
+            managerProjectCodes = Array.isArray(manager.project_code)
+              ? manager.project_code
+              : [manager.project_code];
+          }
+        }
+        
+        setManagerProjects(managerProjectCodes);
+        console.log("Manager project codes:", managerProjectCodes);
+
+        // Filter projects to show only common projects between researcher and manager
+        if (managerProjectCodes.length > 0) {
+          const commonProjects = projectsMap.filter((project) =>
+            managerProjectCodes.includes(project.code)
+          );
+          console.log("Common projects (researcher & manager):", commonProjects);
+          setFilteredProjectsMap(commonProjects);
+          
+          // Clear selected project if it's not in the filtered list
+          if (selectedCodes && !commonProjects.find(p => p.code === selectedCodes.value)) {
+            setSelectedCodes(null);
+            setSelectedProject("");
+          }
+        } else {
+          // Manager has no projects - show empty list
+          console.log("Manager has no projects assigned");
+          setFilteredProjectsMap([]);
+          setSelectedCodes(null);
+          setSelectedProject("");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching manager's projects:", error);
+        // On error, show all researcher's projects
+        setFilteredProjectsMap(projectsMap);
+        setManagerProjects([]);
+      });
+  }, [selectedmanNames, projectsMap]);
   const filteredItemsCodes = itemsCodes.filter(
     (item) => item.details.masterType === masterType
   );
@@ -204,6 +375,12 @@ const AddProductListReq = ({
   console.log("Researched Names:", resNames); // Log state to verify
 
   const handleAdd = () => {
+    // Prevent submission if researcher has no projects assigned
+    if (!hasProjects) {
+      toast.error("You have no projects assigned. Please contact your administrator to assign projects before requesting items.");
+      return;
+    }
+
     const formData = new FormData(formRef.current);
     let newErrorMessages = {};
 
@@ -217,7 +394,9 @@ const AddProductListReq = ({
     if (!selectedCodes) newErrorMessages.project = "Please fill this field";
     if (!selectedLabAssistant)
       newErrorMessages.labAssistant = "Please fill this field";
-    if (!userDetails.name) newErrorMessages.issuedTo = "Please fill this field";
+    // Use Redux user if available, fallback to userDetails prop
+    const username = reduxUser?.user_name || userDetails.name;
+    if (!username) newErrorMessages.issuedTo = "Please fill this field";
 
     if (Object.keys(newErrorMessages).length > 0) {
       setErrorMessages(newErrorMessages);
@@ -228,7 +407,7 @@ const AddProductListReq = ({
     const issueData = {
       c_id: selectedItemCode.value,
       project_code: selectedCodes.value,
-      issued_to: userDetails.name,
+      issued_to: username,
       project_name: selectedCodes.label,
       supervisor_name: selectedmanNames.value,
       remarks: formData.get("remarks"),
@@ -236,11 +415,12 @@ const AddProductListReq = ({
       item_name: selectedItemName.label,
       item_code: selectedItemCode.label,
       lab_assistant_name: selectedLabAssistant.label,
+      quantity_issued: quantityIssued || null,
     };
 
     addIssueResearcherApi(issueData)
       .then(() => {
-        alert("Request added successfully");
+        toast.success("Request added successfully");
         formRef.current.reset();
         setSelectedItem(null);
         setSelectedItemCode(null);
@@ -251,11 +431,12 @@ const AddProductListReq = ({
         setMasterType("");
         setSelectedNames(null);
         setSelectedLabAssistant(null);
+        setQuantityIssued('');
         setErrorMessages({});
       })
       .catch((error) => {
         console.error("Failed to Add Inventory Data", error);
-        alert("Failed to Add Inventory. Check console for details.");
+        toast.error("Failed to Add Inventory. Check console for details.");
       });
   };
 
@@ -272,6 +453,26 @@ const AddProductListReq = ({
           {/* <Button onClick={handleTransferData} style={{float: 'right'}}>Submit</Button> */}
         </h2>
       </div>
+
+      {!hasProjects && (
+        <div
+          style={{
+            padding: "15px",
+            margin: "10px auto",
+            width: "80%",
+            backgroundColor: "#fff3cd",
+            border: "1px solid #ffc107",
+            borderRadius: "5px",
+            color: "#856404",
+            textAlign: "center",
+            fontSize: "1rem",
+          }}
+        >
+          <strong>No Projects Assigned</strong>
+          <br />
+          You have no projects assigned. Please contact your administrator to assign projects before requesting items.
+        </div>
+      )}
 
       <p></p>
       <div style={{
@@ -452,24 +653,37 @@ const AddProductListReq = ({
                       onChange={(selectedOption) => {
                         setSelectedCodes(selectedOption);
                         // Automatically update project name
-                        const correspondingProject = projectsMap.find(
+                        const correspondingProject = filteredProjectsMap.find(
                           (p) => p.code === selectedOption.value
                         );
-                        setSelectedProject({
-                          value: correspondingProject.value,
-                          label: correspondingProject.label,
-                        });
+                        if (correspondingProject) {
+                          setSelectedProject({
+                            value: correspondingProject.value,
+                            label: correspondingProject.label,
+                          });
+                        }
                       }}
-                      options={projectsMap.map((item) => ({
+                      options={filteredProjectsMap.map((item) => ({
                         value: item.code,
                         label: item.code,
                       }))}
-                      placeholder="Select Project Code"
+                      placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Code"}
+                      isDisabled={filteredProjectsMap.length === 0}
                     />
                     {errorMessages.project && (
                       <span className="text-danger">
                         {errorMessages.project}
                       </span>
+                    )}
+                    {!hasProjects && (
+                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px", color: "#856404" }}>
+                        No projects assigned to researcher
+                      </Form.Text>
+                    )}
+                    {filteredProjectsMap.length === 0 && selectedmanNames && hasProjects && (
+                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
+                        No common projects between researcher and selected manager
+                      </Form.Text>
                     )}
                   </Form.Group>
                 </Col>
@@ -482,26 +696,38 @@ const AddProductListReq = ({
                       onChange={(selectedOption) => {
                         setSelectedProject(selectedOption);
                         // Automatically update project code
-                        const correspondingProject = projectsMap.find(
+                        const correspondingProject = filteredProjectsMap.find(
                           (p) => p.label === selectedOption.label
                         );
-                        setSelectedCodes({
-                          value: correspondingProject.code,
-                          label: correspondingProject.code,
-                        });
+                        if (correspondingProject) {
+                          setSelectedCodes({
+                            value: correspondingProject.code,
+                            label: correspondingProject.code,
+                          });
+                        }
                       }}
-                      options={projectsMap.map((item) => ({
+                      options={filteredProjectsMap.map((item) => ({
                         value: item.value,
                         label: item.label,
                       }))}
-                      placeholder="Select Project Name"
+                      placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Name"}
+                      isDisabled={filteredProjectsMap.length === 0}
                     />
+                    {!hasProjects && (
+                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px", color: "#856404" }}>
+                        No projects assigned to researcher
+                      </Form.Text>
+                    )}
+                    {filteredProjectsMap.length === 0 && selectedmanNames && hasProjects && (
+                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
+                        No common projects between researcher and selected manager
+                      </Form.Text>
+                    )}
                   </Form.Group>
                 </Col>
               </Row>
               <p></p>
               <Row>
-                {" "}
                 <Col>
                   <Form.Group controlId="remarks">
                     <Form.Label>Remarks</Form.Label>
@@ -510,12 +736,14 @@ const AddProductListReq = ({
                       name="remarks"
                       required
                       placeholder=""
-                      className="custom-border"
+                      style={{ borderColor: "black" }}
                     />
+                    {errorMessages.remarks && (
+                      <div style={{ color: "red", marginTop: "5px" }}>
+                        {errorMessages.remarks}
+                      </div>
+                    )}
                   </Form.Group>
-                  <span style={{ color: "red", float: "right" }}>
-                    {errorMessages.remarks}
-                  </span>
                 </Col>
                 <Col>
                   <Form.Group controlId="issuedTo">
@@ -523,14 +751,16 @@ const AddProductListReq = ({
                     <Form.Control
                       type="text"
                       name="issuedTo"
-                      value={userDetails.name}
+                      value={reduxUser?.user_name || userDetails.name}
                       readOnly
                       style={{ borderColor: "black" }}
                     />
+                    {errorMessages.issuedTo && (
+                      <div style={{ color: "red", marginTop: "5px" }}>
+                        {errorMessages.issuedTo}
+                      </div>
+                    )}
                   </Form.Group>
-                  <span style={{ color: "red", float: "right" }}>
-                    {errorMessages.issuedTo}
-                  </span>
                 </Col>
                 <Col>
                   <Form.Group controlId="labAssistantName">
@@ -540,28 +770,60 @@ const AddProductListReq = ({
                       value={selectedLabAssistant}
                       onChange={setSelectedLabAssistant}
                       placeholder="Lab Assistant Name"
-                    >
-                      <option value="">Select Lab Assistant</option>
-                      {labassistantNames.map((lab_assistants) => (
-                        <option
-                          key={lab_assistants.value}
-                          value={lab_assistants.value}
-                        >
-                          {lab_assistants.label}
-                        </option>
-                      ))}
-                    </Select>
+                      styles={{
+                        control: (provided) => ({
+                          ...provided,
+                          borderColor: "black",
+                        }),
+                      }}
+                    />
+                    {errorMessages.labAssistant && (
+                      <div style={{ color: "red", marginTop: "5px" }}>
+                        {errorMessages.labAssistant}
+                      </div>
+                    )}
                   </Form.Group>
-                  <span style={{ color: "red", float: "right" }}>
-                    {errorMessages.remarks}
-                  </span>
                 </Col>
+              </Row>
+              <p></p>
+              <Row>
+                <Col>
+                  <Form.Group controlId="quantityIssued">
+                    <Form.Label>Quantity</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="quantityIssued"
+                      min="1"
+                      value={quantityIssued}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || (parseInt(value) >= 1)) {
+                          setQuantityIssued(value);
+                        }
+                      }}
+                      placeholder="Optional"
+                      style={{ borderColor: "black" }}
+                    />
+                    <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
+                      Quantity can be adjusted by Lab Assistant before issuing
+                    </Form.Text>
+                  </Form.Group>
+                </Col>
+                <Col></Col>
+                <Col></Col>
               </Row>
             </Form>
             <Button
               variant="primary"
               onClick={handleAdd}
-              style={{ width: "25%", marginLeft: "40%", marginTop: "40px" }}
+              disabled={!hasProjects}
+              style={{ 
+                width: "25%", 
+                marginLeft: "40%", 
+                marginTop: "40px",
+                opacity: !hasProjects ? 0.6 : 1,
+                cursor: !hasProjects ? "not-allowed" : "pointer"
+              }}
             >
               Submit Request
             </Button>
