@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   fetchMasterListByType,
   createEquipmentDetails,
+  getEquipmentDetailsByEntryNo,
 } from "../../../services/AppinfoService";
 import * as XLSX from "xlsx";
 import { FaBell, FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
@@ -31,7 +32,7 @@ const MasterListTable = ({
   
   const [selectedDates, setSelectedDates] = useState([]);
   const [currentDate, setCurrentDate] = useState("");
-  const [isUpdateMode, setIsUpdateMode] = useState(false);
+  const [isUpdateMode, setIsUpdateMode] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
   const [notifications, setNotifications] = useState(initialNotifications);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -64,7 +65,9 @@ const MasterListTable = ({
   // Modal/Equipment States
   const [calibrationDates, setCalibrationDates] = useState([]);
   const [lastServiceDate, setLastServiceDate] = useState("");
+  const [latestCalibrationDate, setLatestCalibrationDate] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [loadingEquipmentData, setLoadingEquipmentData] = useState(false);
 
   const navigate = useNavigate();
 
@@ -92,7 +95,20 @@ const MasterListTable = ({
       expiry_date: selectedItem.expiry_date,
     };
 
-    if (calibrationDates && calibrationDates.length > 0) {
+    // Handle calibration dates - add new date to existing array or create new array
+    if (latestCalibrationDate) {
+      const updatedCalibrationDates = [...calibrationDates];
+      // Check if this date already exists
+      if (!updatedCalibrationDates.includes(latestCalibrationDate)) {
+        updatedCalibrationDates.push(latestCalibrationDate);
+      }
+      // Sort dates and keep only unique dates
+      const uniqueDates = [...new Set(updatedCalibrationDates)].sort((a, b) => {
+        return new Date(b) - new Date(a);
+      });
+      equipmentData.calibration_dates = uniqueDates;
+    } else if (calibrationDates && calibrationDates.length > 0) {
+      // If no new date but existing dates exist, keep them
       equipmentData.calibration_dates = calibrationDates;
     }
 
@@ -102,11 +118,14 @@ const MasterListTable = ({
 
     try {
       await createEquipmentDetails(equipmentData);
-      toast.success("Equipment details saved successfully!");
+      toast.success("Equipment details updated successfully!");
       setShowModal(false);
-      setIsUpdateMode(false);
+      setSelectedItem(null);
+      setLatestCalibrationDate("");
+      setLastServiceDate("");
+      setCalibrationDates([]);
     } catch (error) {
-      toast.error("Failed to save equipment details.");
+      toast.error("Failed to update equipment details.");
     }
   };
 
@@ -155,10 +174,57 @@ const MasterListTable = ({
     setSelectedItem(null);
   };
 
-  const handleRadioChange = (item) => {
+  const handleRadioChange = async (item) => {
+    // If same item is clicked, unselect it
+    if (selectedItem?.entry_no === item.entry_no) {
+      setSelectedItem(null);
+      setShowModal(false);
+      return;
+    }
+    
     setSelectedItem(item);
     setShowModal(true);
-    setIsUpdateMode(false);
+    setLoadingEquipmentData(true);
+    
+    // Reset form fields
+    setLatestCalibrationDate("");
+    setLastServiceDate("");
+    setCalibrationDates([]);
+    
+    try {
+      // Fetch existing equipment details
+      const response = await getEquipmentDetailsByEntryNo(item.entry_no);
+      
+      if (response && response.data) {
+        const equipmentData = response.data;
+        
+        // Set last service date if it exists
+        if (equipmentData.last_service_date) {
+          // Format date for input (YYYY-MM-DD)
+          const serviceDate = new Date(equipmentData.last_service_date);
+          const formattedServiceDate = serviceDate.toISOString().split('T')[0];
+          setLastServiceDate(formattedServiceDate);
+        }
+        
+        // Handle calibration dates (array)
+        if (equipmentData.calibration_dates && Array.isArray(equipmentData.calibration_dates) && equipmentData.calibration_dates.length > 0) {
+          // Get the latest calibration date (most recent)
+          const sortedDates = [...equipmentData.calibration_dates].sort((a, b) => {
+            return new Date(b) - new Date(a);
+          });
+          const latestDate = sortedDates[0];
+          const formattedLatestDate = new Date(latestDate).toISOString().split('T')[0];
+          setLatestCalibrationDate(formattedLatestDate);
+          // Keep all calibration dates for updating
+          setCalibrationDates(equipmentData.calibration_dates);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching equipment details:", error);
+      // Don't show error toast - it's okay if equipment doesn't exist yet
+    } finally {
+      setLoadingEquipmentData(false);
+    }
   };
 
   // --- Pagination Handlers ---
@@ -465,7 +531,7 @@ const MasterListTable = ({
                         <input
                           type="radio"
                           name="selectItem"
-                          disabled={!isUpdateMode}
+                          checked={selectedItem?.entry_no === item.entry_no}
                           onChange={() => handleRadioChange(item)}
                         />
                       </td>
@@ -542,32 +608,46 @@ const MasterListTable = ({
           <div className="modal-contents">
             <button
               className="modal-close-btn"
-              onClick={() => setShowModal(false)}
+              onClick={() => {
+                setShowModal(false);
+                setSelectedItem(null);
+                setLatestCalibrationDate("");
+                setLastServiceDate("");
+                setCalibrationDates([]);
+              }}
             >
               &times;
             </button>
             <h6 className="modal-title">
               Update Calibration Details for **{selectedItem.item_name}**
             </h6>
-            <form onSubmit={handleSubmit}>
-              <label className="modal-label">Latest Calibration Date:</label>
-              <input
-                type="date"
-                onChange={(e) => setCalibrationDates([e.target.value])}
-                className="modal-input"
-              />
+            {loadingEquipmentData ? (
+              <div style={{ padding: "20px", textAlign: "center" }}>
+                Loading equipment data...
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit}>
+                <label className="modal-label">Latest Calibration Date:</label>
+                <input
+                  type="date"
+                  value={latestCalibrationDate}
+                  onChange={(e) => setLatestCalibrationDate(e.target.value)}
+                  className="modal-input"
+                />
 
-              <label className="modal-label">Last Service Date:</label>
-              <input
-                type="date"
-                onChange={(e) => setLastServiceDate(e.target.value)}
-                className="modal-input"
-              />
+                <label className="modal-label">Last Service Date:</label>
+                <input
+                  type="date"
+                  value={lastServiceDate}
+                  onChange={(e) => setLastServiceDate(e.target.value)}
+                  className="modal-input"
+                />
 
-              <button type="submit" className="modal-submit-btn">
-                Save Details
-              </button>
-            </form>
+                <button type="submit" className="modal-submit-btn">
+                  Update Details
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}

@@ -1572,6 +1572,30 @@ export const createEquipmentDetails = async (equipmentData) => {
   }
 };
 
+export const getEquipmentDetailsByEntryNo = async (entryNo) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/equipment/get/?entry_no=${entryNo}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data; // Return response data
+  } catch (error) {
+    // If equipment not found, return null instead of throwing
+    if (error.response?.status === 404) {
+      return null;
+    }
+    console.error(
+      "Error fetching equipment details:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
 // DNA & Repository
 
 // BASE_URL is now imported from config/api.js

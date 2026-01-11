@@ -126,8 +126,6 @@ const AddProduct = ({
         await createSupplier(inputValue, username);
       } else if (selectedCategory === "Master Type") {
         await createMasterType(inputValue);
-      } else if (selectedCategory === "Unit") {
-        await createUnit(inputValue);
       }
 
       toast.success(`${selectedCategory} added successfully!`);
@@ -608,7 +606,6 @@ const AddProduct = ({
                 <option value="Location">Location</option>
                 <option value="Manufacturer">Manufacturer</option>
                 <option value="Supplier">Supplier</option>
-                <option value="Unit">Unit</option>
               </select>
               {errorMessages.category && (
                 <span style={{ color: "red", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>
