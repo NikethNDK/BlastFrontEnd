@@ -269,6 +269,16 @@ const IssuedProduct = ({
     }
   }, [isEditMode, editingIssue, itemsCodes, itemsNames, projects, resNames, expiryDates, locations, selectedItemCode, selectedItemName, selectedCodes, selectedNames]);
 
+  // Set default project when modal opens in Add mode and only one project is available
+  useEffect(() => {
+    if (showModal && !isEditMode && projects.length === 1 && !selectedProject && !editingIssue) {
+      console.log("🔍 [PROJECT] Modal opened in Add mode with single project, setting default:", projects[0]);
+      setSelectedProject(projects[0].value);
+      setSelectedCodes({ value: projects[0].code, label: projects[0].code });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showModal, isEditMode, projects.length, selectedProject, editingIssue]);
+
   useEffect(() => {
     getManufacturersApi().then((data) => {
       const formattedManufacturers = data.map((item) => ({
@@ -535,16 +545,24 @@ const IssuedProduct = ({
         console.error("💥 [ITEM LIST FETCH] Error fetching project codes:", error);
       });
 
-    getProjectApi()
+    // Use the same username and labName already declared above for project filtering
+    getProjectApi(username, labName)
       .then((data) => {
         const activeProjects = data.filter((item) => item.deleted === 0);
-        setProjects(
-          activeProjects.map((item) => ({
-            value: item.project_code,
-            label: item.project_name,
-            code: item.project_code,
-          }))
-        );
+        const formattedProjects = activeProjects.map((item) => ({
+          value: item.project_code,
+          label: item.project_name,
+          code: item.project_code,
+        }));
+        
+        setProjects(formattedProjects);
+        
+        // If only one project is available and not in edit mode, set it as default
+        if (formattedProjects.length === 1 && !isEditMode && !selectedProject) {
+          console.log("🔍 [PROJECT] Auto-selecting single available project:", formattedProjects[0]);
+          setSelectedProject(formattedProjects[0].value);
+          setSelectedCodes({ value: formattedProjects[0].code, label: formattedProjects[0].code });
+        }
       })
       .catch((error) => console.error("Error fetching projects:", error));
 
