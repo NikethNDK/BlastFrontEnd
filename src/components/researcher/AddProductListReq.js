@@ -53,6 +53,7 @@ const AddProductListReq = ({
   const [selectedmanNames, setSelectedmanNames] = useState(null);
   const [managerProjects, setManagerProjects] = useState([]);
   const [filteredProjectsMap, setFilteredProjectsMap] = useState([]);
+  const [hasProjects, setHasProjects] = useState(true);
   const [selectedSuppliers, setSelectedSuppliers] = useState(null);
   const [selectedManufacturer, setSelectedManufacturer] = useState(null);
   const [manufacturers, setManufacturers] = useState([]);
@@ -203,14 +204,20 @@ const AddProductListReq = ({
         }
 
         // Filter projects to only show assigned ones
-        let filteredProjects = activeProjects;
+        let filteredProjects = [];
         if (assignedProjectCodes.length > 0) {
           filteredProjects = activeProjects.filter((project) =>
             assignedProjectCodes.includes(project.project_code)
           );
           console.log("Filtered Projects (assigned only):", filteredProjects);
+          setHasProjects(true);
         } else {
           console.log("No assigned projects found - showing empty dropdown");
+          // Set empty arrays when researcher has no projects
+          setProjectsMap([]);
+          setFilteredProjectsMap([]);
+          setHasProjects(false);
+          return; // Exit early - no need to process further
         }
 
         const projectsMapData = filteredProjects.map((item) => ({
@@ -225,17 +232,10 @@ const AddProductListReq = ({
       })
       .catch((error) => {
         console.error("Error fetching projects or employees:", error);
-        // Fallback: show all active projects if fetch fails
-        getProjectApi().then((data) => {
-          const activeProjects = data.filter((item) => item.deleted === 0);
-          const projectsMapData = activeProjects.map((item) => ({
-            value: item.project_code,
-            label: item.project_name,
-            code: item.project_code,
-          }));
-          setProjectsMap(projectsMapData);
-          setFilteredProjectsMap(projectsMapData);
-        });
+        // On error, set empty projects and mark as no projects
+        setProjectsMap([]);
+        setFilteredProjectsMap([]);
+        setHasProjects(false);
       });
     //Fetch Projects codes
     getResEmployeeApi()
@@ -375,6 +375,12 @@ const AddProductListReq = ({
   console.log("Researched Names:", resNames); // Log state to verify
 
   const handleAdd = () => {
+    // Prevent submission if researcher has no projects assigned
+    if (!hasProjects) {
+      toast.error("You have no projects assigned. Please contact your administrator to assign projects before requesting items.");
+      return;
+    }
+
     const formData = new FormData(formRef.current);
     let newErrorMessages = {};
 
@@ -447,6 +453,26 @@ const AddProductListReq = ({
           {/* <Button onClick={handleTransferData} style={{float: 'right'}}>Submit</Button> */}
         </h2>
       </div>
+
+      {!hasProjects && (
+        <div
+          style={{
+            padding: "15px",
+            margin: "10px auto",
+            width: "80%",
+            backgroundColor: "#fff3cd",
+            border: "1px solid #ffc107",
+            borderRadius: "5px",
+            color: "#856404",
+            textAlign: "center",
+            fontSize: "1rem",
+          }}
+        >
+          <strong>No Projects Assigned</strong>
+          <br />
+          You have no projects assigned. Please contact your administrator to assign projects before requesting items.
+        </div>
+      )}
 
       <p></p>
       <div style={{
@@ -649,7 +675,12 @@ const AddProductListReq = ({
                         {errorMessages.project}
                       </span>
                     )}
-                    {filteredProjectsMap.length === 0 && selectedmanNames && (
+                    {!hasProjects && (
+                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px", color: "#856404" }}>
+                        No projects assigned to researcher
+                      </Form.Text>
+                    )}
+                    {filteredProjectsMap.length === 0 && selectedmanNames && hasProjects && (
                       <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
                         No common projects between researcher and selected manager
                       </Form.Text>
@@ -682,7 +713,12 @@ const AddProductListReq = ({
                       placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Name"}
                       isDisabled={filteredProjectsMap.length === 0}
                     />
-                    {filteredProjectsMap.length === 0 && selectedmanNames && (
+                    {!hasProjects && (
+                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px", color: "#856404" }}>
+                        No projects assigned to researcher
+                      </Form.Text>
+                    )}
+                    {filteredProjectsMap.length === 0 && selectedmanNames && hasProjects && (
                       <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
                         No common projects between researcher and selected manager
                       </Form.Text>
@@ -780,7 +816,14 @@ const AddProductListReq = ({
             <Button
               variant="primary"
               onClick={handleAdd}
-              style={{ width: "25%", marginLeft: "40%", marginTop: "40px" }}
+              disabled={!hasProjects}
+              style={{ 
+                width: "25%", 
+                marginLeft: "40%", 
+                marginTop: "40px",
+                opacity: !hasProjects ? 0.6 : 1,
+                cursor: !hasProjects ? "not-allowed" : "pointer"
+              }}
             >
               Submit Request
             </Button>

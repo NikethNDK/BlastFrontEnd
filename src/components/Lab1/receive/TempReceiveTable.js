@@ -8,7 +8,7 @@ import {
 } from "../../../services/AppinfoService";
 import "./TempReceiveTable.css"; // Import the new CSS file
 
-const TempReceiveTable = ({ onEdit }) => {
+const TempReceiveTable = ({ onEdit, onItemCountChange }) => {
   const [receive, setReceive] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,13 +21,21 @@ const TempReceiveTable = ({ onEdit }) => {
       const data = await getTempReceiveApi();
       setReceive(data);
       setError(null);
+      // Notify parent of item count change
+      if (onItemCountChange && typeof onItemCountChange === 'function') {
+        onItemCountChange(data.length);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Failed to load data. Please try again.");
+      // Notify parent of item count change (0 on error)
+      if (onItemCountChange && typeof onItemCountChange === 'function') {
+        onItemCountChange(0);
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onItemCountChange]);
 
   useEffect(() => {
     fetchData();
@@ -61,7 +69,12 @@ const TempReceiveTable = ({ onEdit }) => {
 
     try {
       await deleteTempReceiveApi(itemToDelete);
-      setReceive(receive.filter((item) => item.bill_no !== itemToDelete));
+      const updatedReceive = receive.filter((item) => item.bill_no !== itemToDelete);
+      setReceive(updatedReceive);
+      // Notify parent of item count change after deletion
+      if (onItemCountChange && typeof onItemCountChange === 'function') {
+        onItemCountChange(updatedReceive.length);
+      }
       toast.success("Record deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);

@@ -8,7 +8,7 @@ import {
 } from "../../../services/AppinfoService";
 import "./TempIssueTable.css"; // Import the new CSS file
 
-const TempIssueTable = ({ onEdit, username = null }) => {
+const TempIssueTable = ({ onEdit, username = null, onItemCountChange }) => {
   const [issued, setIssued] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,13 +21,21 @@ const TempIssueTable = ({ onEdit, username = null }) => {
       const data = await getTempIssueApi(username);
       setIssued(data);
       setError(null);
+      // Notify parent of item count change
+      if (onItemCountChange && typeof onItemCountChange === 'function') {
+        onItemCountChange(data.length);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       setError("Failed to load data. Please try again.");
+      // Notify parent of item count change (0 on error)
+      if (onItemCountChange && typeof onItemCountChange === 'function') {
+        onItemCountChange(0);
+      }
     } finally {
       setLoading(false);
     }
-  }, [username]);
+  }, [username, onItemCountChange]);
 
   useEffect(() => {
     fetchData();
@@ -61,7 +69,12 @@ const TempIssueTable = ({ onEdit, username = null }) => {
 
     try {
       await deleteTempIssueApi(itemToDelete);
-      setIssued(issued.filter((item) => item.entry_no !== itemToDelete));
+      const updatedIssued = issued.filter((item) => item.entry_no !== itemToDelete);
+      setIssued(updatedIssued);
+      // Notify parent of item count change after deletion
+      if (onItemCountChange && typeof onItemCountChange === 'function') {
+        onItemCountChange(updatedIssued.length);
+      }
       toast.success("Record deleted successfully");
     } catch (error) {
       console.error("Error deleting item:", error);

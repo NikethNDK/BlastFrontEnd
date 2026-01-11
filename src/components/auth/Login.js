@@ -17,7 +17,7 @@ import toast, { Toaster } from "react-hot-toast";
 
 // Temporary flag to enable all features (BLAST, Repository, Inventory) for all users regardless of labs
 // Set to false to restore lab-based routing
-const ENABLE_ALL_FEATURES = true;
+const ENABLE_ALL_FEATURES = false;
 
 function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
   const dispatch = useDispatch();
@@ -133,20 +133,32 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
             case "Admin":
               return <AdminApp userDetails={userDetails} />;
             case "Manager":
-              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab)))) {
+              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => 
+                ["DNA", "Animal Care"].some(allowedLab => 
+                  lab?.toLowerCase() === allowedLab.toLowerCase()
+                )
+              ))) {
                 return <ManagerApp userId={userId} userDetails={userDetails} />;
               }
               else {
                 return <ManagerAccessApp userId={userId} userDetails={userDetails} />;
               }
             case "Lab Assistant":
-              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab)))) {
+              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => 
+                ["DNA", "Animal Care"].some(allowedLab => 
+                  lab?.toLowerCase() === allowedLab.toLowerCase()
+                )
+              ))) {
                 return <LabApp userId={userId} userDetails={userDetails} />;
               } else {
                 return <CareApp userDetails={userDetails} />;
               }
             case "Researcher":
-              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => ["DNA", "Animal Care"].includes(lab)))) {
+              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => 
+                ["DNA", "Animal Care"].some(allowedLab => 
+                  lab?.toLowerCase() === allowedLab.toLowerCase()
+                )
+              ))) {
                 return <ResearcherApp userDetails={userDetails} />;
               } else {
                 return <ResearcherAccessApp userDetails={userDetails} />;

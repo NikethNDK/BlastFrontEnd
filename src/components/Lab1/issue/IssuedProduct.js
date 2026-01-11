@@ -45,6 +45,7 @@ const IssuedProduct = ({
   const [masterTypes, setMasterTypes] = useState([]);
   const [issues, setIssues] = useState([]);
   const [message, setMessage] = useState("");
+  const [tableItemCount, setTableItemCount] = useState(0);
   const [itemsCodes, setItemsCodes] = useState([]);
   const [itemsNames, setItemsNames] = useState([]);
   const [selectedItemCode, setSelectedItemCode] = useState(null);
@@ -941,6 +942,7 @@ const IssuedProduct = ({
             onClick={handleTransferData}
             style={{ float: "right" }}
             title="Accept LAB-OPEN items and transfer LAB-ACT items"
+            disabled={tableItemCount === 0}
           >
             Submit
           </Button>
@@ -952,6 +954,7 @@ const IssuedProduct = ({
         <TempIssueTable 
           onEdit={openIssueEditor} 
           username={effectiveUserDetails.user_name || null}
+          onItemCountChange={setTableItemCount}
         />
       </div>
 

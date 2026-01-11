@@ -31,6 +31,7 @@ const ReceivedProduct = ({
 }) => {
   // Get user from Redux store (preferred over userDetails prop)
   const reduxUser = useSelector((state) => state.user.user);
+  const [tableItemCount, setTableItemCount] = useState(0);
   
   // --- State Variables ---
   const [projects, setProjects] = useState([]);
@@ -562,9 +563,18 @@ const ReceivedProduct = ({
   const handleTransferData = async () => {
     try {
       console.log("🔄 [TRANSFER] Starting receive data transfer...");
+      // Get username for notification
+      const username = reduxUser?.user_name || userDetails.name;
+      
       // NOTE: This uses a hardcoded URL. In a real application, this should be configurable.
       const response = await fetch(`${BASE_URL}/transfer/receive/`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+        }),
       });
 
       // Assuming success is based on a 200-series status code
@@ -607,7 +617,11 @@ const ReceivedProduct = ({
             >
               Add
             </Button>
-            <Button onClick={handleTransferData} style={{ float: "right" }}>
+            <Button 
+              onClick={handleTransferData} 
+              style={{ float: "right" }}
+              disabled={tableItemCount === 0}
+            >
               Submit
             </Button>
           </h1>
@@ -615,7 +629,10 @@ const ReceivedProduct = ({
         <p></p>
         <div>
           {/* The form section is now moved into the Modal component */}
-          <TempReceiveTable onEdit={openEditModal} />
+          <TempReceiveTable 
+            onEdit={openEditModal} 
+            onItemCountChange={setTableItemCount}
+          />
         </div>
       </div>
 
