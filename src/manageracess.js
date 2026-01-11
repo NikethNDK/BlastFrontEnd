@@ -1,9 +1,6 @@
-
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Toaster } from "react-hot-toast";
-import Home from "./components/Home";
-import ManagerAccessNavigation from "./components/manager/acessnavigation";
 import AppinfoManager from "./components/manager/AppinfoManager";
 import ChemicalManager from "./components/manager/ChemicalManager";
 import InventoryManager from "./components/manager/InventoryManager";
@@ -26,7 +23,6 @@ import ManagerNavigation from "./components/manager/ManagerNavigation";
 
 function Layout({ userId, userDetails }) {
   const location = useLocation();
-  // Hide navigation only on JoinLab ("/") route
   const hiddenPaths = ["/", "/add_blast","/dna","/add_dna"];
   const hideNavigation = hiddenPaths.includes(location.pathname);
   return (
@@ -35,6 +31,9 @@ function Layout({ userId, userDetails }) {
         // Directly render routes without ManagerNavigation
         <Routes>
           <Route path="/" element={<Join />} />
+          <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
+          <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
+          <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
         </Routes>
       ) : (
         // Wrap everything else with ManagerNavigation
@@ -66,7 +65,7 @@ function Layout({ userId, userDetails }) {
   );
 }
 
-function ManagerAccessApp({ userId, userDetails = { userDetails } }) {
+function ManagerAccessApp({ userId, userDetails = {} }) {
   return (
     <BrowserRouter>
       <Layout userId={userId} userDetails={userDetails} />

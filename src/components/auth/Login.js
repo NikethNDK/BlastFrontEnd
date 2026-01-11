@@ -151,7 +151,7 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
               ))) {
                 return <LabApp userId={userId} userDetails={userDetails} />;
               } else {
-                return <CareApp userDetails={userDetails} />;
+                return <CareApp userId={userId} userDetails={userDetails} />;
               }
             case "Researcher":
               if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => 

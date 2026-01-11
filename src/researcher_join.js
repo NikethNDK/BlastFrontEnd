@@ -12,7 +12,7 @@ const JoinResearcher = () => {
       <div style={{ marginLeft: "12%" }} className="button-container">
         <button
           className="custom-button"
-          onClick={() => navigate("/re_notify")}
+          onClick={() => navigate("/masters")}
         >
           Inventory
         </button>
