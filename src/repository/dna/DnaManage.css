@@ -11,6 +11,7 @@
 }
 
 .dna-manage-content {
+  margin-top: -20px;
   width: 100%;
   height: calc(100vh - 60px); /* Adjust based on header height */
   display: flex;

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../store/slices/userSlice';
 import { 
   FaBars,
   FaTimes,
@@ -19,13 +21,23 @@ const BlastSidebar = ({
 }) => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
   };
 
   const handleLogout = () => {
-    window.location.href = '/';
+    dispatch(logoutUser())
+      .unwrap()
+      .then(() => {
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error('Logout failed:', err);
+        // Force redirect even if backend fails
+        navigate('/');
+      });
   };
 
   return (
