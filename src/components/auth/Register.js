@@ -191,7 +191,7 @@ const RegisterModal = ({
                 type="text"
                 value={name}
                 className="form-input-register"
-                placeholder="Enter name (optional)"
+                placeholder="Enter name"
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
@@ -495,7 +495,7 @@ const EditUserModal = ({
                 type="text"
                 value={name}
                 className="form-input-register"
-                placeholder="Enter name (optional)"
+                placeholder="Enter name"
                 onChange={(e) => setName(e.target.value)}
               />
             </div>

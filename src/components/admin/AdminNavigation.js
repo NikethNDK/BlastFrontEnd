@@ -76,15 +76,15 @@ const AdminNavigation = ({ children }) => {
 
               <nav className="blast-sidebar-menu">
                 <NavLink
-                  to="/admin/project_manage"
+                  to="/master_table"
                   className={({ isActive }) =>
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
                   }
-                  title="Project Management"
+                  title="Master Table"
                 >
-                  <FaChartBar className="blast-sidebar-item-icon" style={{ color: '#3b82f6' }} />
+                  <FaTable className="blast-sidebar-item-icon" style={{ color: '#8b5cf6' }} />
                   {!collapsed && (
-                    <span className="blast-sidebar-item-text">Project Management</span>
+                    <span className="blast-sidebar-item-text">Master Table</span>
                   )}
                 </NavLink>
 
@@ -102,15 +102,15 @@ const AdminNavigation = ({ children }) => {
                 </NavLink>
 
                 <NavLink
-                  to="/password_reset"
+                  to="/admin/project_manage"
                   className={({ isActive }) =>
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
                   }
-                  title="Password Reset"
+                  title="Project Management"
                 >
-                  <FaRedo className="blast-sidebar-item-icon" style={{ color: '#ef4444' }} />
+                  <FaChartBar className="blast-sidebar-item-icon" style={{ color: '#3b82f6' }} />
                   {!collapsed && (
-                    <span className="blast-sidebar-item-text">Password Reset</span>
+                    <span className="blast-sidebar-item-text">Project Management</span>
                   )}
                 </NavLink>
 
@@ -128,15 +128,15 @@ const AdminNavigation = ({ children }) => {
                 </NavLink>
 
                 <NavLink
-                  to="/master_table"
+                  to="/password_reset"
                   className={({ isActive }) =>
                     `blast-sidebar-item ${isActive ? 'active' : ''}`
                   }
-                  title="Master Table"
+                  title="Password Reset"
                 >
-                  <FaTable className="blast-sidebar-item-icon" style={{ color: '#8b5cf6' }} />
+                  <FaRedo className="blast-sidebar-item-icon" style={{ color: '#ef4444' }} />
                   {!collapsed && (
-                    <span className="blast-sidebar-item-text">Master Table</span>
+                    <span className="blast-sidebar-item-text">Password Reset</span>
                   )}
                 </NavLink>
               </nav>
