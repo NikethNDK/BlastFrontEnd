@@ -1,8 +1,8 @@
 import axios from "axios";
 import { API_ENDPOINTS, API_BASE_URL } from "../config/api";
 
-// Base URL for all API calls
-export const BASE_URL = "http://localhost:8000";
+// Base URL for all API calls - exported for use in other files
+export const BASE_URL = API_BASE_URL;
 
 export function getAppinfo() {
   return axios

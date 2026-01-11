@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { BASE_URL } from "../../../services/AppinfoService";
 import "./ChangePassword.css";
 
 const ChangePassword = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
@@ -17,7 +18,7 @@ const ChangePassword = ({ userDetails = { name: '', lab: '', designation: '' } }
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/change-password/",
+        `${BASE_URL}/change-password/`,
         {
           user_name: userName,
           new_password: newPassword,

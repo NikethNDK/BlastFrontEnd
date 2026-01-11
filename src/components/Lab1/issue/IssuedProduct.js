@@ -792,23 +792,21 @@ const IssuedProduct = ({
     }
   };
 
-  // Helper function to validate manufacturer and expiry date for items
+  // Helper function to validate expiry date for items
   const validateItemsForSubmission = (items, itemType) => {
     const invalidItems = items.filter(item => {
-      const missingManufacturer = !item.manufacturer || 
-                                  (typeof item.manufacturer === 'string' && item.manufacturer.trim() === "");
       const missingExpiryDate = !item.expiry_date || 
                                 item.expiry_date === null || 
                                 item.expiry_date === undefined ||
                                 (typeof item.expiry_date === 'string' && item.expiry_date.trim() === "");
-      return missingManufacturer || missingExpiryDate;
+      return missingExpiryDate;
     });
 
     if (invalidItems.length > 0) {
       const itemCodes = invalidItems.map(item => item.item_code || `Entry #${item.entry_no}`).join(", ");
       toast.error(
-        `Cannot submit: ${invalidItems.length} item(s) are missing manufacturer or expiry date. ` +
-        `Please edit all items to add manufacturer and expiry date before submitting. ` +
+        `Cannot submit: ${invalidItems.length} item(s) are missing expiry date. ` +
+        `Please edit all items to add expiry date before submitting. ` +
         `Items: ${itemCodes}`
       );
       return false;
@@ -831,9 +829,9 @@ const IssuedProduct = ({
         if (itemsToAccept.length > 0) {
           console.log(`📝 [ACCEPT] Found ${itemsToAccept.length} LAB-OPEN items to accept`);
           
-          // Validate all LAB-OPEN items have manufacturer and expiry date
+          // Validate all LAB-OPEN items have expiry date
           if (!validateItemsForSubmission(itemsToAccept, "LAB-OPEN")) {
-            console.log("❌ [ACCEPT] Validation failed - missing manufacturer or expiry date");
+            console.log("❌ [ACCEPT] Validation failed - missing expiry date");
             return; // Stop here - atomic operation (all or none)
           }
           
@@ -877,9 +875,9 @@ const IssuedProduct = ({
       if (itemsToTransfer.length > 0) {
         console.log(`📝 [TRANSFER] Found ${itemsToTransfer.length} LAB-ACT items to transfer`);
         
-        // Validate all LAB-ACT items have manufacturer and expiry date
+        // Validate all LAB-ACT items have expiry date
         if (!validateItemsForSubmission(itemsToTransfer, "LAB-ACT")) {
-          console.log("❌ [TRANSFER] Validation failed - missing manufacturer or expiry date");
+          console.log("❌ [TRANSFER] Validation failed - missing expiry date");
           return; // Stop here - atomic operation (all or none)
         }
       }

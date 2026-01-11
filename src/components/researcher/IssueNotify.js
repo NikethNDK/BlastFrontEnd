@@ -6,6 +6,7 @@ import {
   getItemIssueApi,
   updateItemStatus,
   revertStock,
+  BASE_URL,
 } from "../../services/AppinfoService";
 import ResearcherNavigation from "./ResearcherNavigation";
 
@@ -50,7 +51,7 @@ const IssueNotify = ({
         prevIssued.filter((item) => item.entry_no !== entry_no)
       );
       const response = await axios.post(
-        "http://127.0.0.1:8000/decline-issued-item/",
+        `${BASE_URL}/decline-issued-item/`,
         {
           entry_no,
           item_code,

@@ -1,6 +1,5 @@
 import axios from 'axios';
-
-const BASE_URL = 'http://localhost:8000';
+import { BASE_URL } from '../services/AppinfoService';
 
 // Create axios instance with default config
 const axiosInstance = axios.create({

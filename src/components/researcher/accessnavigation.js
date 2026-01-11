@@ -27,6 +27,7 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "reactstrap";
+import { BASE_URL } from "../../services/AppinfoService";
 
 const ResearcherAccessNavigation = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -38,7 +39,7 @@ const ResearcherAccessNavigation = ({
   const fetchDeclinedItems = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/get_all_declined_items/"
+        `${BASE_URL}/get_all_declined_items/`
       );
       const data = await response.json();
       if (data.declined_items) {
@@ -58,7 +59,7 @@ const ResearcherAccessNavigation = ({
   const cancelNotification = async (entry_no) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/req-issue-item/cancel/${entry_no}/`,
+        `${BASE_URL}/req-issue-item/cancel/${entry_no}/`,
         {
           method: "PATCH",
         }

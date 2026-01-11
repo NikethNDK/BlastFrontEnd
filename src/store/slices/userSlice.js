@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-
-const BASE_URL = 'http://localhost:8000';
+import { BASE_URL } from '../../services/AppinfoService';
 
 // Async thunk to fetch current user from /me/ endpoint
 export const fetchCurrentUser = createAsyncThunk(
