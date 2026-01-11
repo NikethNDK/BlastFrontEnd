@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaUserPlus, FaUsers, FaCheckCircle, FaTimesCircle, FaEye, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaUserPlus, FaUsers, FaCheckCircle, FaTimesCircle, FaEye, FaChevronLeft, FaChevronRight, FaExclamationTriangle } from "react-icons/fa";
+import { Modal, Button } from "react-bootstrap";
 import AddEmployeeModal from "./AddEmployeeModal";
 import UpdateEmployeeModal from "./UpdateEmployeeModal";
 import {
@@ -18,6 +19,8 @@ const EmployeeManage = () => {
   const [inactiveEmployees, setInactiveEmployees] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [confirmModalShow, setConfirmModalShow] = useState(false);
+  const [employeeToInactivate, setEmployeeToInactivate] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -70,26 +73,37 @@ const EmployeeManage = () => {
     setAddModalShow(true);
   };
 
-  const handleInactive = async (e, emp_id) => {
+  const handleInactiveClick = (e, employee) => {
     e.preventDefault();
-    if (!window.confirm("Are you sure you want to mark this employee as inactive?")) {
-      return;
-    }
+    setEmployeeToInactivate(employee);
+    setConfirmModalShow(true);
+  };
+
+  const handleConfirmInactive = async () => {
+    if (!employeeToInactivate) return;
+    
     try {
-      await inactiveEmployeeApi(emp_id);
+      await inactiveEmployeeApi(employeeToInactivate.emp_id);
       toast.success("Employee marked as inactive");
       setInactiveEmployees((prev) => {
-        const updatedSet = new Set(prev).add(emp_id);
+        const updatedSet = new Set(prev).add(employeeToInactivate.emp_id);
         localStorage.setItem(
           "inactiveEmployees",
           JSON.stringify([...updatedSet])
         );
         return updatedSet;
       });
+      setConfirmModalShow(false);
+      setEmployeeToInactivate(null);
     } catch (error) {
       console.error("Failed to mark Employee as inactive:", error);
       toast.error("Failed to update Employee status");
     }
+  };
+
+  const handleCloseConfirmModal = () => {
+    setConfirmModalShow(false);
+    setEmployeeToInactivate(null);
   };
 
   const styles = {
@@ -453,7 +467,7 @@ const EmployeeManage = () => {
                           <button
                             style={isInactive ? {...styles.actionButton, ...styles.buttonSecondary} : {...styles.actionButton, ...styles.buttonDanger}}
                             disabled={isInactive}
-                            onClick={(e) => handleInactive(e, emp.emp_id)}
+                            onClick={(e) => handleInactiveClick(e, emp)}
                             onMouseEnter={(e) => {
                               if (!isInactive) {
                                 e.currentTarget.style.backgroundColor = "#c82333";
@@ -542,6 +556,57 @@ const EmployeeManage = () => {
         onHide={() => setEditModalShow(false)}
         employee={editEmployees}
       />
+
+      {/* Confirmation Modal */}
+      <Modal
+        show={confirmModalShow}
+        onHide={handleCloseConfirmModal}
+        centered
+        backdrop="static"
+      >
+        <Modal.Header closeButton style={{ borderBottom: '1px solid #dee2e6' }}>
+          <Modal.Title style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <FaExclamationTriangle style={{ color: '#dc3545' }} />
+            Confirm Inactivation
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ padding: '1.5rem' }}>
+          <p style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>
+            Are you sure you want to mark this employee as inactive?
+          </p>
+          {employeeToInactivate && (
+            <div style={{ 
+              backgroundColor: '#f8f9fa', 
+              padding: '0.75rem', 
+              borderRadius: '0.25rem',
+              marginTop: '1rem'
+            }}>
+              <p style={{ margin: 0, fontWeight: '600', color: '#495057' }}>
+                Employee ID: <span style={{ color: '#007bff' }}>{employeeToInactivate.emp_id}</span>
+              </p>
+              <p style={{ margin: '0.25rem 0 0 0', color: '#6c757d' }}>
+                Employee Name: {employeeToInactivate.emp_name || 'N/A'}
+              </p>
+              {employeeToInactivate.designation && (
+                <p style={{ margin: '0.25rem 0 0 0', color: '#6c757d' }}>
+                  Designation: {employeeToInactivate.designation}
+                </p>
+              )}
+            </div>
+          )}
+          <p style={{ marginTop: '1rem', marginBottom: 0, fontSize: '0.875rem', color: '#6c757d' }}>
+            This action will mark the employee as inactive. You can reactivate them later if needed.
+          </p>
+        </Modal.Body>
+        <Modal.Footer style={{ borderTop: '1px solid #dee2e6' }}>
+          <Button variant="secondary" onClick={handleCloseConfirmModal}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={handleConfirmInactive}>
+            Mark Inactive
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };

@@ -557,11 +557,11 @@ export async function updateEmployeeApi(emp_id, employee) {
 
 export const inactiveEmployeeApi = async (emp_id) => {
   try {
-    await axios.post(`${BASE_URL}/inactive_emp/${emp_id}`);
-    alert("Employee deactivated successfully and cannot log in again.");
-    // Optionally update UI state here
+    const response = await axios.post(`${BASE_URL}/inactive_emp/${emp_id}`);
+    return response.data;
   } catch (error) {
-    alert("Failed to deactivate employee");
+    console.error("Error deactivating employee:", error);
+    throw error;
   }
 };
 
