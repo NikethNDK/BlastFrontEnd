@@ -151,7 +151,11 @@ const ResearcherNavigation = ({
                 <div className="blast-sidebar-user-info">
                   <div className="blast-sidebar-user-name">{userDetails.name}</div>
                   <div className="blast-sidebar-user-role">{userDetails.designation}</div>
-                  <div className="blast-sidebar-user-lab">{userDetails.lab}</div>
+                  <div className="blast-sidebar-user-lab">
+                    {Array.isArray(userDetails.lab) 
+                      ? userDetails.lab.join(', ') 
+                      : userDetails.lab || 'N/A'}
+                  </div>
                 </div>
               </div>
             )}

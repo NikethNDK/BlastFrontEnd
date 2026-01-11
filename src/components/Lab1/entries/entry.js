@@ -56,13 +56,22 @@ const TransferredDataTable = ({
   useEffect(() => {
     const lab = labName || effectiveUserDetails.lab;
     if (lab && lab !== 'N/A') {
-      const labToUse = Array.isArray(lab) ? lab[0] : lab;
-      getmanagerEmployeeApi(labToUse)
-        .then((data) => {
-          console.log("Received manager data:", data);
-          setManagerNames(data.map((item) => ({ value: item, label: item })));
-        })
-        .catch((error) => console.error("Error fetching Manager Names:", error));
+      // Send all labs - backend will return managers with ANY matching lab
+      let labsToSend = null;
+      if (Array.isArray(lab)) {
+        labsToSend = lab.filter(l => l && l !== 'N/A');
+      } else if (typeof lab === 'string') {
+        labsToSend = [lab];
+      }
+      
+      if (labsToSend && labsToSend.length > 0) {
+        getmanagerEmployeeApi(labsToSend)
+          .then((data) => {
+            console.log("Received manager data:", data);
+            setManagerNames(data.map((item) => ({ value: item, label: item })));
+          })
+          .catch((error) => console.error("Error fetching Manager Names:", error));
+      }
     }
   }, [labName, effectiveUserDetails.lab]);
 

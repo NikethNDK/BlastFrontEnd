@@ -17,6 +17,7 @@ import {
   addTempItemIssueApi,
   addTempToIssueApi,
   getEmployeeApi,
+  getEmployeeByUsernameApi,
 } from "../../services/AppinfoService";
 // import '../../inventory/formBorder.css';
 import Select from "react-select";
@@ -50,6 +51,8 @@ const AddProductListReq = ({
   const [selectedNames, setSelectedNames] = useState(null);
   const [managerNames, setManagerNames] = useState([]);
   const [selectedmanNames, setSelectedmanNames] = useState(null);
+  const [managerProjects, setManagerProjects] = useState([]);
+  const [filteredProjectsMap, setFilteredProjectsMap] = useState([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState(null);
   const [selectedManufacturer, setSelectedManufacturer] = useState(null);
   const [manufacturers, setManufacturers] = useState([]);
@@ -210,26 +213,28 @@ const AddProductListReq = ({
           console.log("No assigned projects found - showing empty dropdown");
         }
 
-        setProjectsMap(
-          filteredProjects.map((item) => ({
-            value: item.project_code,
-            label: item.project_name,
-            code: item.project_code,
-          }))
-        );
+        const projectsMapData = filteredProjects.map((item) => ({
+          value: item.project_code,
+          label: item.project_name,
+          code: item.project_code,
+        }));
+        
+        setProjectsMap(projectsMapData);
+        // Initialize filteredProjectsMap with all researcher's projects (no manager selected yet)
+        setFilteredProjectsMap(projectsMapData);
       })
       .catch((error) => {
         console.error("Error fetching projects or employees:", error);
         // Fallback: show all active projects if fetch fails
         getProjectApi().then((data) => {
           const activeProjects = data.filter((item) => item.deleted === 0);
-          setProjectsMap(
-            activeProjects.map((item) => ({
-              value: item.project_code,
-              label: item.project_name,
-              code: item.project_code,
-            }))
-          );
+          const projectsMapData = activeProjects.map((item) => ({
+            value: item.project_code,
+            label: item.project_name,
+            code: item.project_code,
+          }));
+          setProjectsMap(projectsMapData);
+          setFilteredProjectsMap(projectsMapData);
         });
       });
     //Fetch Projects codes
@@ -245,18 +250,19 @@ const AddProductListReq = ({
     // Redux user.lab is an array of lab names (from LoginSerializer)
     // userDetails.lab might be string or array
     const researcherLabs = reduxUser?.lab || userDetails.lab || [];
-    let labName = null;
+    let labsToSend = null;
     
     if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
-      // Use first lab if multiple labs (backend uses icontains, so this should work)
-      labName = researcherLabs[0];
+      // Send all labs - backend will return managers with ANY matching lab
+      labsToSend = researcherLabs.filter(lab => lab && lab !== 'N/A');
     } else if (typeof researcherLabs === 'string' && researcherLabs !== 'N/A') {
-      labName = researcherLabs;
+      // Single lab as string - convert to array for consistency
+      labsToSend = [researcherLabs];
     }
     
-    // Pass lab name to filter managers by researcher's lab
+    // Pass all labs to filter managers - returns managers who have ANY of the researcher's labs
     // Backend returns all managers if lab param is missing (optional filtering)
-    getmanagerEmployeeApi(labName || null)
+    getmanagerEmployeeApi(labsToSend && labsToSend.length > 0 ? labsToSend : null)
       .then((data) => {
         console.log("Received manager data:", data); // Log received data
         setManagerNames(data.map((item) => ({ value: item, label: item })));
@@ -265,6 +271,64 @@ const AddProductListReq = ({
         console.error("Error fetching Manager Names:", error)
       );
   }, [masterType, reduxUser?.user_name, userDetails.name]);
+
+  // Fetch manager's projects when manager is selected and filter projects accordingly
+  useEffect(() => {
+    if (!selectedmanNames || !selectedmanNames.value) {
+      // No manager selected - show all researcher's projects
+      setFilteredProjectsMap(projectsMap);
+      setManagerProjects([]);
+      return;
+    }
+
+    // Fetch manager's employee data to get their projects
+    getEmployeeByUsernameApi(selectedmanNames.value)
+      .then((employeeData) => {
+        console.log("Manager employee data:", employeeData);
+        
+        // Get manager's project codes from the response
+        let managerProjectCodes = [];
+        if (employeeData && employeeData.length > 0) {
+          const manager = employeeData[0]; // Should be single employee record
+          if (manager.project_code) {
+            // project_code can be array or single value
+            managerProjectCodes = Array.isArray(manager.project_code)
+              ? manager.project_code
+              : [manager.project_code];
+          }
+        }
+        
+        setManagerProjects(managerProjectCodes);
+        console.log("Manager project codes:", managerProjectCodes);
+
+        // Filter projects to show only common projects between researcher and manager
+        if (managerProjectCodes.length > 0) {
+          const commonProjects = projectsMap.filter((project) =>
+            managerProjectCodes.includes(project.code)
+          );
+          console.log("Common projects (researcher & manager):", commonProjects);
+          setFilteredProjectsMap(commonProjects);
+          
+          // Clear selected project if it's not in the filtered list
+          if (selectedCodes && !commonProjects.find(p => p.code === selectedCodes.value)) {
+            setSelectedCodes(null);
+            setSelectedProject("");
+          }
+        } else {
+          // Manager has no projects - show empty list
+          console.log("Manager has no projects assigned");
+          setFilteredProjectsMap([]);
+          setSelectedCodes(null);
+          setSelectedProject("");
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching manager's projects:", error);
+        // On error, show all researcher's projects
+        setFilteredProjectsMap(projectsMap);
+        setManagerProjects([]);
+      });
+  }, [selectedmanNames, projectsMap]);
   const filteredItemsCodes = itemsCodes.filter(
     (item) => item.details.masterType === masterType
   );
@@ -563,24 +627,32 @@ const AddProductListReq = ({
                       onChange={(selectedOption) => {
                         setSelectedCodes(selectedOption);
                         // Automatically update project name
-                        const correspondingProject = projectsMap.find(
+                        const correspondingProject = filteredProjectsMap.find(
                           (p) => p.code === selectedOption.value
                         );
-                        setSelectedProject({
-                          value: correspondingProject.value,
-                          label: correspondingProject.label,
-                        });
+                        if (correspondingProject) {
+                          setSelectedProject({
+                            value: correspondingProject.value,
+                            label: correspondingProject.label,
+                          });
+                        }
                       }}
-                      options={projectsMap.map((item) => ({
+                      options={filteredProjectsMap.map((item) => ({
                         value: item.code,
                         label: item.code,
                       }))}
-                      placeholder="Select Project Code"
+                      placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Code"}
+                      isDisabled={filteredProjectsMap.length === 0}
                     />
                     {errorMessages.project && (
                       <span className="text-danger">
                         {errorMessages.project}
                       </span>
+                    )}
+                    {filteredProjectsMap.length === 0 && selectedmanNames && (
+                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
+                        No common projects between researcher and selected manager
+                      </Form.Text>
                     )}
                   </Form.Group>
                 </Col>
@@ -593,20 +665,28 @@ const AddProductListReq = ({
                       onChange={(selectedOption) => {
                         setSelectedProject(selectedOption);
                         // Automatically update project code
-                        const correspondingProject = projectsMap.find(
+                        const correspondingProject = filteredProjectsMap.find(
                           (p) => p.label === selectedOption.label
                         );
-                        setSelectedCodes({
-                          value: correspondingProject.code,
-                          label: correspondingProject.code,
-                        });
+                        if (correspondingProject) {
+                          setSelectedCodes({
+                            value: correspondingProject.code,
+                            label: correspondingProject.code,
+                          });
+                        }
                       }}
-                      options={projectsMap.map((item) => ({
+                      options={filteredProjectsMap.map((item) => ({
                         value: item.value,
                         label: item.label,
                       }))}
-                      placeholder="Select Project Name"
+                      placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Name"}
+                      isDisabled={filteredProjectsMap.length === 0}
                     />
+                    {filteredProjectsMap.length === 0 && selectedmanNames && (
+                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
+                        No common projects between researcher and selected manager
+                      </Form.Text>
+                    )}
                   </Form.Group>
                 </Col>
               </Row>
