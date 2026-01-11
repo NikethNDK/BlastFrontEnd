@@ -79,15 +79,17 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
 
       // Get user details (keeping existing flow for backward compatibility)
       const response = await getLoginApi();
-      console.log("API Response:", response);
+      // console.log("API Response:", response);
 
       if (response.length > 0) {
         let foundUser = response.find(
           (user) => user.user_name === username && user.password === password
         );
-        if (!foundUser?.is_active) {
+        if (!foundUser) {
+          toast.error("The username or password you entered is incorrect. Please try again.");
+        } else if (!foundUser.is_active) {
           toast.error("You are blocked");
-        } else if (foundUser) {
+        } else {
           console.log("Logged in User:", foundUser);
 
           // Dispatch to Redux store
@@ -104,8 +106,6 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
             lab: foundUser.lab || "N/A",
             designation: foundUser.designation || "Not Assigned"
           });
-        } else {
-          toast.error("The username or password you entered is incorrect. Please try again.");
         }
       } else {
         toast.error("No user found in system");
