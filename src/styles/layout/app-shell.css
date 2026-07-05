@@ -8,12 +8,47 @@
   background-color: var(--lims-bg, #f2f5e6);
 }
 
+/* Authenticated workspace: viewport-locked, content panel is sole scroller */
+.lims-app--workspace {
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
 .lims-header {
   flex-shrink: 0;
   z-index: 100;
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+}
+
+/* Collapsible header row (authenticated workspace only) */
+.lims-app--workspace .lims-header {
+  overflow: hidden;
+  max-height: var(--lims-header-measured-height, 200px);
+  transition: max-height var(--lims-header-transition-duration, 300ms)
+    var(--lims-header-transition-easing, ease-in-out);
+  will-change: max-height;
+}
+
+.lims-app--workspace.lims-app--header-hidden .lims-header {
+  max-height: 0;
+  pointer-events: none;
+}
+
+.lims-app--workspace .lims-header .modern-header {
+  transition: margin-bottom var(--lims-header-transition-duration, 300ms)
+    var(--lims-header-transition-easing, ease-in-out);
+}
+
+.lims-app--workspace.lims-app--header-hidden .lims-header .modern-header {
+  margin-bottom: 0;
+}
+
+.lims-app--workspace.lims-app--header-hidden .lims-header[aria-hidden='true'] {
+  visibility: hidden;
 }
 
 .lims-body,
@@ -26,6 +61,15 @@
   min-height: 0;
 }
 
+.lims-app--workspace .lims-body,
+.lims-app--workspace .lab-body-container {
+  align-items: stretch;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  gap: var(--lims-content-gutter, var(--lims-sidebar-gutter, 8px));
+}
+
 .lims-main,
 .lab-main-content {
   flex: 1;
@@ -33,6 +77,11 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+}
+
+.lims-app--workspace .lims-main,
+.lims-app--workspace .lab-main-content {
+  overflow: hidden;
 }
 
 .lims-content,
@@ -46,9 +95,53 @@
   width: 100%;
 }
 
+/* Content panel — mirrors sidebar box; only inner scroll layer moves */
+.lims-app--workspace .lims-content,
+.lims-app--workspace .lab-content-container {
+  padding: 0;
+  margin: var(--lims-content-gutter, var(--lims-sidebar-gutter, 8px))
+    var(--lims-content-gutter, var(--lims-sidebar-gutter, 8px))
+    var(--lims-content-gutter, var(--lims-sidebar-gutter, 8px)) 0;
+  background-color: var(--lims-bg-sidebar, #ffffff);
+  color: var(--lims-text, #1a3d2a);
+  border: 1px solid var(--lims-border, #e2e8f0);
+  border-radius: var(--lims-radius-md, 8px);
+  box-shadow: var(--lims-shadow-subtle);
+  overflow: hidden;
+  align-self: stretch;
+}
+
+.lims-app--workspace .lims-content-scroll {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--lims-space-3, 0.75rem);
+  outline: none;
+}
+
+.lims-app--workspace .lims-content-scroll:focus-visible {
+  outline: 2px solid var(--lims-accent-dark, #b5da21);
+  outline-offset: -2px;
+}
+
+.lims-app--workspace .lims-content-scroll > .lims-page-layout {
+  height: auto;
+  min-height: 100%;
+}
+
 /* Auth-only shell (login) */
 .lims-app--auth {
   min-height: 100dvh;
+  height: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 .lims-auth-content {
@@ -56,5 +149,29 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1024px) {
+  .lims-app--workspace .lims-body,
+  .lims-app--workspace .lab-body-container {
+    gap: 0;
+  }
+
+  .lims-app--workspace .lims-content,
+  .lims-app--workspace .lab-content-container {
+    margin: var(--lims-content-gutter, var(--lims-sidebar-gutter, 8px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lims-app--workspace .lims-header {
+    transition: none;
+    will-change: auto;
+  }
+
+  .lims-app--workspace .lims-header .modern-header {
+    transition: none;
+  }
 }

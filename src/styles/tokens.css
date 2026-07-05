@@ -13,10 +13,16 @@
 
   /* Layout */
   --lims-header-offset: 220px;
-  --lims-sidebar-width: 280px;
-  --lims-sidebar-collapsed-width: 80px;
-  --lims-sidebar-min-height: 360px;
-  --lims-sidebar-max-height: calc(100dvh - var(--lims-header-offset, 220px));
+  --lims-sidebar-width: 240px;
+  --lims-sidebar-collapsed-width: 64px;
+  --lims-sidebar-min-height: 320px;
+  --lims-sidebar-gutter: 8px;
+  --lims-content-gutter: var(--lims-sidebar-gutter);
+
+  /* Header motion (authenticated workspace) */
+  --lims-header-transition-duration: 300ms;
+  --lims-header-transition-easing: ease-in-out;
+  --lims-header-measured-height: 200px;
 
   /* Motion & elevation */
   --lims-transition: 0.2s ease;

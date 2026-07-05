@@ -97,6 +97,7 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
           dispatch(setUser(foundUser));
 
           // Keep existing local state for backward compatibility with props
+          sessionStorage.setItem('lims-header-intro', '1');
           setLoggedIn(true);
           setUserRole(foundUser.role);
           setUserLabs(foundUser.lab || []);

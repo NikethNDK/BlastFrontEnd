@@ -160,6 +160,16 @@
   min-height: 0;
 }
 
+/* Workspace shell panel already provides the outer box */
+.lims-app--workspace .lims-content-scroll .lims-page-body > .lims-content-card,
+.lims-app--workspace .lims-content-scroll > .lims-page-layout > .lims-content-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+}
+
 /* Fill-height data panels inside cards */
 .lims-data-fill,
 .lims-content-card--flush > .master-list-container,
