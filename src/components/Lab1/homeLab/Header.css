@@ -4,7 +4,6 @@
 
 /* --- CSS Custom Properties --- */
 :root {
-    /* Color Palette - Modern & Professional */
     --header-gradient-start: #c5ea31;
     --header-gradient-end: #c5ea31;
     --accent-primary: #3182ce;
@@ -15,21 +14,16 @@
     --divider-color: rgba(0, 0, 0, 0.055);
     --shadow-primary: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     --shadow-button: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    
-    /* Typography */
+
     --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-secondary: 'Poppins', sans-serif;
-    
-    /* Spacing & Sizing */
-    --header-padding: 15px 15px;
+
+    --header-padding: clamp(6px, 1.3vw, 10px) clamp(8px, 2vw, 10px);
+    --header-logo-height: clamp(26px, 5.5vw, 64px);
+    --header-intranet-height: clamp(18px, 3.2vw, 38px);
     --border-radius: 12px;
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --backdrop-blur: blur(10px);
-}
-
-/* --- Base Styles --- */
-* {
-    box-sizing: border-box;
 }
 
 /* --- Main Header Container --- */
@@ -37,26 +31,25 @@
     position: relative;
     left: 0;
     right: 0;
-    margin-bottom: 20px;
-    
-    /* Modern gradient background */
-    background: linear-gradient(135deg, var(--header-gradient-start) 0%,var(--header-gradient-end) 65%, var(--header-gradient-end) 100%);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    margin-bottom: 10px;
+
+    background: linear-gradient(135deg, var(--header-gradient-start) 0%, var(--header-gradient-end) 65%, var(--header-gradient-end) 100%);
     backdrop-filter: var(--backdrop-blur);
     -webkit-backdrop-filter: var(--backdrop-blur);
-    
-    /* Layout */
+
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
     align-items: center;
-    /* gap: 14px; */
+    gap: clamp(5px, 1vw, 8px);
     padding: var(--header-padding);
-    min-height: 100px;
-    
-    /* Visual Effects */
+    min-height: clamp(48px, 8.5vw, 64px);
+
     box-shadow: var(--shadow-primary);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    
-    /* Typography base */
+
     font-family: var(--font-primary);
     color: var(--text-primary);
     line-height: 1.5;
@@ -64,68 +57,70 @@
 
 /* --- Logo Columns --- */
 .logo-column {
-  /* display: flex; */
-  flex-direction: column; /* stack children vertically */
-  gap: 8px;
-  padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(2px, 0.6vw, 5px);
+    padding: clamp(2px, 0.6vw, 5px);
+    min-width: 0;
 }
 
 .logo-row {
-  display: flex; /* two logos side by side */
-  gap: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: clamp(2px, 0.6vw, 5px);
+}
+
+.right-logos {
+    flex-direction: column;
 }
 
 .logo {
     transition: var(--transition-smooth);
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
-}
-
-
-/* Specific logo sizing */
-.tn-logo, .dna-logo {
-    height: 100px;
+    height: var(--header-logo-height);
     width: auto;
-    object-fit: contain;
-}
-
-.emblem-logo, .lims-logo {
-    height: 100px;
-    width: auto;
+    max-width: 100%;
     object-fit: contain;
 }
 
 .intranet-logo {
+    height: var(--header-intranet-height);
     margin: 0 auto;
-    height: 60px;
     display: block;
 }
 
 /* --- Title Column (Center Content) --- */
 .title-column {
     text-align: center;
-    max-width: 800px;
+    max-width: 580px;
     margin: 0 auto;
+    min-width: 0;
+    width: 100%;
 }
 
 .title-group {
     display: flex;
     flex-direction: column;
-    /* gap: 2px; */
+    gap: 1px;
 }
 
-/* Main Title */
 .main-title {
     font-family: var(--font-secondary);
-    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-size: clamp(0.85rem, 1.9vw + 0.3rem, 1.5rem);
     font-weight: 500;
     color: var(--text-primary);
     margin: 0;
     letter-spacing: -0.025em;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     line-height: 1.2;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
-/* Subtitles */
 .subtitle {
     margin: 0;
     font-family: var(--font-primary);
@@ -136,21 +131,21 @@
 }
 
 .subtitle.light-text {
-    font-size: 0.75rem;
+    font-size: clamp(0.55rem, 1.1vw, 0.625rem);
     color: var(--text-primary);
     font-weight: 400;
 }
 
 .subtitle.dark-text {
-    font-size: 1rem;
+    font-size: clamp(0.625rem, 1.3vw, 0.75rem);
     color: var(--text-primary);
     font-weight: 600;
 }
 
 .address-text {
-    font-size: 0.95rem;
+    font-size: clamp(0.625rem, 1.2vw, 0.75rem);
     color: var(--text-primary);
-    margin: 4px 0 16px 0;
+    margin: 1px 0 clamp(4px, 1.3vw, 10px) 0;
     font-style: italic;
     opacity: 0.9;
 }
@@ -160,9 +155,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
-    padding-top: 16px;
-    margin-top: 12px;
+    gap: 10px;
+    padding-top: clamp(4px, 1.3vw, 10px);
+    margin-top: clamp(3px, 1vw, 6px);
     border-top: 2px solid var(--divider-color);
     position: relative;
 }
@@ -173,62 +168,58 @@
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 60px;
+    width: 40px;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--accent-secondary), transparent);
 }
 
 .lims-text {
     font-family: var(--font-secondary);
-    font-size: 0.95rem;
+    font-size: clamp(0.5625rem, 1.1vw, 0.75rem);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-align: center;
     flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.lims-text-short {
+    display: none;
 }
 
 /* --- Action Buttons --- */
 .header-buttons {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
     flex-wrap: wrap;
     justify-content: center;
 }
 
 .action-button {
-    /* Reset & Base */
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    
-    /* Sizing & Spacing */
-    padding: 10px 20px;
-    min-height: 40px;
-    
-    /* Typography */
+    gap: 6px;
+    padding: 6px 14px;
+    min-height: 30px;
     font-family: var(--font-primary);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 500;
     text-decoration: none;
     white-space: nowrap;
-    
-    /* Styling */
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--border-radius);
     color: var(--text-primary);
-    
-    /* Effects */
     box-shadow: var(--shadow-button);
     transition: var(--transition-smooth);
     cursor: pointer;
-    
-    /* Prevent selection */
     user-select: none;
     -webkit-user-select: none;
 }
@@ -245,7 +236,6 @@
     transition-duration: 0.1s;
 }
 
-/* Primary button variant */
 .action-button.primary {
     background: var(--accent-primary);
     border-color: var(--accent-primary);
@@ -257,172 +247,164 @@
     border-color: var(--accent-secondary);
 }
 
-/* --- Responsive Design --- */
-
-/* Large Desktop */
-@media (min-width: 1400px) {
-    .modern-header {
-        /* padding: 28px 48px; */
-        /* gap: 22px; */
-    }
-    
-    .main-title {
-        font-size: 2rem;
-    }
-}
-
-/* Tablet Landscape */
-@media (max-width: 1200px) {
+/* --- Responsive: Tablet & below (≤1024px) — stack layout --- */
+@media (max-width: 1024px) {
     .modern-header {
         grid-template-columns: 1fr;
         text-align: center;
-        gap: 10px;
-        /* padding: 20px 24px; */
+        gap: clamp(5px, 1.3vw, 8px);
     }
-    
+
     .logo-column {
         flex-direction: row;
+        flex-wrap: wrap;
         justify-content: center;
-        gap: 24px;
     }
-    
+
+    .right-logos {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
     .title-column {
         order: 1;
     }
-    
+
     .logo-column:first-child {
         order: 0;
     }
-    
-    .logo-column:last-child {
+
+    .logo-column.right-logos {
         order: 2;
     }
-    
-    .main-title {
-        font-size: 2rem;
-    }
 }
 
-/* Tablet Portrait */
-@media (max-width: 900px) {
+/* --- Responsive: Small tablet (≤768px) — compact logos --- */
+@media (max-width: 768px) {
     .modern-header {
-        padding: 16px 20px;
-        gap: 16px;
+        --header-logo-height: clamp(24px, 5vw, 40px);
+        --header-intranet-height: clamp(16px, 3vw, 26px);
+        min-height: auto;
     }
-    
-    .logo-column {
-        gap: 16px;
-    }
-    
-    .tn-logo, .dna-logo {
-        height: 48px;
-    }
-    
-    .emblem-logo, .lims-logo {
-        height: 40px;
-    }
-    
-    .main-title {
-        font-size: 1.75rem;
-    }
-    
+
     .lims-bar {
         flex-direction: column;
-        gap: 12px;
-        text-align: center;
-    }
-    
-    .header-buttons {
-        width: 100%;
-        justify-content: center;
+        gap: 5px;
     }
 }
 
-/* Mobile Landscape */
+/* --- Responsive: Mobile (≤640px) — logos side-by-side above title --- */
 @media (max-width: 640px) {
     .modern-header {
-        padding: 12px 16px;
-        gap: 12px;
-        min-height: 80px;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        --header-logo-height: clamp(22px, 6.5vw, 30px);
+        --header-intranet-height: clamp(14px, 3.5vw, 22px);
+        padding: 6px 8px;
+        gap: 5px;
     }
-    
-    .logo-column {
-        display: none; /* Hide logos on small screens to save space */
+
+    .logo-column:first-child {
+        grid-column: 1;
+        grid-row: 1;
+        order: unset;
+        justify-content: flex-end;
+        padding-right: 4px;
     }
-    
-    .main-title {
-        font-size: 1.5rem;
-        line-height: 1.3;
+
+    .logo-column.right-logos {
+        grid-column: 2;
+        grid-row: 1;
+        order: unset;
+        justify-content: flex-start;
+        padding-left: 4px;
     }
-    
-    .subtitle.dark-text {
-        font-size: 0.9rem;
+
+    .title-column {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        order: unset;
     }
-    
-    .subtitle.light-text {
-        font-size: 0.7rem;
+
+    .intranet-logo {
+        display: none;
     }
-    
-    .address-text {
-        font-size: 0.85rem;
+
+    .lims-text-full {
+        display: none;
     }
-    
-    .lims-text {
-        font-size: 0.8rem;
-    }
-    
-    .action-button {
-        padding: 8px 16px;
-        font-size: 0.8rem;
-        min-height: 36px;
+
+    .lims-text-short {
+        display: inline;
     }
 }
 
-/* Mobile Portrait */
+/* --- Responsive: Small mobile (≤480px) --- */
 @media (max-width: 480px) {
     .modern-header {
-        padding: 10px 12px;
+        --header-logo-height: clamp(18px, 6vw, 26px);
+        padding: 5px 6px;
+        gap: 4px;
     }
-    
-    .main-title {
-        font-size: 1.25rem;
+
+    .dna-logo {
+        display: none;
     }
-    
-    .header-buttons {
-        gap: 8px;
+
+    .lims-bar {
+        padding-top: 3px;
+        margin-top: 3px;
     }
-    
+
     .action-button {
-        padding: 6px 12px;
-        font-size: 0.75rem;
-        min-height: 32px;
+        padding: 5px 10px;
+        font-size: 0.6875rem;
+        min-height: 28px;
+    }
+}
+
+/* --- Responsive: Extra-small (≤375px) --- */
+@media (max-width: 375px) {
+    .modern-header {
+        --header-logo-height: 18px;
+        padding: 5px;
+    }
+
+    .subtitle.light-text {
+        letter-spacing: 0.03em;
+    }
+}
+
+/* --- Large desktop (≥1400px) --- */
+@media (min-width: 1400px) {
+    .main-title {
+        font-size: 1.5rem;
     }
 }
 
 /* --- Accessibility & Performance --- */
 @media (prefers-reduced-motion: reduce) {
-    * {
+    .modern-header,
+    .modern-header * {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
 }
 
-/* High contrast mode support */
 @media (prefers-contrast: high) {
     .modern-header {
         border-bottom: 2px solid var(--text-primary);
     }
-    
+
     .action-button {
         border-width: 2px;
     }
 }
 
-/* --- Dark mode support (if needed in future) --- */
 @media (prefers-color-scheme: dark) {
     :root {
-        --header-gradient-end: #c5ea31 ;
-        --header-gradient-start: #c5ea31 ;
+        --header-gradient-end: #c5ea31;
+        --header-gradient-start: #c5ea31;
     }
 }

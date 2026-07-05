@@ -400,8 +400,8 @@ body {
   padding: var(--space-6);
 }
 
-/* Modern Header - Using green gradient to match Header.css */
-.modern-header {
+/* Page-level hero header (not the app shell Header component) */
+.modern-container > .modern-page-header {
   background: linear-gradient(135deg, #c5ea31 0%, #c5ea31 100%);
   color: #000;
   padding: var(--space-8) 0;
@@ -410,7 +410,7 @@ body {
   box-shadow: var(--shadow-xl);
 }
 
-.modern-header h1 {
+.modern-container > .modern-page-header h1 {
   font-size: var(--text-4xl);
   font-weight: 700;
   margin: 0;

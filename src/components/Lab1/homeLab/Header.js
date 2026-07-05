@@ -67,7 +67,8 @@ const Header = () => {
                     
                     <div className="lims-bar">
                         <h2 className="lims-text">
-                            Laboratory Information Management System
+                            <span className="lims-text-full">Laboratory Information Management System</span>
+                            <span className="lims-text-short" aria-hidden="true">AIWC LIMS</span>
                         </h2>
                     </div>
                 </div>

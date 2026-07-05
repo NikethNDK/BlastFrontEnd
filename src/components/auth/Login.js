@@ -175,7 +175,7 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
           <AppShell auth>
             <div className="login-container login-page">
               <div className="login-content">
-              <div className="login-grid">
+                <div className="login-grid">
                 {/* Left side - Image */}
                 <div className="login-image-section">
                   <div className="image-wrapper">
@@ -187,6 +187,13 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
                 {/* Right side - Login Form */}
                 <div className="login-form-section">
                   <div className="login-card">
+                    <img
+                      src={AIWC_LIMS}
+                      alt=""
+                      className="login-card-logo"
+                      aria-hidden="true"
+                      loading="lazy"
+                    />
                     <div className="login-header">
                       <h2 className="login-title">Welcome Back</h2>
                       <p className="login-subtitle">Sign in to access your dashboard</p>
@@ -194,24 +201,32 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
 
                     <form className="login-form" onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
                       <div className="form-group-modern">
-                        <label className="form-label-modern">Username</label>
+                        <label className="form-label-modern" htmlFor="login-username">
+                          Username
+                        </label>
                         <input
+                          id="login-username"
                           type="text"
                           value={username}
                           className="form-input-modern"
                           placeholder="Enter your username"
+                          autoComplete="username"
                           onChange={(e) => setUsername(e.target.value)}
                         />
                       </div>
 
                       <div className="form-group-modern">
-                        <label className="form-label-modern">Password</label>
+                        <label className="form-label-modern" htmlFor="login-password">
+                          Password
+                        </label>
                         <div className="password-input-wrapper">
                           <input
+                            id="login-password"
                             type={showPassword ? "text" : "password"}
                             value={password}
                             className="form-input-modern"
                             placeholder="Enter your password"
+                            autoComplete="current-password"
                             onChange={(e) => setPassword(e.target.value)}
                           />
                           <button
@@ -234,8 +249,8 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
                     </form>
                   </div>
                 </div>
+                </div>
               </div>
-            </div>
             </div>
           </AppShell>
 
