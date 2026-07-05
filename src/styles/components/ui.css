@@ -1,0 +1,459 @@
+/**
+ * Global UI polish inside authenticated main content.
+ * Scoped to .lims-content so login/welcome pages stay unchanged.
+ */
+
+/* ── Typography & base ───────────────────────────────────── */
+.lims-content {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #334155;
+  -webkit-font-smoothing: antialiased;
+}
+
+.lims-content h1,
+.lims-content h2,
+.lims-content h3,
+.lims-content h4,
+.lims-content h5 {
+  color: var(--lims-text, #1a3d2a);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* ── Remove legacy page constraints ──────────────────────── */
+.lims-content .project-manage-wrapper,
+.lims-content .project-manage-container,
+.lims-content .employee-manage-container {
+  max-width: 100% !important;
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  min-height: 0;
+}
+
+.lims-content .project-content-card,
+.lims-content .project-manage-header {
+  border-radius: var(--lims-radius-md, 10px);
+  border-color: var(--lims-border, #e2e8f0);
+  box-shadow: var(--lims-shadow-subtle);
+}
+
+.lims-content .project-content-header {
+  background: var(--lims-accent, #c5ea31) !important;
+  border-bottom: 1px solid var(--lims-border, #e2e8f0);
+}
+
+.lims-content .project-content-header h4 {
+  color: var(--lims-text, #1a3d2a) !important;
+}
+
+.lims-content .project-stat-card {
+  border-radius: var(--lims-radius-md, 10px);
+  border-color: var(--lims-border, #e2e8f0);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.lims-content .project-stat-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--lims-shadow-md, 0 6px 16px rgba(0, 0, 0, 0.08));
+}
+
+/* ── Forms ───────────────────────────────────────────────── */
+.lims-content .form-label,
+.lims-content label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 0.35rem;
+}
+
+.lims-content .form-control,
+.lims-content .form-select,
+.lims-content select.form-control,
+.lims-content textarea.form-control,
+.lims-content input[type="text"],
+.lims-content input[type="email"],
+.lims-content input[type="password"],
+.lims-content input[type="number"],
+.lims-content input[type="date"],
+.lims-content input[type="search"] {
+  border: 1px solid var(--lims-border, #e2e8f0);
+  border-radius: var(--lims-radius-sm, 6px);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: #334155;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lims-content .form-control:focus,
+.lims-content .form-select:focus,
+.lims-content select:focus,
+.lims-content textarea:focus,
+.lims-content input:focus {
+  border-color: var(--lims-accent-dark, #b5da21);
+  box-shadow: 0 0 0 3px rgba(197, 234, 49, 0.25);
+  outline: none;
+}
+
+.lims-content .form-control::placeholder {
+  color: #94a3b8;
+}
+
+.lims-content .form-group,
+.lims-content .mb-3 {
+  margin-bottom: var(--lims-space-4, 1rem);
+}
+
+.lims-content .row {
+  --bs-gutter-x: var(--lims-space-4, 1rem);
+  --bs-gutter-y: var(--lims-space-3, 0.75rem);
+}
+
+.lims-content-card .form-control,
+.lims-content-card .form-select {
+  margin-bottom: 0;
+}
+
+/* react-select inside content */
+.lims-content .css-13cymwt-control,
+.lims-content .css-t3ipsp-control {
+  border-color: var(--lims-border, #e2e8f0) !important;
+  border-radius: var(--lims-radius-sm, 6px) !important;
+  min-height: 38px !important;
+  box-shadow: none !important;
+}
+
+.lims-content .css-t3ipsp-control {
+  border-color: var(--lims-accent-dark, #b5da21) !important;
+  box-shadow: 0 0 0 3px rgba(197, 234, 49, 0.2) !important;
+}
+
+/* Form layout grids */
+.lims-content .lims-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+.lims-content .lims-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--lims-border, #e2e8f0);
+}
+
+/* ── Buttons ─────────────────────────────────────────────── */
+.lims-content .btn {
+  border-radius: var(--lims-radius-sm, 6px);
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.15s ease;
+}
+
+.lims-content .btn-primary {
+  background-color: var(--lims-text, #1a3d2a);
+  border-color: var(--lims-text, #1a3d2a);
+  color: #fff;
+}
+
+.lims-content .btn-primary:hover,
+.lims-content .btn-primary:focus {
+  background-color: #0f2d1c;
+  border-color: #0f2d1c;
+}
+
+.lims-content .btn-success {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.lims-content .btn-success:hover {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+.lims-content .btn-outline-primary {
+  color: var(--lims-text, #1a3d2a);
+  border-color: var(--lims-text, #1a3d2a);
+}
+
+.lims-content .btn-outline-primary:hover {
+  background: var(--lims-active-bg, rgba(197, 234, 49, 0.2));
+  color: var(--lims-text, #1a3d2a);
+}
+
+.lims-content .btn-outline-secondary {
+  border-color: var(--lims-border, #e2e8f0);
+  color: #64748b;
+}
+
+.lims-content .btn-outline-secondary:hover {
+  background: var(--lims-hover-bg, #f1f5f9);
+  color: #334155;
+}
+
+.lims-content .action-btn {
+  border-radius: var(--lims-radius-sm, 6px);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-color: var(--lims-text, #1a3d2a);
+  color: var(--lims-text, #1a3d2a);
+}
+
+.lims-content .action-btn:hover {
+  background: var(--lims-active-bg, rgba(197, 234, 49, 0.18));
+}
+
+.lims-content .action-btn.active-update {
+  background: var(--lims-text, #1a3d2a) !important;
+  border-color: var(--lims-text, #1a3d2a) !important;
+  color: #fff !important;
+}
+
+.lims-content .download-btn {
+  border-radius: var(--lims-radius-sm, 6px);
+}
+
+/* ── Tabs ────────────────────────────────────────────────── */
+.lims-content .nav-tabs {
+  border-bottom: 2px solid var(--lims-border, #e2e8f0);
+  gap: 0.25rem;
+}
+
+.lims-content .nav-tabs .nav-link {
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.65rem 1rem;
+  border-radius: 6px 6px 0 0;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.lims-content .nav-tabs .nav-link:hover {
+  color: var(--lims-text, #1a3d2a);
+  background: var(--lims-hover-bg, #f1f5f9);
+  border-bottom-color: rgba(197, 234, 49, 0.5);
+}
+
+.lims-content .nav-tabs .nav-link.active {
+  color: var(--lims-text, #1a3d2a);
+  background: transparent;
+  border-bottom-color: var(--lims-accent, #c5ea31);
+}
+
+.lims-content .add-product-tabs-modern .nav-link.active {
+  border-bottom-color: var(--lims-accent, #c5ea31) !important;
+}
+
+/* ── Modals ──────────────────────────────────────────────── */
+.lims-content ~ .modal .modal-content,
+.modal .modal-content {
+  border-radius: var(--lims-radius-md, 10px);
+  border: 1px solid var(--lims-border, #e2e8f0);
+  overflow: hidden;
+}
+
+.modal .modal-header,
+.lims-content .modal-header,
+.add-product-modal-header {
+  background: var(--lims-accent, #c5ea31);
+  border-bottom: 1px solid var(--lims-border, #e2e8f0);
+  padding: 1rem 1.25rem;
+}
+
+.modal .modal-title,
+.add-product-modal-header .modal-title {
+  color: var(--lims-text, #1a3d2a);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.modal .modal-footer,
+.add-product-modal-footer {
+  background: #fafbfc;
+  border-top: 1px solid var(--lims-border, #e2e8f0);
+  padding: 0.75rem 1.25rem;
+}
+
+/* In-content section rhythm */
+.lims-content-card > * + * {
+  margin-top: 0;
+}
+
+.lims-content-card .lims-pagination--top + .table-wrapper,
+.lims-content-card .lims-pagination--top + .lims-table-wrap,
+.lims-content-card .lims-pagination--top + div[class*="table"] {
+  border-top: none;
+}
+
+.lims-content-card form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lims-space-3, 0.75rem);
+}
+
+.lims-content-card .row + .row {
+  margin-top: 0;
+}
+
+/* Filter inputs in table headers */
+.lims-content .filter-input {
+  margin-top: var(--lims-space-2, 0.5rem);
+  border-radius: var(--lims-radius-sm, 6px);
+  font-size: 0.8rem;
+}
+
+/* Card inner sections with subtle dividers */
+.lims-content-card .add-product-card-modern + .add-product-card-modern,
+.lims-content-card .lims-section + .lims-section {
+  border-top: 1px solid var(--lims-border, #e2e8f0);
+}
+
+/* Bootstrap pagination */
+.lims-content .pagination .page-link {
+  border-radius: var(--lims-radius-sm, 6px);
+  margin: 0 2px;
+  color: var(--lims-text, #1a3d2a);
+  border-color: var(--lims-border, #e2e8f0);
+  font-size: 0.875rem;
+}
+
+.lims-content .pagination .page-item.active .page-link {
+  background: var(--lims-accent, #c5ea31);
+  border-color: var(--lims-accent-dark, #b5da21);
+  color: var(--lims-text, #1a3d2a);
+}
+
+/* react-bootstrap-table pagination */
+.lims-content .react-bootstrap-table-pagination {
+  padding: 0.75rem 1rem;
+  background: #fafbfc;
+  border-top: 1px solid var(--lims-border, #e2e8f0);
+}
+
+.lims-content .equipment-actions {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--lims-border, #e2e8f0);
+  flex-shrink: 0;
+  margin-bottom: 0;
+}
+.lims-embedded-panel,
+.lims-data-fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  gap: 0.5rem;
+}
+
+.lims-embedded-panel .lims-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  background: #fafbfc;
+  border-bottom: 1px solid var(--lims-border, #e2e8f0);
+  flex-shrink: 0;
+}
+
+.lims-embedded-panel .lims-filter-row label {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.lims-embedded-panel .lims-fill-card,
+.lims-data-fill > .lims-content-card {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Alerts & empty states ─────────────────────────────── */
+.lims-content .alert {
+  border-radius: var(--lims-radius-sm, 6px);
+  font-size: 0.875rem;
+}
+
+.lims-content .loading-state,
+.lims-content .error-state {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9375rem;
+}
+
+.lims-content .error-state {
+  color: #dc2626;
+}
+
+/* ── MUI inside content (masterTable etc.) ──────────────── */
+.lims-content .MuiPaper-root {
+  border-radius: var(--lims-radius-md, 10px) !important;
+  box-shadow: var(--lims-shadow-subtle) !important;
+}
+
+.lims-content .MuiTableHead-root .MuiTableCell-head {
+  background: var(--lims-accent, #c5ea31) !important;
+  color: var(--lims-text, #1a3d2a) !important;
+  font-weight: 600 !important;
+}
+
+/* ── Search / filter bars ────────────────────────────────── */
+.lims-content .project-search-bar,
+.lims-content .search-filter-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem 0;
+}
+
+.lims-content .project-search-bar input,
+.lims-content .search-filter-container input {
+  flex: 1;
+  min-width: 160px;
+}
+
+/* ── Card section labels ─────────────────────────────────── */
+.lims-content .lims-section-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.lims-content .dna-manage-table-section,
+.lims-content .dna-manage-table-section .table-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  width: 100%;
+}
+
+.lims-content .dna-manage-table-section .table-container {
+  overflow: auto;
+  max-height: none !important;
+}
+.lims-page-layout > .lims-content-card,
+.lims-page-layout > .lims-page-body,
+.lims-page-layout > .lims-page-toolbar + .lims-content-card,
+.lims-page-layout > .lims-page-toolbar + .lims-page-body {
+  flex: 1 1 0;
+  min-height: 0;
+}

@@ -24,8 +24,8 @@ import {
 import "../../inventory/formBorder.css";
 import Select from "react-select";
 import TempIssueTable from "./TempIssueTable";
-import LabNavigation1 from "../homeLab/LabNavigation1";
 import { BASE_URL } from "../../../services/AppinfoService";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
 
 const IssuedProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -915,46 +915,33 @@ const IssuedProduct = ({
   };
 
   return (
-    <div style={{ marginTop: "1px", width: "100%" }}>
-      <div>
-        <h1 style={{
-    fontSize: "var(--lab-text-3xl, 1.8rem)",
-    fontWeight: 700,
-    color: "var(--lab-neutral-800, #1e293b)",
-    margin: 0,
-    textAlign: "left",
-  }}>
-          ADD ISSUE
-          <Button
-            variant="primary"
-            onClick={handleShow}
-            style={{
-              width: "70px",
-              float: "right",
-              marginLeft: "8px",
-            }}
-          >
-            Add
-          </Button>
-          <Button
-            onClick={handleTransferData}
-            style={{ float: "right" }}
-            title="Accept LAB-OPEN items and transfer LAB-ACT items"
-            disabled={tableItemCount === 0}
-          >
-            Submit
-          </Button>
-        </h1>
-      </div>
-      <p></p>
-
-      <div style={{ paddingTop: "10px" }}>
+    <PageLayout>
+      <PageHeader
+        title="Add issue"
+        actions={
+          <>
+            <Button
+              onClick={handleTransferData}
+              disabled={tableItemCount === 0}
+              title="Accept LAB-OPEN items and transfer LAB-ACT items"
+            >
+              Submit
+            </Button>
+            <Button variant="primary" onClick={handleShow}>
+              Add
+            </Button>
+          </>
+        }
+      />
+      <PageBody>
+      <ContentCard flush>
         <TempIssueTable 
           onEdit={openIssueEditor} 
           username={effectiveUserDetails.user_name || null}
           onItemCountChange={setTableItemCount}
         />
-      </div>
+      </ContentCard>
+      </PageBody>
 
       {/* --- Modal Component for Add Issue Form --- */}
       <Modal show={showModal} onHide={handleClose} size="xl" scrollable className="modal-xl">
@@ -1394,7 +1381,7 @@ const IssuedProduct = ({
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </PageLayout>
   );
 };
 

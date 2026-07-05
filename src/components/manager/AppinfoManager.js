@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button } from 'react-bootstrap';
 import { getAppinfo } from '../../services/AppinfoService';
 import "../../App.css";
+import { PageLayout, PageHeader, PageBody, ContentCard } from '../layout/content';
 
 const AppinfoManager = () => {
   const [students, setAppinfo] = useState([]);
@@ -22,10 +23,10 @@ const AppinfoManager = () => {
   }, []);
 
   return(
-    <div className="container-fluid side-container">
-    <div className="header-container">
-      <h2 style={{ textAlign: 'center' }} className="appinfo-header">Appinfo</h2>
-    </div>
+    <PageLayout>
+    <PageHeader title="Appinfo" />
+    <PageBody>
+    <ContentCard flush>
       <div className="row side-row">
     <p id="before-table"></p>
         <Table striped bordered hover className="react-bootstrap-table" id="dataTable">
@@ -56,7 +57,9 @@ const AppinfoManager = () => {
         </tbody>
     </Table>
     </div>
-  </div>
+    </ContentCard>
+    </PageBody>
+  </PageLayout>
   );
 };
 

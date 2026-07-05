@@ -34,11 +34,9 @@
 
 /* --- Main Header Container --- */
 .modern-header {
-    position: sticky;
-    top: 0;
+    position: relative;
     left: 0;
     right: 0;
-    z-index: 1000;
     margin-bottom: 20px;
     
     /* Modern gradient background */

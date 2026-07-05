@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import Pagination from "../../common/Pagination";
 import { getItemReceiveApi } from "../../../services/AppinfoService";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "../../../components/Lab1/homeLab/inventory.css";
+import { ContentCard } from "../../layout/content";
 
 const ReceivedFilter = ({ setReceivedCount }) => {
   // Get user from Redux store to get username and labs
@@ -166,14 +167,9 @@ const ReceivedFilter = ({ setReceivedCount }) => {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-
-  const handleItemsPerPageChange = (e) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing items per page
-  };
-
   return (
-    <div className="master-list-container" style={{ width: "100%", padding: "24px" }}>
+    <ContentCard flush>
+    <div className="master-list-container lims-data-fill">
       {/* --- Lab Filter Dropdown --- */}
       <div style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
         <label style={{ fontWeight: "500", fontSize: "14px" }}>Lab Name:</label>
@@ -199,30 +195,27 @@ const ReceivedFilter = ({ setReceivedCount }) => {
       </div>
 
       {/* --- Pagination Controls (Top) --- */}
-      <div className="pagination-controls top">
-        <div className="pagination-info">
-          Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} items
-        </div>
-        <div className="pagination-options">
-          <label className="items-per-page-label">
-            Items per page:
-            <select 
-              value={itemsPerPage} 
-              onChange={handleItemsPerPageChange}
-              className="items-per-page-select"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </label>
-        </div>
-      </div>
+      <Pagination
+        position="top"
+        showPageNumbers={false}
+        showItemsPerPage
+        showSummary
+        totalItems={totalItems}
+        startIndex={startIndex}
+        endIndex={endIndex}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={(n) => {
+          setItemsPerPage(n);
+          setCurrentPage(1);
+        }}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
 
       {/* --- Main Data Table --- */}
       <div className="table-wrapper">
-        <table className="inventory-table">
+        <table className="inventory-table lims-table">
           <thead>
             <tr>
               {/* Header Cells with Filters */}
@@ -288,48 +281,14 @@ const ReceivedFilter = ({ setReceivedCount }) => {
       </div>
 
       {/* --- Pagination Controls (Bottom) --- */}
-      {totalPages > 1 && (
-        <div className="pagination-controls bottom">
-          <div className="pagination-navigation">
-            <button
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="pagination-btn prev-btn"
-            >
-              <FaChevronLeft size={14} />
-              Previous
-            </button>
-            
-            <div className="pagination-numbers">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`pagination-btn page-btn ${
-                    currentPage === page ? "active" : ""
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-            
-            <button
-              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className="pagination-btn next-btn"
-            >
-              Next
-              <FaChevronRight size={14} />
-            </button>
-          </div>
-          
-          <div className="pagination-summary">
-            Page {currentPage} of {totalPages}
-          </div>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        position="bottom"
+      />
     </div>
+    </ContentCard>
   );
 };
 

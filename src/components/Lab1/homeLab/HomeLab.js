@@ -1,38 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Button, ButtonGroup } from "react-bootstrap"; // Using ButtonGroup for a cleaner look
-import { CDBContainer } from "cdbreact";
-import "./HomeLab.css"; // Link to the new CSS file
-import { FaBell, FaTimes, FaEllipsisV } from "react-icons/fa";
+import "./HomeLab.css";
 import {
   getStockLevelApi,
-  getMastertyApi,
 } from "../../../services/AppinfoService";
 import MasterListTable from "./inventory";
-import LabNavigation1 from "./LabNavigation1"; // Assuming this is the main navigation/sidebar
+import { PageLayout, PageHeader, PageToolbar, PageBody, ContentCard } from "../../layout/content";
 
 const HomeLab = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
   const [selectedMasterType, setSelectedMasterType] = useState("");
   const [stockLevel, setStockLevel] = useState("");
-  // const [masterTypes, setMasterTypes] = useState([]);
-  const [showUserModal, setShowUserModal] = useState(false);
 
-  // Constants for the Inventory Types
   const inventoryTypes = ["Labware", "Chemical", "Equipment"];
 
-  // useEffect(() => {
-  //   const fetchMasterTypes = async () => {
-  //     try {
-  //       const data = await getMastertyApi();
-  //       setMasterTypes(data);
-  //     } catch (error) {
-  //       console.error("Error fetching Master Types:", error);
-  //     }
-  //   };
-  //   fetchMasterTypes();
-  // }, []);
-
   useEffect(() => {
-    // Fetch Stock Level
     getStockLevelApi()
       .then((response) => response.json())
       .then((data) => {
@@ -43,7 +23,6 @@ const HomeLab = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
         setStockLevel("Stock Level Unknown");
       });
 
-    // Set a default selected type if masterTypes is not empty
     if (inventoryTypes.length > 0) {
       setSelectedMasterType(inventoryTypes[0]);
     }
@@ -54,63 +33,41 @@ const HomeLab = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
     setSelectedMasterType(type);
   };
 
-  // Determine the indicator class based on stock level for styling
-  const getStockLevelClass = () => {
+  const getStockLevelBadgeClass = () => {
     if (stockLevel.includes("Sufficient")) {
-      return "stock-sufficient";
+      return "lims-meta-badge--success";
     } else if (stockLevel.includes("Reorder")) {
-      return "stock-reorder";
+      return "lims-meta-badge--danger";
     }
-    return "stock-unknown";
+    return "lims-meta-badge--neutral";
   };
 
+  const toolbarItems = inventoryTypes.map((type) => ({
+    id: type,
+    label: `${type} Inventory`,
+  }));
+
   return (
-    <div className="homelab-page-container">
-      {/* NOTE: Assuming the ModernSidebar (or LabNavigation1) is positioned fixed/sticky, 
-        and the content of HomeLab starts to its right. 
-        We use the padding/margin in the CSS to account for the sidebar.
-      */}
-
-      {/* --- Main Content Header --- */}
-      <div className="content-header">
-        <h1 className="page-title">INVENTORY MANAGEMENT</h1>
-        
-        {/* Stock Level Indicator Card */}
-        <div className={`stock-indicator-card ${getStockLevelClass()}`}>
-          <label className="stock-label">
+    <PageLayout>
+      <PageHeader
+        title="Inventory management"
+        meta={
+          <div className={`lims-meta-badge ${getStockLevelBadgeClass()}`}>
             {stockLevel}
-          </label>
-        </div>
-      </div>
-
-      {/* --- Inventory Type Selector --- */}
-      <div className="inventory-selector-bar">
-        <ButtonGroup className="inventory-type-group">
-          {inventoryTypes.map((type) => (
-            <Button
-              key={type}
-              variant="light" // Base button is light
-              className={`inventory-type-button ${
-                selectedMasterType === type ? "active" : ""
-              }`}
-              onClick={() => handleMasterTypeSelection(type)}
-            >
-              {type} Inventory
-            </Button>
-          ))}
-        </ButtonGroup>
-      </div>
-
-      {/* --- Main Data Table Container --- */}
-      <div className="data-table-container">
-        <CDBContainer>
-          {/* Render the MasterListTable component, which will filter data based on the selected type.
-            It defaults to showing nothing or all if selectedMasterType is empty.
-          */}
+          </div>
+        }
+      />
+      <PageToolbar
+        items={toolbarItems}
+        activeId={selectedMasterType}
+        onChange={handleMasterTypeSelection}
+      />
+      <PageBody>
+        <ContentCard flush>
           <MasterListTable masterType={selectedMasterType} />
-        </CDBContainer>
-      </div>
-    </div>
+        </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

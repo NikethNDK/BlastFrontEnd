@@ -1,0 +1,197 @@
+/* Unified table styling — all tables inside main content share one look */
+
+.lims-content table,
+.lims-content-card table,
+.lims-table,
+.lims-notification-table,
+.inventory-table-modern,
+.inventory-table,
+.return-data-table,
+.issued-data-table,
+.received-data-table,
+.transferred-data-table,
+.data-table,
+.dna-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 0;
+}
+
+/* Green accent headers everywhere */
+.lims-content table thead th,
+.lims-content-card .table thead th,
+.lims-content-card table thead th,
+.lims-table thead th,
+.lims-notification-table thead th,
+.inventory-table-modern thead th,
+.inventory-table thead th,
+.table-header-modern,
+.table-header,
+.return-data-table thead th,
+.issued-data-table thead th,
+.received-data-table thead th,
+.transferred-data-table thead th,
+.data-table thead th,
+.dna-data-table thead th,
+.lims-content .dna-data-table .table-header,
+.lims-content .react-bootstrap-table table thead th,
+.lims-content-card .react-bootstrap-table table thead th {
+  background-color: var(--lims-accent, #c5ea31) !important;
+  color: var(--lims-text, #1a3d2a) !important;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-align: center;
+  vertical-align: middle;
+  padding: 11px 14px;
+  border: 1px solid var(--lims-border, #e2e8f0);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+/* Body cells */
+.lims-content table tbody td,
+.lims-content-card .table tbody td,
+.lims-content-card table tbody td,
+.lims-table tbody td,
+.lims-notification-table tbody td,
+.inventory-table-modern tbody td,
+.inventory-table tbody td,
+.table-cell-modern,
+.table-cell,
+.return-data-table tbody td,
+.issued-data-table tbody td,
+.received-data-table tbody td,
+.transferred-data-table tbody td,
+.data-table tbody td,
+.dna-data-table tbody td,
+.lims-content .dna-data-table .table-cell {
+  vertical-align: middle;
+  text-align: center;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  color: #475569;
+  border: 1px solid var(--lims-border, #e2e8f0);
+}
+
+/* Row hover + zebra */
+.lims-content table tbody tr:nth-child(even),
+.lims-content-card table tbody tr:nth-child(even),
+.lims-table tbody tr:nth-child(even),
+.lims-notification-table tbody tr:nth-child(even),
+.inventory-table-modern tbody tr:nth-child(even),
+.data-row-modern:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.lims-content table tbody tr:hover,
+.lims-content-card .table-hover tbody tr:hover,
+.lims-table.table-hover tbody tr:hover,
+.lims-notification-table tbody tr:hover,
+.inventory-table-modern tbody tr:hover,
+.data-row-modern:hover {
+  background-color: var(--lims-hover-bg, #f1f5f9) !important;
+}
+
+/* Bootstrap table inside cards */
+.lims-content-card .table {
+  margin-bottom: 0;
+}
+
+.lims-content-card .table-hover tbody tr:hover {
+  background-color: var(--lims-hover-bg, #f1f5f9);
+}
+
+/* react-bootstrap-table wrapper */
+.lims-content .react-bootstrap-table,
+.lims-content-card .react-bootstrap-table {
+  width: 100%;
+}
+
+.lims-content .react-bootstrap-table table,
+.lims-content-card .react-bootstrap-table table {
+  width: 100%;
+}
+
+/* Scrollable table wrappers — fill remaining card height */
+.table-wrapper-modern,
+.lims-table-wrap,
+.lims-content .table-wrapper,
+.lims-content-card .table-wrapper,
+.lims-content .received-table-wrapper,
+.lims-content .issued-table-wrapper,
+.lims-content .return-table-wrapper,
+.lims-content .transferred-table-wrapper,
+.lims-content .project-table-wrapper {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  max-height: none !important;
+  overflow: auto;
+  border: none;
+  border-radius: 0;
+  background: var(--lims-surface, #ffffff);
+}
+
+.lims-content-card--flush .table-wrapper-modern {
+  border: none;
+  border-radius: 0;
+}
+
+/* Nested section cards — flat inside ContentCard */
+.lims-content-card .add-product-card-modern {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.lims-content-card .add-product-card-modern + .add-product-card-modern {
+  border-top: 1px solid var(--lims-border, #e2e8f0);
+}
+
+.lims-content-card .add-product-card-body-modern {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.lims-content-card .add-product-modern-container {
+  gap: 0;
+}
+
+/* Empty state */
+.no-data-cell-modern,
+.lims-notification-empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Section card headers inside content (AddProduct etc.) */
+.lims-content-card .add-product-card-header-modern,
+.lims-content-card .project-content-header {
+  background-color: var(--lims-accent, #c5ea31);
+  color: var(--lims-text, #1a3d2a);
+  border-bottom: 1px solid var(--lims-border, #e2e8f0);
+}
+
+.lims-content-card .add-product-card-title,
+.lims-content-card .project-content-header h4 {
+  color: var(--lims-text, #1a3d2a);
+}
+
+/* Pagination controls — consistent spacing */
+.lims-content-card .pagination-controls {
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--lims-border, #e2e8f0);
+  margin-top: 0.75rem;
+}

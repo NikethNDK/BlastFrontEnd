@@ -1,0 +1,410 @@
+/* Shared main-content layout kit — full-width by default */
+
+.lims-page-layout {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lims-space-3, 0.75rem);
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+}
+
+.lims-page-layout--constrained {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.lims-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--lims-accent, #c5ea31) 0%, #d4f04a 100%);
+  padding: 0.85rem 1.25rem;
+  border-radius: var(--lims-radius-md, 10px);
+  box-shadow: var(--lims-shadow-subtle);
+  width: 100%;
+  border: 1px solid rgba(26, 61, 42, 0.08);
+}
+
+.lims-page-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--lims-text, #1a3d2a);
+  flex: 1 1 auto;
+  min-width: 0;
+  letter-spacing: -0.02em;
+}
+
+.lims-page-header-end {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.lims-page-header-meta,
+.lims-page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lims-page-toolbar {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.lims-page-toolbar-group {
+  border-radius: 6px;
+  box-shadow: var(--lims-shadow-subtle);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.lims-page-toolbar-btn {
+  background-color: var(--lims-surface, #ffffff) !important;
+  border: 1px solid var(--lims-border, #e2e8f0) !important;
+  color: var(--lims-text, #1a3d2a) !important;
+  font-weight: 600;
+  padding: 0.65rem 1.25rem;
+  transition: all var(--lims-transition, 0.3s ease);
+  position: relative;
+}
+
+.lims-page-toolbar-btn:hover {
+  background: var(--lims-hover-bg, #f1f5f9) !important;
+}
+
+.lims-page-toolbar-btn.active {
+  background: var(--lims-accent, #c5ea31) !important;
+  color: var(--lims-text, #1a3d2a) !important;
+  border-color: var(--lims-accent-dark, #b5da21) !important;
+}
+
+.lims-page-toolbar-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.lims-page-toolbar-badge.badge-highlight {
+  animation: lims-badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes lims-badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2); }
+}
+
+.lims-page-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.lims-content-card {
+  background: var(--lims-surface, #ffffff);
+  border: 1px solid var(--lims-border, #e2e8f0);
+  border-radius: var(--lims-radius-md, 10px);
+  box-shadow: var(--lims-shadow-subtle);
+  padding: var(--lims-space-5, 1.25rem);
+  min-width: 0;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0;
+}
+
+.lims-content-card--flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+.lims-content-card--flush > .lims-pagination--top:first-child {
+  margin: 0;
+}
+
+/* Nested cards (e.g. dashboard filter inside dashboard card) */
+.lims-content-card .lims-content-card {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Fill-height data panels inside cards */
+.lims-data-fill,
+.lims-content-card--flush > .master-list-container,
+.lims-content-card--flush > .cdb-container,
+.lims-content-card--flush > .add-product-modern-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+}
+
+/* CDBContainer / Bootstrap container — use full width inside shell */
+.lims-content .cdb-container,
+.lims-content-card .cdb-container {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Card toolbar row (actions above tables) */
+.lims-card-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--lims-border, #e2e8f0);
+  flex-shrink: 0;
+  background: var(--lims-surface, #ffffff);
+}
+
+.lims-card-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.lims-pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--lims-border, #e2e8f0);
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  color: #64748b;
+  background: #fafbfc;
+}
+
+.lims-table-wrap {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.lims-table-wrap .react-bootstrap-table {
+  margin: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Legacy meta badges used in HomeLab / Dashboard headers */
+.lims-meta-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  transition: all var(--lims-transition, 0.3s ease);
+}
+
+.lims-meta-badge--success { background-color: #10b981; }
+.lims-meta-badge--danger { background-color: #ef4444; }
+.lims-meta-badge--neutral { background-color: #94a3b8; }
+.lims-meta-badge--warning { background-color: #f59e0b; }
+.lims-meta-badge--pulse { animation: lims-badge-pulse 2s ease-in-out infinite; }
+
+.lims-meta-badge-icon {
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+}
+
+/* Notification table (manager) */
+.lims-notification-scroll {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.lims-notification-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 1200px;
+}
+
+.lims-notification-table thead th {
+  background-color: var(--lims-accent, #c5ea31);
+  padding: 14px 12px;
+  text-align: center;
+  border: 1px solid var(--lims-border, #e2e8f0);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--lims-text, #1a3d2a);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.lims-notification-table tbody td {
+  text-align: center;
+  border: 1px solid var(--lims-border, #e2e8f0);
+  padding: 12px;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.lims-notification-table tbody tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.lims-notification-table tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+.lims-notification-empty {
+  text-align: center;
+  padding: 40px;
+  color: #64748b;
+}
+
+.lims-notification-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.lims-btn-accept,
+.lims-btn-decline {
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.lims-btn-accept {
+  background-color: #10b981;
+}
+
+.lims-btn-accept:hover {
+  background-color: #059669;
+}
+
+.lims-btn-decline {
+  background-color: #ef4444;
+}
+
+.lims-btn-decline:hover {
+  background-color: #dc2626;
+}
+
+/* Researcher request form */
+.lims-form-submit-btn {
+  display: block;
+  width: 100%;
+  max-width: 280px;
+  margin: 1.5rem auto 0;
+}
+
+.lims-form-warning {
+  padding: 1rem;
+  margin: 0 0 1rem;
+  max-width: 100%;
+  background-color: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: var(--lims-radius-sm, 6px);
+  color: #92400e;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.lims-form-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Home carousel pages */
+.lims-carousel-card .carousel-item img {
+  max-height: 70vh;
+  object-fit: cover;
+}
+
+/* Auth form centering */
+.lims-auth-form-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
+
+.lims-auth-form-panel {
+  width: 40%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.lims-auth-form-panel--wide {
+  width: 100%;
+  max-width: 600px;
+}
+
+.lims-issue-notify-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+}
+
+.lims-issue-notify-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.3;
+}

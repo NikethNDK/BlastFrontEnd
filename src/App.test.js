@@ -1,8 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import store from './store';
+import AuthGuard from './components/auth/AuthGuard';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('renders auth guard without crashing', () => {
+  const { container } = render(
+    <Provider store={store}>
+      <AuthGuard />
+    </Provider>
+  );
+  expect(container).toBeTruthy();
 });

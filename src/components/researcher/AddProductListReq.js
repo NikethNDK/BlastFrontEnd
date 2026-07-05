@@ -22,8 +22,8 @@ import {
 // import '../../inventory/formBorder.css';
 import Select from "react-select";
 import TempIssueTable from "../Lab1/issue/TempIssueTable";
-import ResearcherNavigation from "./ResearcherNavigation";
 import { Heading2 } from "lucide-react";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
 const AddProductListReq = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
@@ -941,48 +941,19 @@ const AddProductListReq = ({
   };
 
   return (
-    <div
-  style={{
-    margin: "5px",
-    padding: "10px",
-  }}
->
-      <div>
-        <h2 style={{ textAlign: "center", color: "black" }}>
-          Request Form
-          {/* <Button onClick={handleTransferData} style={{float: 'right'}}>Submit</Button> */}
-        </h2>
-      </div>
+    <PageLayout>
+      <PageHeader title="Request form" />
 
       {!hasProjects && (
-        <div
-          style={{
-            padding: "15px",
-            margin: "10px auto",
-            width: "80%",
-            backgroundColor: "#fff3cd",
-            border: "1px solid #ffc107",
-            borderRadius: "5px",
-            color: "#856404",
-            textAlign: "center",
-            fontSize: "1rem",
-          }}
-        >
+        <div className="lims-form-warning">
           <strong>No Projects Assigned</strong>
           <br />
           You have no projects assigned. Please contact your administrator to assign projects before requesting items.
         </div>
       )}
 
-      <p></p>
-      <div style={{
-    padding: "10px",
-    border: "1px solid #ccc", // gray border
-    borderRadius: "5px",       // optional, rounded corners
-    width: "80%",
-    margin: "0 auto",
-    boxShadow: "0 4px 6px rgba(0,0,0,0.1)" // subtle shadow
-  }}> 
+      <PageBody>
+      <ContentCard>
         <Row>
           <Col sm={12}>
             {/* <Form onSubmit={handleAdd} ref={formRef}> */}
@@ -1320,23 +1291,15 @@ const AddProductListReq = ({
               variant="primary"
               onClick={handleAdd}
               disabled={!hasProjects || !selectedItemCode || !selectedCodes || !selectedmanNames || !selectedLabAssistant}
-              style={{ 
-                width: "25%", 
-                marginLeft: "40%", 
-                marginTop: "40px",
-                opacity: (!hasProjects || !selectedItemCode || !selectedCodes || !selectedmanNames || !selectedLabAssistant) ? 0.6 : 1,
-                cursor: (!hasProjects || !selectedItemCode || !selectedCodes || !selectedmanNames || !selectedLabAssistant) ? "not-allowed" : "pointer"
-              }}
+              className="lims-form-submit-btn"
             >
               Submit Request
             </Button>
           </Col>
         </Row>
-      </div>
-      {/* <div style={{paddingTop: '10px' }}>
-                <TempIssueTable />
-            </div> */}
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

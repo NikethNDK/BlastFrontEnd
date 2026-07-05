@@ -1,16 +1,19 @@
+/* Welcome / join picker pages — distinct from authenticated app shell */
+
 .main-page {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: 100vh;
+  width: 100%;
   background-color: #2f4f4f;
 }
 
-h1 {
+.main-page h1 {
   margin-bottom: 20px;
   font-family: Arial, sans-serif;
-  color: white;
+  color: #ffffff;
 }
 
 .button-container {
@@ -43,13 +46,13 @@ h1 {
   transition: background-color 0.3s ease;
 }
 
-.custom-button:hover {
-  background-color: #c5ea31;
+.custom-button:hover,
+.custom:hover {
+  background-color: #b5da21;
 }
 
 .img-right {
   height: 50%;
-
   border-radius: 50%;
   padding-bottom: 20px;
 }

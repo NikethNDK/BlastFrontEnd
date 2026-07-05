@@ -13,30 +13,11 @@
     --font-size-base: 0.9rem;
 }
 
-/* Header Component Styles */
-.header-blast {
-  background: #e1dede;
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 1000;
-}
+/* Blast page content — layout handled by AppShell */
 
-/* Main Container Layout */
-.blast-container {
-  display: flex;
-  margin-top: 280px; /* Account for fixed header */
-  min-height: calc(100vh - 220px);
-  background-color: #f5f5f5;
-}
-
-/* Sidebar will be styled in BlastSidebar component */
-
-/* Main Content Area */
 .blast-main-content {
   flex: 1;
-  padding: 20px;
+  padding: 0;
   overflow-x: auto;
 }
 
@@ -232,7 +213,7 @@
 }
 
 .results-table-container.scrollable {
-    max-height: 550px; /* Slightly taller scroll area */
+    max-height: none;
     overflow-y: auto;
 }
 
@@ -353,17 +334,6 @@
     top: auto;
     margin-bottom: 20px;
     width: 100%;
-  }
-  
-  .blast-container {
-    flex-direction: column;
-  }
-  
-  .blast-sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    top: 0;
   }
 }
 

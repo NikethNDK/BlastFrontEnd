@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaUserPlus, FaUsers, FaCheckCircle, FaTimesCircle, FaEye, FaChevronLeft, FaChevronRight, FaExclamationTriangle } from "react-icons/fa";
+import { FaUserPlus, FaUsers, FaCheckCircle, FaTimesCircle, FaEye, FaExclamationTriangle } from "react-icons/fa";
+import Pagination from "../../common/Pagination";
 import { Modal, Button } from "react-bootstrap";
 import AddEmployeeModal from "./AddEmployeeModal";
 import UpdateEmployeeModal from "./UpdateEmployeeModal";
@@ -9,6 +10,7 @@ import {
 } from "../../../services/AppinfoService";
 import toast from "react-hot-toast";
 import "../../../components/Lab1/homeLab/inventory.css";
+import { PageLayout, PageHeader } from "../../layout/content";
 
 const EmployeeManage = () => {
   const [employees, setEmployees] = useState([]);
@@ -316,42 +318,30 @@ const EmployeeManage = () => {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-
-  const handleItemsPerPageChange = (e) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing items per page
-  };
-
   return (
-    <div style={styles.container}>
-      <div style={styles.wrapper}>
-        <div style={styles.header}>
-          <div style={styles.headerContent}>
-            <div style={styles.headerTitle}>
-              <h1 style={styles.title}>
-                <FaUsers />
-                EMPLOYEE MANAGEMENT
-              </h1>
-              <p style={styles.subtitle}>Manage and organize employee information</p>
-            </div>
-            <button
-              style={styles.addButton}
-              onClick={handleAdd}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#0056b3";
-                e.currentTarget.style.borderColor = "#004085";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#007bff";
-                e.currentTarget.style.borderColor = "#007bff";
-              }}
-            >
-              <FaUserPlus />
-              Assign Employee
-            </button>
-          </div>
-        </div>
+    <PageLayout>
+      <PageHeader
+        title="Employee management"
+        actions={
+          <button
+            style={styles.addButton}
+            onClick={handleAdd}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#0056b3";
+              e.currentTarget.style.borderColor = "#004085";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#007bff";
+              e.currentTarget.style.borderColor = "#007bff";
+            }}
+          >
+            <FaUserPlus />
+            Assign Employee
+          </button>
+        }
+      />
 
+      <div style={styles.wrapper}>
         <div style={styles.statsContainer}>
           <div style={styles.statCard}>
             <div style={{...styles.statIcon, color: "#007bff"}}>
@@ -388,25 +378,24 @@ const EmployeeManage = () => {
 
           <div style={styles.contentBody}>
             {/* --- Pagination Controls (Top) --- */}
-            <div className="pagination-controls top" style={{ marginBottom: "1rem" }}>
-              <div className="pagination-info">
-                Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} employees
-              </div>
-              <div className="pagination-options">
-                <label className="items-per-page-label">
-                  Items per page:
-                  <select 
-                    value={itemsPerPage} 
-                    onChange={handleItemsPerPageChange}
-                    className="items-per-page-select"
-                  >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                    <option value={50}>50</option>
-                  </select>
-                </label>
-              </div>
+            <div style={{ marginBottom: "1rem" }}>
+              <Pagination
+                position="top"
+                showPageNumbers={false}
+                showItemsPerPage
+                showSummary
+                totalItems={totalItems}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                itemsPerPage={itemsPerPage}
+                onItemsPerPageChange={(n) => {
+                  setItemsPerPage(n);
+                  setCurrentPage(1);
+                }}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
             </div>
 
             <div style={styles.tableWrapper}>
@@ -499,47 +488,14 @@ const EmployeeManage = () => {
             </div>
 
             {/* --- Pagination Controls (Bottom) --- */}
-            {totalPages > 1 && (
-              <div className="pagination-controls bottom" style={{ marginTop: "1rem" }}>
-                <div className="pagination-navigation">
-                  <button
-                    onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="pagination-btn prev-btn"
-                  >
-                    <FaChevronLeft size={14} />
-                    Previous
-                  </button>
-                  
-                  <div className="pagination-numbers">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`pagination-btn page-btn ${
-                          currentPage === page ? "active" : ""
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                  </div>
-                  
-                  <button
-                    onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                    className="pagination-btn next-btn"
-                  >
-                    Next
-                    <FaChevronRight size={14} />
-                  </button>
-                </div>
-                
-                <div className="pagination-summary">
-                  Page {currentPage} of {totalPages}
-                </div>
-              </div>
-            )}
+            <div style={{ marginTop: "1rem" }}>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                position="bottom"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -607,7 +563,7 @@ const EmployeeManage = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </PageLayout>
   );
 };
 

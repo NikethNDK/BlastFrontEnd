@@ -17,9 +17,10 @@ import {
 import toast from "react-hot-toast";
 import { Button, Modal, Nav, Tab, Row, Col, Form } from "react-bootstrap";
 import { useSelector } from "react-redux";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import Pagination from "../../common/Pagination";
 import "../homeLab/inventory.css";
 import "./AddProduct.css";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
 
 const AddProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -267,29 +268,31 @@ const AddProduct = ({
   };
 
   return (
-    <div>
-      {/* Header with Buttons */}
-      <div className="add-product-header">
-        <h1 className="add-product-title">Product & Category Management</h1>
-        <div className="add-product-actions">
-          <Button 
-            variant="outline-primary" 
-            onClick={handleShowCategoryModal}
-            className="add-product-btn-modern"
-          >
-            Add Category
-          </Button>
-          <Button 
-            variant="primary" 
-            onClick={handleShowProductModal}
-            className="add-product-btn-modern"
-          >
-            Add Product
-          </Button>
-        </div>
-      </div>
-
-      <div className="add-product-modern-container">
+    <PageLayout>
+      <PageHeader
+        title="Product & category management"
+        actions={
+          <>
+            <Button
+              variant="outline-primary"
+              onClick={handleShowCategoryModal}
+              className="add-product-btn-modern"
+            >
+              Add Category
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleShowProductModal}
+              className="add-product-btn-modern"
+            >
+              Add Product
+            </Button>
+          </>
+        }
+      />
+      <PageBody>
+      <ContentCard flush>
+        <div className="add-product-modern-container">
       {/* Products Card */}
       <div className="add-product-card-modern">
         <div className="add-product-card-header-modern">
@@ -298,7 +301,7 @@ const AddProduct = ({
         </div>
         <div className="add-product-card-body-modern">
           <div className="table-wrapper-modern">
-            <table className="inventory-table-modern">
+            <table className="inventory-table-modern lims-table">
               <thead>
                 <tr>
                   <th className="table-header-modern">Item Code</th>
@@ -330,44 +333,12 @@ const AddProduct = ({
             </table>
           </div>
           {/* Products Pagination */}
-          {productsTotalPages > 1 && (
-            <div className="pagination-controls bottom">
-              <div className="pagination-navigation">
-                <button
-                  onClick={() => handleProductsPageChange(Math.max(1, productsCurrentPage - 1))}
-                  disabled={productsCurrentPage === 1}
-                  className="pagination-btn prev-btn"
-                >
-                  <FaChevronLeft size={14} />
-                  Previous
-                </button>
-                <div className="pagination-numbers">
-                  {Array.from({ length: productsTotalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => handleProductsPageChange(page)}
-                      className={`pagination-btn page-btn ${
-                        productsCurrentPage === page ? "active" : ""
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => handleProductsPageChange(Math.min(productsTotalPages, productsCurrentPage + 1))}
-                  disabled={productsCurrentPage === productsTotalPages}
-                  className="pagination-btn next-btn"
-                >
-                  Next
-                  <FaChevronRight size={14} />
-                </button>
-              </div>
-              <div className="pagination-summary">
-                Page {productsCurrentPage} of {productsTotalPages}
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={productsCurrentPage}
+            totalPages={productsTotalPages}
+            onPageChange={handleProductsPageChange}
+            position="bottom"
+          />
         </div>
       </div>
 
@@ -396,7 +367,7 @@ const AddProduct = ({
             <Tab.Content className="add-product-tab-content">
               <Tab.Pane eventKey="master-types">
                 <div className="table-wrapper-modern">
-                  <table className="inventory-table-modern">
+                  <table className="inventory-table-modern lims-table">
                     <thead>
                       <tr>
                         <th className="table-header-modern">ID</th>
@@ -425,7 +396,7 @@ const AddProduct = ({
 
               <Tab.Pane eventKey="locations">
                 <div className="table-wrapper-modern">
-                  <table className="inventory-table-modern">
+                  <table className="inventory-table-modern lims-table">
                     <thead>
                       <tr>
                         <th className="table-header-modern">ID</th>
@@ -454,7 +425,7 @@ const AddProduct = ({
 
               <Tab.Pane eventKey="manufacturers">
                 <div className="table-wrapper-modern">
-                  <table className="inventory-table-modern">
+                  <table className="inventory-table-modern lims-table">
                     <thead>
                       <tr>
                         <th className="table-header-modern">ID</th>
@@ -483,7 +454,7 @@ const AddProduct = ({
 
               <Tab.Pane eventKey="suppliers">
                 <div className="table-wrapper-modern">
-                  <table className="inventory-table-modern">
+                  <table className="inventory-table-modern lims-table">
                     <thead>
                       <tr>
                         <th className="table-header-modern">ID</th>
@@ -512,7 +483,7 @@ const AddProduct = ({
 
               <Tab.Pane eventKey="units">
                 <div className="table-wrapper-modern">
-                  <table className="inventory-table-modern">
+                  <table className="inventory-table-modern lims-table">
                     <thead>
                       <tr>
                         <th className="table-header-modern">ID</th>
@@ -541,47 +512,17 @@ const AddProduct = ({
             </Tab.Content>
           </Tab.Container>
           {/* Categories Pagination */}
-          {categoriesTotalPages > 1 && (
-            <div className="pagination-controls bottom">
-              <div className="pagination-navigation">
-                <button
-                  onClick={() => handleCategoriesPageChange(Math.max(1, categoriesCurrentPage - 1))}
-                  disabled={categoriesCurrentPage === 1}
-                  className="pagination-btn prev-btn"
-                >
-                  <FaChevronLeft size={14} />
-                  Previous
-                </button>
-                <div className="pagination-numbers">
-                  {Array.from({ length: categoriesTotalPages }, (_, i) => i + 1).map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => handleCategoriesPageChange(page)}
-                      className={`pagination-btn page-btn ${
-                        categoriesCurrentPage === page ? "active" : ""
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => handleCategoriesPageChange(Math.min(categoriesTotalPages, categoriesCurrentPage + 1))}
-                  disabled={categoriesCurrentPage === categoriesTotalPages}
-                  className="pagination-btn next-btn"
-                >
-                  Next
-                  <FaChevronRight size={14} />
-                </button>
-              </div>
-              <div className="pagination-summary">
-                Page {categoriesCurrentPage} of {categoriesTotalPages}
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={categoriesCurrentPage}
+            totalPages={categoriesTotalPages}
+            onPageChange={handleCategoriesPageChange}
+            position="bottom"
+          />
         </div>
       </div>
       </div>
+      </ContentCard>
+      </PageBody>
 
       {/* Add Category Modal */}
       <Modal show={showCategoryModal} onHide={handleCloseCategoryModal} centered>
@@ -778,7 +719,7 @@ const AddProduct = ({
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </PageLayout>
   );
 };
 

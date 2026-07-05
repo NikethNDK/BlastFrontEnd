@@ -32,8 +32,11 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
-import Header from "../components/Lab1/homeLab/Header";
-import BlastSidebar from "./BlastSidebar";
+
+import AppShell from "../components/layout/AppShell";
+import AppSidebar from "../components/layout/AppSidebar";
+import { blastMenuConfig } from "../config/sidebar/blastMenu";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../components/layout/content";
 
 const Blast = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   const [file, setFile] = useState(null);
@@ -165,19 +168,15 @@ const Blast = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   };
 
   return (
-    <>
-      {/* Fixed Header */}
-      <header className="header-blast">
-        <Header />
-      </header>
-
-      {/* Main Container with Sidebar and Content */}
-      <div className="blast-container">
-        {/* Sidebar */}
-        <BlastSidebar userDetails={userDetails}/>
-
-        {/* Main Content Area */}
-        <div className="blast-main-content">
+    <AppShell
+      sidebar={
+        <AppSidebar config={blastMenuConfig} userDetails={userDetails} />
+      }
+    >
+      <PageLayout>
+        <PageHeader title="BLAST comparison" />
+        <PageBody>
+        <ContentCard className="blast-main-content">
           {/* Upload Section */}
           <div className="blast-upload-card">
               <div className="blast-header">
@@ -303,9 +302,10 @@ const Blast = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
               <p>Upload a FASTA file to see BLAST results here.</p>
             </div>
           )}
-        </div>
-      </div>
-    </>
+        </ContentCard>
+        </PageBody>
+      </PageLayout>
+    </AppShell>
   );
 };
 

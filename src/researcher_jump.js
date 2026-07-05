@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-// import "./main.css"; // For styling
+import "./repository/main.css";
 import rightLogo from "../src/assets/logo.jpg";
 const JoinResearcher = () => {
   const navigate = useNavigate();

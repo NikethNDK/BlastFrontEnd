@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { updateLoginApi, getLoginApi } from "../../services/AppinfoService";
 import { FaEye, FaEyeSlash, FaKey, FaUser, FaLock } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
 
 function PasswordReset({ userDetails = { name: "", lab: "", designation: "" } }) {
   const [username, setUsername] = useState("");
@@ -215,14 +216,11 @@ function PasswordReset({ userDetails = { name: "", lab: "", designation: "" } })
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.wrapper}>
-        <div style={styles.card}>
-          <div style={styles.header}>
-            <h1 style={styles.title}>Password Reset</h1>
-            <p style={styles.subtitle}>Reset password for an existing user</p>
-          </div>
-
+    <PageLayout>
+      <PageHeader title="Password reset" />
+      <PageBody>
+      <div className="lims-auth-form-center">
+        <ContentCard className="lims-auth-form-panel lims-auth-form-panel--wide">
           <div style={styles.form}>
             <div style={styles.formGroup}>
               <label style={styles.label}>
@@ -316,9 +314,10 @@ function PasswordReset({ userDetails = { name: "", lab: "", designation: "" } })
               Reset Password
             </button>
           </div>
-        </div>
+        </ContentCard>
       </div>
-    </div>
+      </PageBody>
+    </PageLayout>
   );
 }
 

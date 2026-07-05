@@ -6,11 +6,13 @@ import {
   getAllUsersApi,
   updateLoginApi,
 } from "../../services/AppinfoService";
-import { FaEye, FaEyeSlash, FaUserPlus, FaUser, FaLock, FaBriefcase, FaFlask, FaSearch, FaChevronLeft, FaChevronRight, FaEdit } from "react-icons/fa";
-import { Table, Modal, Button, Form, InputGroup, Card, Badge } from "react-bootstrap";
+import { FaEye, FaEyeSlash, FaUserPlus, FaUser, FaLock, FaBriefcase, FaFlask, FaSearch, FaEdit } from "react-icons/fa";
+import { Table, Modal, Button, Form, InputGroup, Badge } from "react-bootstrap";
 import Select from "react-select";
 import toast from "react-hot-toast";
+import Pagination from "../common/Pagination";
 import "./Register.css";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
 
 // Register Modal Component
 const RegisterModal = ({ 
@@ -724,67 +726,34 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
     setCurrentPage(pageNumber);
   };
 
-  const handleItemsPerPageChange = (e) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing items per page
-  };
-
   // Reset to page 1 when search term changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
   return (
-    <div style={{ 
-      padding: "24px", 
-      backgroundColor: "#f8f9fa", 
-      minHeight: "100vh"
-    }}>
-      <div style={{ 
-        maxWidth: "1400px",
-        margin: "0 auto"
-      }}>
-        {/* Compact Header */}
-        <div style={{ 
-          display: "flex", 
-          justifyContent: "space-between", 
-          alignItems: "center",
-          marginBottom: "24px"
-        }}>
-          <div>
-            <h2 style={{ 
-              margin: 0, 
-              fontSize: "1.75rem", 
-              fontWeight: 600,
-              color: "#212529"
-            }}>
-              User Management
-            </h2>
-            <p style={{ 
-              margin: "4px 0 0 0", 
-              color: "#6c757d", 
-              fontSize: "0.875rem" 
-            }}>
-              Manage users, roles, and lab assignments
-            </p>
-          </div>
-          <Button 
-            variant="primary" 
+    <PageLayout>
+      <PageHeader
+        title="User management"
+        actions={
+          <Button
+            variant="primary"
             onClick={() => setShowModal(true)}
-            style={{ 
+            style={{
               padding: "10px 20px",
               fontWeight: 500,
               display: "flex",
               alignItems: "center",
-              gap: "8px"
+              gap: "8px",
             }}
           >
             <FaUserPlus />
             Add User
           </Button>
-        </div>
+        }
+      />
 
-        {/* Search and Stats Bar */}
+      {/* Search and Stats Bar */}
         <div style={{ 
           display: "flex", 
           gap: "16px", 
@@ -826,12 +795,8 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
         </div>
 
         {/* Main Table Card */}
-        <Card style={{ 
-          border: "1px solid #dee2e6",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
-          borderRadius: "8px",
-          overflow: "hidden"
-        }}>
+        <PageBody>
+        <ContentCard flush>
           {loadingUsers ? (
             <div style={{ 
               padding: "60px 20px", 
@@ -851,27 +816,23 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
             </div>
           ) : (
             <>
-              {/* --- Pagination Controls (Top) --- */}
-              <div className="pagination-controls top" style={{ padding: "1rem 1.5rem", margin: 0 }}>
-                <div className="pagination-info">
-                  Showing {startIndex + 1}-{Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} users
-                </div>
-                <div className="pagination-options">
-                  <label className="items-per-page-label">
-                    Items per page:
-                    <select 
-                      value={itemsPerPage} 
-                      onChange={handleItemsPerPageChange}
-                      className="items-per-page-select"
-                    >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={20}>20</option>
-                      <option value={50}>50</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
+              <Pagination
+                position="top"
+                showPageNumbers={false}
+                showItemsPerPage
+                showSummary
+                totalItems={filteredUsers.length}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                itemsPerPage={itemsPerPage}
+                onItemsPerPageChange={(n) => {
+                  setItemsPerPage(n);
+                  setCurrentPage(1);
+                }}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
 
               <div 
                 className="register-table-wrapper" 
@@ -1206,51 +1167,16 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                 </Table>
               </div>
 
-              {/* --- Pagination Controls (Bottom) --- */}
-              {!loadingUsers && totalPages > 1 && (
-                <div className="pagination-controls bottom" style={{ padding: "1rem 1.5rem", margin: 0 }}>
-                  <div className="pagination-navigation">
-                    <button
-                      onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                      disabled={currentPage === 1}
-                      className="pagination-btn prev-btn"
-                    >
-                      <FaChevronLeft size={14} />
-                      Previous
-                    </button>
-                    
-                    <div className="pagination-numbers">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <button
-                          key={page}
-                          onClick={() => handlePageChange(page)}
-                          className={`pagination-btn page-btn ${
-                            currentPage === page ? "active" : ""
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ))}
-                    </div>
-                    
-                    <button
-                      onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                      disabled={currentPage === totalPages}
-                      className="pagination-btn next-btn"
-                    >
-                      Next
-                      <FaChevronRight size={14} />
-                    </button>
-                  </div>
-                  
-                  <div className="pagination-summary">
-                    Page {currentPage} of {totalPages}
-                  </div>
-                </div>
-              )}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                totalItems={filteredUsers.length}
+              />
             </>
           )}
-        </Card>
+        </ContentCard>
+        </PageBody>
 
         {/* Registration Modal */}
         <RegisterModal
@@ -1275,8 +1201,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
           designations={designations}
           isLoading={isLoading}
         />
-      </div>
-    </div>
+    </PageLayout>
   );
 }
 

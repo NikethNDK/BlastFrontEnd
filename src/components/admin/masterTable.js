@@ -10,7 +10,6 @@ import {
 import toast from "react-hot-toast";
 import {
   Container,
-  Typography,
   TextField,
   Button,
   MenuItem,
@@ -28,6 +27,7 @@ import {
   Alert,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
 
 const LabDesignationForm = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -118,10 +118,11 @@ const LabDesignationForm = ({
   }, [selectedOption]);
 
   return (
-    <Container maxWidth="sm">
-      <Typography variant="h4" align="center" gutterBottom>
-        Lab & Designation Form
-      </Typography>
+    <PageLayout>
+      <PageHeader title="Lab & designation form" />
+      <PageBody>
+      <ContentCard>
+    <Container maxWidth="sm" disableGutters>
 
       <Card variant="outlined">
         <CardContent>
@@ -208,6 +209,9 @@ const LabDesignationForm = ({
         </Alert>
       </Snackbar> */}
     </Container>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

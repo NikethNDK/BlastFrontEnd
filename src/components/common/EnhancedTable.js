@@ -316,17 +316,15 @@ const EnhancedTable = ({
 
       {/* Pagination */}
       {pagination && processedData.length > pageSize && (
-        <div className="table-pagination">
-          <div className="pagination-info">
-            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, processedData.length)} of {processedData.length} entries
-          </div>
           <Pagination
             currentPage={currentPage}
             totalPages={Math.ceil(processedData.length / pageSize)}
             onPageChange={onPageChange}
-            size={size}
+            totalItems={processedData.length}
+            startIndex={(currentPage - 1) * pageSize}
+            endIndex={currentPage * pageSize}
+            showItemsPerPage={false}
           />
-        </div>
       )}
     </div>
   );

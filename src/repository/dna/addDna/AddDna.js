@@ -3,10 +3,12 @@ import { Button, Modal } from "react-bootstrap";
 import { getPartialApi, addDnaApi } from "../../../services/AppinfoService";
 import { FcPlus } from "react-icons/fc";
 import PartialNameModal from "./PartialNameModal";
-import Header from "../../../components/Lab1/homeLab/Header";
-import Navigation from "../../navigation/Navigation";
+import AppShell from "../../../components/layout/AppShell";
+import AppSidebar from "../../../components/layout/AppSidebar";
+import { repositoryMenuConfig } from "../../../config/sidebar/repositoryMenu";
 import { useNavigate } from "react-router-dom";
 import "./AddDNA.css";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../../components/layout/content";
 
 const AddDNA = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   const [className, setClassName] = useState("");
@@ -132,17 +134,15 @@ const AddDNA = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   };
 
   return (
-    <div className="add-dna-container">
-      <header>
-        <Header />
-      </header>
-      <div className="add-dna-content">
-        <Navigation userDetails={userDetails} />
-        <div className="add-dna-main">
-          <div className="add-dna-header">
-            <h2 className="add-dna-title">NEW SUBMISSION</h2>
-          </div>
-
+    <AppShell
+      sidebar={
+        <AppSidebar config={repositoryMenuConfig} userDetails={userDetails} />
+      }
+    >
+      <PageLayout>
+        <PageHeader title="New submission" />
+        <PageBody>
+        <ContentCard className="add-dna-main">
           <div className="form-container">
             {/* Class, Scientific Name, and Common Name Fields */}
             <div className="form-row">
@@ -291,9 +291,10 @@ const AddDNA = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
             show={addModalShow}
             onHide={() => setAddModalShow(false)}
           />
-        </div>
-      </div>
-    </div>
+        </ContentCard>
+        </PageBody>
+      </PageLayout>
+    </AppShell>
   );
 };
 

@@ -1,32 +1,13 @@
 /* DNA Manage Component Styles */
 
-/* Container and Layout */
-.dna-manage-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
-  background-color: #f2f5e6;
-}
-
-.dna-manage-content {
-  margin-top: -20px;
-  width: 100%;
-  height: calc(100vh - 60px); /* Adjust based on header height */
-  display: flex;
-  overflow: hidden;
-}
-
 .dna-manage-main {
   width: 100%;
-  height: 100%;
-  padding: 0 20px;
+  padding: 0;
   max-width: 1400px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-height: 0;
 }
 
 /* Header Section */
@@ -366,7 +347,7 @@
 }
 
 .modal-body-content {
-  max-height: 450px;
+  max-height: none;
   overflow-y: auto;
   padding: 20px;
 }

@@ -5,6 +5,7 @@ import "../../../App.css";
 import ChemicalUpdate from "../update/ChemicalUpdate";
 import { FaEdit } from "react-icons/fa";
 import "../../styles/styles.css";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
 
 const ChemicalList = () => {
   const [masters, setMasters] = useState([]);
@@ -113,10 +114,12 @@ const ChemicalList = () => {
   const EditModelClose = () => setEditModalShow(false);
 
   return (
-    <div>
-      <div>
+    <PageLayout>
+      <PageHeader title="Chemical list" />
+      <PageBody>
+      <ContentCard flush>
         <div
-          className="row side-row"
+          className="row side-row lims-table-wrap"
           style={{
             textAlign: "center",
             maxHeight: "330px",
@@ -365,8 +368,9 @@ const ChemicalList = () => {
             </tbody>
           </Table>
         </div>
-      </div>
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

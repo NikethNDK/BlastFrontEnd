@@ -3,11 +3,10 @@ import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
-import { Button } from "react-bootstrap";
-import { AiOutlineDownload } from "react-icons/ai";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { BASE_URL } from "../../services/AppinfoService";
 import { setManagerPendingReturns } from "../../store/slices/notificationSlice";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
 
 const ReturnDataTableNotification = ({
   managerId,
@@ -114,293 +113,67 @@ const ReturnDataTableNotification = ({
   ];
 
   return (
-    <div style={{ width: "100%" }}>
-      <div
-        style={{
-          backgroundColor: "#f8fafc",
-          padding: "20px",
-          borderBottom: "2px solid #e2e8f0",
-        }}
-      >
-        <h2
-          style={{
-            textAlign: "center",
-            margin: 0,
-            fontSize: "1.75rem",
-            fontWeight: 600,
-            color: "#1e293b",
-          }}
-        >
-          RETURN NOTIFICATION
-        </h2>
-      </div>
-
-      <div style={{ padding: "20px" }}>
-        <div
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "8px",
-            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1)",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              overflowX: "auto",
-              maxHeight: "500px",
-              overflowY: "auto",
-            }}
-          >
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "separate",
-                borderSpacing: 0,
-                minWidth: "1000px",
-              }}
-            >
-              <thead>
-                <tr>
-                  {columns.map((column, index) => (
-                    <th
-                      key={index}
-                      style={{
-                        backgroundColor: "#f8fafc",
-                        padding: "12px",
-                        textAlign: "center",
-                        border: "1px solid #e2e8f0",
-                        fontWeight: 600,
-                        fontSize: "0.875rem",
-                        color: "#1e293b",
-                        position: "sticky",
-                        top: 0,
-                        zIndex: 10,
-                        minWidth: "120px",
-                      }}
-                    >
-                      {column.label}
-                    </th>
-                  ))}
-                  <th
-                    style={{
-                      backgroundColor: "#f8fafc",
-                      padding: "12px",
-                      textAlign: "center",
-                      border: "1px solid #e2e8f0",
-                      fontWeight: 600,
-                      fontSize: "0.875rem",
-                      color: "#1e293b",
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: "150px",
-                    }}
-                  >
-                    Action
+    <PageLayout>
+      <PageHeader title="Return notification" />
+      <PageBody>
+      <ContentCard flush>
+        <div className="lims-notification-scroll">
+          <table className="lims-notification-table lims-table">
+            <thead>
+              <tr>
+                {columns.map((column) => (
+                  <th key={column.key} style={{ minWidth: "120px" }}>
+                    {column.label}
                   </th>
+                ))}
+                <th style={{ minWidth: "150px" }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length + 1} className="lims-notification-empty">
+                    No pending return requests. Data is automatically updated via centralized polling.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {data.length === 0 ? (
-                  <tr>
-                    <td colSpan={columns.length + 1} style={{ textAlign: "center", padding: "40px", color: "#64748b" }}>
-                      No pending return requests. Data is automatically updated via centralized polling.
-                    </td>
-                  </tr>
-                ) : (
-                  data.map((inven, index) => (
-                  <tr
-                    key={inven.entry_no || inven.id || index}
-                    style={{
-                      transition: "background-color 0.15s",
-                      backgroundColor: index % 2 === 0 ? "#ffffff" : "#f8fafc",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "#f1f5f9";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor =
-                        index % 2 === 0 ? "#ffffff" : "#f8fafc";
-                    }}
-                  >
-                    <td
-                      style={{
-                        textAlign: "center",
-                        border: "1px solid #e2e8f0",
-                        padding: "12px",
-                        fontSize: "0.875rem",
-                        color: "#475569",
-                      }}
-                    >
-                      {inven.item_code}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        border: "1px solid #e2e8f0",
-                        padding: "12px",
-                        fontSize: "0.875rem",
-                        color: "#475569",
-                      }}
-                    >
-                      {inven.item_name}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        border: "1px solid #e2e8f0",
-                        padding: "12px",
-                        fontSize: "0.875rem",
-                        color: "#475569",
-                      }}
-                    >
-                      {inven.quantity_returned}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        border: "1px solid #e2e8f0",
-                        padding: "12px",
-                        fontSize: "0.875rem",
-                        color: "#475569",
-                      }}
-                    >
-                      {inven.project_name}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        border: "1px solid #e2e8f0",
-                        padding: "12px",
-                        fontSize: "0.875rem",
-                        color: "#475569",
-                      }}
-                    >
-                      {inven.location}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        border: "1px solid #e2e8f0",
-                        padding: "12px",
-                        fontSize: "0.875rem",
-                        color: "#475569",
-                      }}
-                    >
-                      {inven.receipt_date}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        border: "1px solid #e2e8f0",
-                        padding: "12px",
-                        fontSize: "0.875rem",
-                        color: "#475569",
-                      }}
-                    >
-                      {inven.return_date}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        border: "1px solid #e2e8f0",
-                        padding: "12px",
-                        fontSize: "0.875rem",
-                        color: "#475569",
-                      }}
-                    >
-                      {inven.remarks}
-                    </td>
-                    <td
-                      style={{
-                        textAlign: "center",
-                        border: "1px solid #e2e8f0",
-                        padding: "12px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          gap: "8px",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
+              ) : (
+                data.map((inven) => (
+                  <tr key={inven.entry_no || inven.id}>
+                    <td>{inven.item_code}</td>
+                    <td>{inven.item_name}</td>
+                    <td>{inven.quantity_returned}</td>
+                    <td>{inven.project_name}</td>
+                    <td>{inven.location}</td>
+                    <td>{inven.receipt_date}</td>
+                    <td>{inven.return_date}</td>
+                    <td>{inven.remarks}</td>
+                    <td>
+                      <div className="lims-notification-actions">
                         <button
-                          onClick={() =>
-                            handleStatusUpdate(inven.entry_no, "Accepted")
-                          }
-                          style={{
-                            backgroundColor: "#10b981",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "6px",
-                            padding: "8px 16px",
-                            cursor: "pointer",
-                            fontSize: "0.875rem",
-                            fontWeight: 500,
-                            transition: "all 0.2s",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = "#059669";
-                            e.target.style.boxShadow =
-                              "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = "#10b981";
-                            e.target.style.boxShadow =
-                              "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
-                          }}
+                          type="button"
+                          onClick={() => handleStatusUpdate(inven.entry_no, "Accepted")}
+                          className="lims-btn-accept"
                         >
                           <FaCheck size={14} /> Accept
                         </button>
                         <button
-                          onClick={() =>
-                            handleStatusUpdate(inven.entry_no, "Declined")
-                          }
-                          style={{
-                            backgroundColor: "#ef4444",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "6px",
-                            padding: "8px 16px",
-                            cursor: "pointer",
-                            fontSize: "0.875rem",
-                            fontWeight: 500,
-                            transition: "all 0.2s",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            boxShadow: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = "#dc2626";
-                            e.target.style.boxShadow =
-                              "0 4px 6px -1px rgba(0, 0, 0, 0.1)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = "#ef4444";
-                            e.target.style.boxShadow =
-                              "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
-                          }}
+                          type="button"
+                          onClick={() => handleStatusUpdate(inven.entry_no, "Declined")}
+                          className="lims-btn-decline"
                         >
                           <FaTimes size={14} /> Decline
                         </button>
                       </div>
                     </td>
                   </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      </div>
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

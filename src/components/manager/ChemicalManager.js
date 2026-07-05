@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Button } from "react-bootstrap";
 import { getMasterApi } from "../../services/AppinfoService";
 import "../../App.css";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
 
 const ChemicalManager = () => {
   const [masters, setMasters] = useState([]);
@@ -22,10 +23,10 @@ const ChemicalManager = () => {
   }, []);
 
   return (
-    <div>
-      <div style={{ background: "#C5EA31", height: "70px" }} className="header">
-        <h2 style={{ textAlign: "center", paddingTop: "15px" }}>Dashboard</h2>
-      </div>
+    <PageLayout>
+      <PageHeader title="Master data" />
+      <PageBody>
+      <ContentCard flush>
       <div style={{ overflowY: "scroll", maxHeight: "450px" }}>
         <div className="row side-row" style={{ textAlign: "center" }}>
           <p id="before-table"></p>
@@ -242,7 +243,9 @@ const ChemicalManager = () => {
           </Table>
         </div>
       </div>
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

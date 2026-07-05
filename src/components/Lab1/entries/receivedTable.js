@@ -4,12 +4,12 @@ import "./TransferredDataTable.css";
 import * as XLSX from "xlsx";
 import { Download } from "lucide-react";
 import { AiOutlineDownload } from "react-icons/ai";
-import LabNavigation1 from "../homeLab/LabNavigation1";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../services/AppinfoService";
 import { useSelector } from "react-redux";
 import { Button } from "react-bootstrap";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import Pagination from "../../common/Pagination";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
 
 const ReceivedDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -211,30 +211,22 @@ const ReceivedDataTable = ({
   ];
 
   return (
-    <div style={{ marginTop: "1px", width: "100%" }}>
-      <div>
-        <h1 style={{
-          fontSize: "var(--lab-text-3xl, 1.8rem)",
-          fontWeight: 700,
-          color: "var(--lab-neutral-800, #1e293b)",
-          margin: 0,
-          textAlign: "left",
-        }}>
-          RECEIVED DATA
+    <PageLayout>
+      <PageHeader
+        title="Received data"
+        actions={
           <Button
             variant="secondary"
             onClick={handleDownload}
-            style={{ float: "right" }}
             title="Download Excel"
           >
             <AiOutlineDownload size={18} style={{ marginRight: "4px" }} />
             Download
           </Button>
-        </h1>
-      </div>
-      <p></p>
-
-      <div style={{ paddingTop: "10px" }}>
+        }
+      />
+      <PageBody>
+      <ContentCard flush>
         {/* Total Summary */}
         <div className="total-summary" style={{ 
           marginBottom: "1rem", 
@@ -367,46 +359,18 @@ const ReceivedDataTable = ({
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="pagination-controls bottom">
-            <div className="pagination-navigation">
-              <button
-                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="pagination-btn prev-btn"
-              >
-                <FaChevronLeft size={14} />
-                Previous
-              </button>
-              <div className="pagination-numbers">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`pagination-btn page-btn ${
-                      currentPage === page ? "active" : ""
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="pagination-btn next-btn"
-              >
-                Next
-                <FaChevronRight size={14} />
-              </button>
-            </div>
-            <div className="pagination-summary">
-              Page {currentPage} of {totalPages} ({filteredData.length} items)
-            </div>
-          </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            totalItems={filteredData.length}
+            position="bottom"
+          />
         )}
       </div>
-    </div>
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

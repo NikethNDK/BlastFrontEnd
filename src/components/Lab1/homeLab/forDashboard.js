@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Button, ButtonGroup } from "react-bootstrap";
-import { CDBContainer } from "cdbreact";
-import "./forDashboard.css"; // New CSS file
+import "./forDashboard.css";
 import {
   getStockLevelApi,
   getMastertyApi,
 } from "../../../services/AppinfoService";
 import MasterListTable from "./inventory";
+import { PageToolbar, ContentCard } from "../../layout/content";
 
 const HomeLab1 = ({userDetails}) => {
   // Get user from Redux store to get labs
@@ -68,22 +67,19 @@ const HomeLab1 = ({userDetails}) => {
     return "stock-unknown";
   };
 
+  const toolbarItems = inventoryTypes.map((type) => ({
+    id: type,
+    label: `${type} Inventory`,
+  }));
+
   return (
-    <div className="fordashboard-page-container">
-      {/* --- Lab Filter Dropdown --- */}
-      <div style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
-        <label style={{ fontWeight: "500", fontSize: "14px" }}>Lab Name:</label>
+    <div className="lims-embedded-panel">
+      <div className="lims-filter-row">
+        <label htmlFor="dash-lab-filter">Lab name</label>
         <select
+          id="dash-lab-filter"
           value={selectedLab}
           onChange={(e) => setSelectedLab(e.target.value)}
-          style={{
-            padding: "8px 12px",
-            fontSize: "14px",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            minWidth: "200px",
-            cursor: "pointer"
-          }}
         >
           <option value="All">All</option>
           {managerLabs.map((lab, index) => (
@@ -94,22 +90,12 @@ const HomeLab1 = ({userDetails}) => {
         </select>
       </div>
 
-      {/* --- Stock Indicator and Inventory Selector (Same Line) --- */}
       <div className="dash-inventory-selector-bar">
-        <ButtonGroup className="inventory-type-group">
-          {inventoryTypes.map((type) => (
-            <Button
-              key={type}
-              variant="light"
-              className={`inventory-type-button ${
-                selectedMasterType === type ? "active" : ""
-              }`}
-              onClick={() => handleMasterTypeSelection(type)}
-            >
-              {type} Inventory
-            </Button>
-          ))}
-        </ButtonGroup>
+        <PageToolbar
+          items={toolbarItems}
+          activeId={selectedMasterType}
+          onChange={handleMasterTypeSelection}
+        />
         <div className={`stock-indicator-card ${getStockLevelClass()}`}>
           <label className="stock-label">
             {stockLevel}
@@ -117,18 +103,13 @@ const HomeLab1 = ({userDetails}) => {
         </div>
       </div>
 
-      {/* --- Main Data Table Container --- */}
-      <div className="data-table-container">
-        <CDBContainer>
-          {selectedMasterType && (
-            <MasterListTable 
-              masterType={selectedMasterType} 
-              userDetails={userDetails}
-              selectedLab={selectedLab}
-            />
-          )}
-        </CDBContainer>
-      </div>
+      <ContentCard flush className="lims-fill-card">
+        <MasterListTable
+          masterType={selectedMasterType}
+          userDetails={userDetails}
+          selectedLab={selectedLab}
+        />
+      </ContentCard>
     </div>
   );
 };

@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/lab-design-system.css";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from 'react-redux';
 import { logoutUser } from './store/slices/userSlice';
 import { Toaster } from "react-hot-toast";
-import ModernSidebar from "./components/common/ModernSidebar";
-import ModernHeader from "./components/common/ModernHeader";
-import Header from "./components/Lab1/homeLab/Header";
-// import StatsDashboard from "./components/common/StatsDashboard";
+import AppShell from "./components/layout/AppShell";
+import AppSidebar from "./components/layout/AppSidebar";
+import { labMenuConfig } from "./config/sidebar/labMenu";
 import HomeLab from "../src/components/Lab1/homeLab/HomeLab";
 import AddProduct from "./components/Lab1/addProduct/AddProduct";
 import ReceivedProduct from "./components/Lab1/receive/ReceivedProduct";
@@ -28,15 +27,9 @@ import ReturnDataTable from "./components/Lab1/entries/return";
 import ChangePassword from "./components/Lab1/homeLab/ChangePassword";
 import JoinLab from "./lab_jump";
 import EquipmentList from "./components/Lab1/homeLab/equipmentList";
-import { BASE_URL } from "./services/AppinfoService";
 
 function Layout({ userDetails, userId }) {
   const location = useLocation();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  // NOTE: Polling removed - notifications now come from centralized polling via Redux
-  // const [notifications, setNotifications] = useState([]);
-
-  // Hide navigation only on JoinLab ("/") route
   const hiddenPaths = ["/", "/add_blast", "/dna", "/add_dna"];
   const hideNavigation = hiddenPaths.includes(location.pathname);
 
@@ -55,54 +48,6 @@ function Layout({ userDetails, userId }) {
       });
   };
 
-  const getPageTitle = (pathname) => {
-    const titles = {
-      '/master': 'Inventory Dashboard',
-      '/add_product': 'Add New Product',
-      '/received_product': 'Add Received Item',
-      '/issued_product': 'Add Issued Item',
-      '/issuetable': 'Issued Items',
-      '/return_product': 'Add Returned Item',
-      '/chemical_list': 'Chemical List',
-      '/transferred': 'Transferred Items',
-      '/received_issue': 'Received Issues',
-      '/returntable': 'Received Data',
-      '/dna': 'DNA Repository',
-      '/common_name': 'Common Name DNA',
-      '/scientific_name': 'Scientific Name DNA',
-      '/add_dna': 'Add DNA Sequence',
-      '/add_blast': 'DNA Blast Analysis',
-      '/retrun': 'Return Data',
-      '/change_password': 'Change Password',
-      '/equipment': 'Equipment Management'
-    };
-    return titles[pathname] || 'Lab Assistant';
-  };
-
-  const getPageSubtitle = (pathname) => {
-    const subtitles = {
-      '/master': 'Overview of your laboratory inventory and statistics',
-      '/add_product': 'Add new items to your inventory',
-      '/received_product': 'Record newly received items',
-      '/issued_product': 'Record items issued to researchers',
-      '/issuetable': 'View all issued items and their status',
-      '/return_product': 'Record items returned to inventory',
-      '/chemical_list': 'Manage chemical inventory',
-      '/transferred': 'Track item transfers between labs',
-      '/received_issue': 'Handle received item issues',
-      '/returntable': 'View received item data',
-      '/dna': 'Manage DNA sequence repository',
-      '/common_name': 'Search DNA by common name',
-      '/scientific_name': 'Search DNA by scientific name',
-      '/add_dna': 'Add new DNA sequences',
-      '/add_blast': 'Perform BLAST analysis on DNA sequences',
-      '/retrun': 'View return item data',
-      '/change_password': 'Update your account password',
-      '/equipment': 'Manage laboratory equipment'
-    };
-    return subtitles[pathname] || 'Manage your laboratory efficiently';
-  };
-
   if (hideNavigation) {
     return (
       <Routes>
@@ -115,47 +60,36 @@ function Layout({ userDetails, userId }) {
   }
 
   return (
-    <div className="lab-app">
-      <Header />
-      <div className="lab-body-container">
-        <ModernSidebar
+    <AppShell
+      sidebar={
+        <AppSidebar
+          config={labMenuConfig}
           userDetails={userDetails}
           userId={userId}
           onLogout={handleLogout}
         />
-
-        <div className={`lab-main-content ${sidebarCollapsed ? 'collapsed' : ''}`}>
-
-          <div className="lab-content-container">
-            <Routes>
-              <Route path="/master" element={
-                <div>
-                  {/* <StatsDashboard stats={stats} loading={loading} /> */}
-
-                  <HomeLab userDetails={userDetails} />
-                </div>
-              } />
-              <Route path="/add_product" element={<AddProduct userDetails={userDetails} />} />
-              <Route path="/received_product" element={<ReceivedProduct userDetails={userDetails} />} />
-              <Route path="/issued_product" element={<IssuedProduct userDetails={userDetails} />} />
-              <Route path="/issuetable" element={<IssueDataTable userDetails={userDetails} />} />
-              <Route path="/return_product" element={<ReturnProduct userDetails={userDetails} />} />
-              <Route path="/chemical_list" element={<ChemicalList userDetails={userDetails} />} />
-              <Route path="/transferred" element={<TransferredDataTable userDetails={userDetails} />} />
-              <Route path="/received_issue" element={<ChemicalIssuePage userDetails={userDetails} />} />
-              <Route path="/returntable" element={<ReceivedDataTable userDetails={userDetails} />} />
-              <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
-              <Route path="/common_name" element={<CommonNameDna userDetails={userDetails} />} />
-              <Route path="/scientific_name" element={<ScientificNameDna userDetails={userDetails} />} />
-              <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
-              <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
-              <Route path="/retrun" element={<ReturnDataTable userDetails={userDetails} />} />
-              <Route path="/change_password" element={<ChangePassword userDetails={userDetails} />} />
-              <Route path="/equipment" element={<EquipmentList userDetails={userDetails} />} />
-            </Routes>
-          </div>
-        </div>
-      </div>
+      }
+    >
+      <Routes>
+        <Route path="/master" element={<HomeLab userDetails={userDetails} />} />
+        <Route path="/add_product" element={<AddProduct userDetails={userDetails} />} />
+        <Route path="/received_product" element={<ReceivedProduct userDetails={userDetails} />} />
+        <Route path="/issued_product" element={<IssuedProduct userDetails={userDetails} />} />
+        <Route path="/issuetable" element={<IssueDataTable userDetails={userDetails} />} />
+        <Route path="/return_product" element={<ReturnProduct userDetails={userDetails} />} />
+        <Route path="/chemical_list" element={<ChemicalList userDetails={userDetails} />} />
+        <Route path="/transferred" element={<TransferredDataTable userDetails={userDetails} />} />
+        <Route path="/received_issue" element={<ChemicalIssuePage userDetails={userDetails} />} />
+        <Route path="/returntable" element={<ReceivedDataTable userDetails={userDetails} />} />
+        <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
+        <Route path="/common_name" element={<CommonNameDna userDetails={userDetails} />} />
+        <Route path="/scientific_name" element={<ScientificNameDna userDetails={userDetails} />} />
+        <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
+        <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
+        <Route path="/retrun" element={<ReturnDataTable userDetails={userDetails} />} />
+        <Route path="/change_password" element={<ChangePassword userDetails={userDetails} />} />
+        <Route path="/equipment" element={<EquipmentList userDetails={userDetails} />} />
+      </Routes>
       <Toaster
         position="top-center"
         toastOptions={{
@@ -180,7 +114,7 @@ function Layout({ userDetails, userId }) {
           },
         }}
       />
-    </div>
+    </AppShell>
   );
 }
 

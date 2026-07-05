@@ -3,8 +3,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Toaster } from "react-hot-toast";
 import Home from "./components/Home";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
-import ResearcherNavigation from "./components/researcher/ResearcherNavigation";
-import ReNotification from "./components/researcher/ReNotification";
+import AppShell from "./components/layout/AppShell";
+import AppSidebar from "./components/layout/AppSidebar";
+import { researcherMenuConfig } from "./config/sidebar/researcherMenu";
 import AddProductListReq from "./components/researcher/AddProductListReq";
 import IssueNotify from "./components/researcher/IssueNotify";
 import HomeLab from "../src/components/Lab1/homeLab/HomeLab";
@@ -26,7 +27,11 @@ function Layout({ userDetails }) {
   }
 
   return (
-    <ResearcherNavigation userDetails={userDetails}>
+    <AppShell
+      sidebar={
+        <AppSidebar config={researcherMenuConfig} userDetails={userDetails} />
+      }
+    >
       <Routes>
         <Route path="/home" element={<Home userDetails={userDetails} />} />
         <Route path="/re_notify" element={<IssueNotify userDetails={userDetails} />} />
@@ -35,7 +40,7 @@ function Layout({ userDetails }) {
         <Route path="/confirm-issue" element={<ConfirmIssue userDetails={userDetails} />} />
         <Route path="/change_password" element={<ChangePassword userDetails={userDetails} />} />
       </Routes>
-    </ResearcherNavigation>
+    </AppShell>
   );
 }
 

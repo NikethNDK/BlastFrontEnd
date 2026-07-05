@@ -7,6 +7,7 @@ import Select from 'react-select';
 import TempIssueTable from './TempReturnTable';
 import { BASE_URL } from "../../../services/AppinfoService";
 import { useSelector } from 'react-redux';
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
 
 const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
     // Get user from Redux as fallback/primary source
@@ -175,24 +176,20 @@ const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) 
 
 
     return (
-        <div>
-            <div>
-                <h1 style={{ textAlign: 'center' }}>
-                    Add Issue  {' '} 
-                    <Button variant="primary" onClick={handleAdd} style={{ width: '70px', float: 'right', marginLeft: "8px" }}>
+        <PageLayout>
+            <PageHeader
+                title="Add return"
+                actions={
+                    <>
+                        <Button onClick={handleTransferData}>Submit</Button>
+                        <Button variant="primary" onClick={handleAdd}>
                             Add
-                    </Button>
-                    <Button onClick={handleTransferData} style={{float: 'right'}}>Submit</Button>
-                </h1>
-            </div>
-            
-      <div style={{ position: "absolute", right: "1200px", top: "10px" }}>
-          <p style={{ margin: 0,marginright:"100px" }}>User: {userDetails.name}</p>
-          <p style={{ margin: 0,marginright:"100px" }}>Lab: {userDetails.lab}</p>
-          <p style={{ margin: 0,marginright:"100px" }}>designation: {userDetails.designation}</p>
-        </div>
-            <p></p>
-            
+                        </Button>
+                    </>
+                }
+            />
+            <PageBody>
+            <ContentCard>
             <div>
                     <Row>
                         <Col sm={12}>
@@ -345,7 +342,9 @@ const ReturnProduct = ({ userDetails= { name: '', lab: '', designation: '' } }) 
             <div style={{paddingTop: '10px' }}>
                 <TempIssueTable userDetails={effectiveUserDetails} />
             </div>
-        </div>
+            </ContentCard>
+            </PageBody>
+        </PageLayout>
     );
 };
 

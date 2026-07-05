@@ -1,0 +1,79 @@
+/* LIMS design tokens — single source of truth */
+
+:root {
+  /* Brand */
+  --lims-bg: #f2f5e6;
+  --lims-bg-sidebar: #ffffff;
+  --lims-accent: #c5ea31;
+  --lims-accent-dark: #b5da21;
+  --lims-text: #1a3d2a;
+  --lims-surface: #ffffff;
+  --lims-muted: #6b7280;
+  --lims-border: #e2e8f0;
+
+  /* Layout */
+  --lims-header-offset: 220px;
+  --lims-sidebar-width: 280px;
+  --lims-sidebar-collapsed-width: 80px;
+  --lims-sidebar-min-height: 360px;
+  --lims-sidebar-max-height: calc(100dvh - var(--lims-header-offset, 220px));
+
+  /* Motion & elevation */
+  --lims-transition: 0.2s ease;
+  --lims-shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --lims-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --lims-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --lims-active-bg: rgba(197, 234, 49, 0.18);
+  --lims-hover-bg: #f4f6f8;
+
+  /* Radius */
+  --lims-radius-sm: 6px;
+  --lims-radius-md: 10px;
+  --lims-radius-lg: 12px;
+
+  /* Spacing (8px grid) */
+  --lims-space-1: 0.25rem;
+  --lims-space-2: 0.5rem;
+  --lims-space-3: 0.75rem;
+  --lims-space-4: 1rem;
+  --lims-space-5: 1.25rem;
+  --lims-space-6: 1.5rem;
+
+  /* Legacy aliases — lab-design-system */
+  --lab-primary-600: var(--lims-accent);
+  --lab-primary-700: var(--lims-accent-dark);
+  --lab-primary-50: var(--lims-hover-bg);
+  --lab-transition-normal: var(--lims-transition);
+  --lab-shadow-md: var(--lims-shadow-subtle);
+
+  /* Legacy aliases — Blast sidebar */
+  --blast-sidebar-width: var(--lims-sidebar-width);
+  --blast-sidebar-collapsed-width: var(--lims-sidebar-collapsed-width);
+  --blast-color-background-light: var(--lims-bg-sidebar);
+  --blast-color-background-dark: var(--lims-bg);
+  --blast-color-text-dark: var(--lims-text);
+  --blast-color-text-secondary: var(--lims-muted);
+  --blast-color-accent: var(--lims-accent);
+  --blast-color-accent-hover: var(--lims-accent-dark);
+  --blast-color-hover: var(--lims-hover-bg);
+  --blast-color-active-bg: var(--lims-active-bg);
+  --blast-transition-speed: var(--lims-transition);
+  --blast-shadow-subtle: var(--lims-shadow-subtle);
+
+  /* Legacy aliases — Modern sidebar */
+  --color-brand-primary: var(--lims-text);
+  --color-brand-accent: var(--lims-accent);
+  --color-brand-accent-dark: var(--lims-accent-dark);
+  --sidebar-width: var(--lims-sidebar-width);
+  --sidebar-collapsed-width: var(--lims-sidebar-collapsed-width);
+  --color-background-light: var(--lims-bg-sidebar);
+  --color-background-dark: var(--lims-bg);
+  --color-text-dark: var(--lims-text);
+  --color-text-secondary: var(--lims-muted);
+  --color-accent: var(--lims-accent);
+  --color-accent-hover: var(--lims-accent-dark);
+  --color-hover: var(--lims-hover-bg);
+  --color-active-bg: var(--lims-active-bg);
+  --transition-speed: var(--lims-transition);
+  --shadow-subtle: var(--lims-shadow-subtle);
+}

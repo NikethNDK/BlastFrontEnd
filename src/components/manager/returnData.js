@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 import { AiOutlineDownload } from "react-icons/ai";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import Pagination from "../common/Pagination";
 import { BASE_URL } from "../../services/AppinfoService";
 import "../../components/Lab1/homeLab/inventory.css";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
 
 const ReturnDataTable = () => {
+  const location = useLocation();
+  const isEmbedded = location.pathname === "/dashboard";
+
   // Get user from Redux store to get username and labs
   const reduxUser = useSelector((state) => state.user.user);
   const username = reduxUser?.user_name || reduxUser?.name || null;
@@ -174,12 +179,6 @@ const ReturnDataTable = () => {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
-
-  const handleItemsPerPageChange = (e) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing items per page
-  };
-
   const handleDownload = () => {
     if (filteredData.length === 0) {
       toast.error("No data to download!");
@@ -223,8 +222,8 @@ const ReturnDataTable = () => {
     0
   );
 
-  return (
-    <div className="master-list-container" style={{ width: "100%", padding: "24px" }}>
+  const tableContent = (
+    <div className="master-list-container lims-data-fill">
       {/* --- Lab Filter and Download Button --- */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         {/* Lab Filter Dropdown */}
@@ -268,26 +267,23 @@ const ReturnDataTable = () => {
       </div>
 
       {/* --- Pagination Controls (Top) --- */}
-      <div className="pagination-controls top">
-        <div className="pagination-info">
-          Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} items
-        </div>
-        <div className="pagination-options">
-          <label className="items-per-page-label">
-            Items per page:
-            <select 
-              value={itemsPerPage} 
-              onChange={handleItemsPerPageChange}
-              className="items-per-page-select"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </label>
-        </div>
-      </div>
+      <Pagination
+        position="top"
+        showPageNumbers={false}
+        showItemsPerPage
+        showSummary
+        totalItems={totalItems}
+        startIndex={startIndex}
+        endIndex={endIndex}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={(n) => {
+          setItemsPerPage(n);
+          setCurrentPage(1);
+        }}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
 
       {/* --- Main Data Table --- */}
       <div className="table-wrapper">
@@ -357,48 +353,28 @@ const ReturnDataTable = () => {
       </div>
 
       {/* --- Pagination Controls (Bottom) --- */}
-      {totalPages > 1 && (
-        <div className="pagination-controls bottom">
-          <div className="pagination-navigation">
-            <button
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="pagination-btn prev-btn"
-            >
-              <FaChevronLeft size={14} />
-              Previous
-            </button>
-            
-            <div className="pagination-numbers">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`pagination-btn page-btn ${
-                    currentPage === page ? "active" : ""
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-            
-            <button
-              onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className="pagination-btn next-btn"
-            >
-              Next
-              <FaChevronRight size={14} />
-            </button>
-          </div>
-          
-          <div className="pagination-summary">
-            Page {currentPage} of {totalPages}
-          </div>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        position="bottom"
+      />
     </div>
+  );
+
+  if (isEmbedded) {
+    return tableContent;
+  }
+
+  return (
+    <PageLayout>
+      <PageHeader title="Returned items" />
+      <PageBody>
+      <ContentCard flush>
+        {tableContent}
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

@@ -5,8 +5,9 @@ import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-ro
 import { useDispatch } from 'react-redux';
 import { logoutUser } from './store/slices/userSlice';
 import { Toaster } from "react-hot-toast";
-import ModernSidebar from "./components/common/ModernSidebar";
-import Header from "./components/Lab1/homeLab/Header";
+import AppShell from "./components/layout/AppShell";
+import AppSidebar from "./components/layout/AppSidebar";
+import { labMenuConfig } from "./config/sidebar/labMenu";
 import HomeLab from "../src/components/Lab1/homeLab/HomeLab";
 import AddProduct from "./components/Lab1/addProduct/AddProduct";
 import ReceivedProduct from "./components/Lab1/receive/ReceivedProduct";
@@ -29,9 +30,6 @@ import EquipmentList from "./components/Lab1/homeLab/equipmentList";
 
 function Layout({ userDetails, userId }) {
   const location = useLocation();
-  // NOTE: Polling removed - notifications now come from centralized polling via Redux
-
-  // Hide navigation only on JoinLab ("/") route
   const hiddenPaths = ["/", "/add_blast", "/dna", "/add_dna"];
   const hideNavigation = hiddenPaths.includes(location.pathname);
 
@@ -62,44 +60,36 @@ function Layout({ userDetails, userId }) {
   }
 
   return (
-    <div className="lab-app">
-      <Header />
-      <div className="lab-body-container">
-        <ModernSidebar
+    <AppShell
+      sidebar={
+        <AppSidebar
+          config={labMenuConfig}
           userDetails={userDetails}
           userId={userId}
           onLogout={handleLogout}
         />
-
-        <div className="lab-main-content">
-          <div className="lab-content-container">
-            <Routes>
-              <Route path="/master" element={
-                <div>
-                  <HomeLab userDetails={userDetails} />
-                </div>
-              } />
-              <Route path="/add_product" element={<AddProduct userDetails={userDetails} />} />
-              <Route path="/received_product" element={<ReceivedProduct userDetails={userDetails} />} />
-              <Route path="/issued_product" element={<IssuedProduct userDetails={userDetails} />} />
-              <Route path="/issuetable" element={<IssueDataTable userDetails={userDetails} />} />
-              <Route path="/return_product" element={<ReturnProduct userDetails={userDetails} />} />
-              <Route path="/chemical_list" element={<ChemicalList userDetails={userDetails} />} />
-              <Route path="/transferred" element={<TransferredDataTable userDetails={userDetails} />} />
-              <Route path="/received_issue" element={<ChemicalIssuePage userDetails={userDetails} />} />
-              <Route path="/returntable" element={<ReceivedDataTable userDetails={userDetails} />} />
-              <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
-              <Route path="/common_name" element={<CommonNameDna userDetails={userDetails} />} />
-              <Route path="/scientific_name" element={<ScientificNameDna userDetails={userDetails} />} />
-              <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
-              <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
-              <Route path="/retrun" element={<ReturnDataTable userDetails={userDetails} />} />
-              <Route path="/change_password" element={<ChangePassword userDetails={userDetails} />} />
-              <Route path="/equipment" element={<EquipmentList userDetails={userDetails} />} />
-            </Routes>
-          </div>
-        </div>
-      </div>
+      }
+    >
+      <Routes>
+        <Route path="/master" element={<HomeLab userDetails={userDetails} />} />
+        <Route path="/add_product" element={<AddProduct userDetails={userDetails} />} />
+        <Route path="/received_product" element={<ReceivedProduct userDetails={userDetails} />} />
+        <Route path="/issued_product" element={<IssuedProduct userDetails={userDetails} />} />
+        <Route path="/issuetable" element={<IssueDataTable userDetails={userDetails} />} />
+        <Route path="/return_product" element={<ReturnProduct userDetails={userDetails} />} />
+        <Route path="/chemical_list" element={<ChemicalList userDetails={userDetails} />} />
+        <Route path="/transferred" element={<TransferredDataTable userDetails={userDetails} />} />
+        <Route path="/received_issue" element={<ChemicalIssuePage userDetails={userDetails} />} />
+        <Route path="/returntable" element={<ReceivedDataTable userDetails={userDetails} />} />
+        <Route path="/dna" element={<DnaManage userDetails={userDetails} />} />
+        <Route path="/common_name" element={<CommonNameDna userDetails={userDetails} />} />
+        <Route path="/scientific_name" element={<ScientificNameDna userDetails={userDetails} />} />
+        <Route path="/add_dna" element={<AddDNA userDetails={userDetails} />} />
+        <Route path="/add_blast" element={<Comparision userDetails={userDetails} />} />
+        <Route path="/retrun" element={<ReturnDataTable userDetails={userDetails} />} />
+        <Route path="/change_password" element={<ChangePassword userDetails={userDetails} />} />
+        <Route path="/equipment" element={<EquipmentList userDetails={userDetails} />} />
+      </Routes>
       <Toaster
         position="top-center"
         toastOptions={{
@@ -124,7 +114,7 @@ function Layout({ userDetails, userId }) {
           },
         }}
       />
-    </div>
+    </AppShell>
   );
 }
 

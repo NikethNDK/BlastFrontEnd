@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "../../../services/AppinfoService";
 import "./ChangePassword.css";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
 
 const ChangePassword = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
   const [userName, setUserName] = useState("");
@@ -36,31 +37,18 @@ const ChangePassword = ({ userDetails = { name: '', lab: '', designation: '' } }
   };
 
   return (
-    <div className="change-password-container">
-      
-      <div className="change-password-content">
+    <PageLayout>
+      <PageHeader title="Change password" />
+      <PageBody>
+      <ContentCard>
         <div style={{ 
           display: 'flex', 
-          flexDirection: 'column', 
-          width: '100%',
-          height: '100%',
-          backgroundColor:"#f2f5e6"
+          justifyContent: 'center', 
+          alignItems: 'center',
+          padding: '20px'
         }}>
-          {/* Header Section */}
-          <div className="change-password-header">
-            <h1 className="change-password-title">CHANGE PASSWORD</h1>
-          </div>
-
-          {/* Form Section */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            flex: 1,
-            padding: '20px'
-          }}>
-            <div className="password-form-container">
-              <form onSubmit={handleSubmit}>
+          <div className="password-form-container">
+            <form onSubmit={handleSubmit}>
                 <div className="password-form-group">
                   <label htmlFor="username">Username</label>
                   <input
@@ -105,11 +93,11 @@ const ChangePassword = ({ userDetails = { name: '', lab: '', designation: '' } }
                   {error}
                 </div>
               )}
-            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

@@ -23,8 +23,8 @@ import {
 import "../../inventory/formBorder.css";
 import Select from "react-select";
 import TempReceiveTable from "./TempReceiveTable";
-import LabNavigation1 from "../homeLab/LabNavigation1"; // This was in the original imports but isn't used in the component return
 import { BASE_URL } from "../../../services/AppinfoService";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
 
 const ReceivedProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -599,42 +599,31 @@ const ReceivedProduct = ({
 
   // --- Render Function ---
   return (
-    <div>
-      <div style={{ marginTop: "20px", width: "100%" }}>
-        <div>
-          <h1 style={{
-    fontSize: "var(--lab-text-3xl, 1.8rem)",
-    fontWeight: 700,
-    color: "var(--lab-neutral-800, #1e293b)",
-    margin: 0,
-    textAlign: "left",
-  }}>
-            RECEIVED PRODUCT
+    <PageLayout>
+      <PageHeader
+        title="Received product"
+        actions={
+          <>
             <Button
-              variant="primary"
-              onClick={handleShowAdd} // Open the modal (add mode)
-              style={{ width: "70px", float: "right", marginLeft: "8px" }}
-            >
-              Add
-            </Button>
-            <Button 
-              onClick={handleTransferData} 
-              style={{ float: "right" }}
+              onClick={handleTransferData}
               disabled={tableItemCount === 0}
             >
               Submit
             </Button>
-          </h1>
-        </div>
-        <p></p>
-        <div>
-          {/* The form section is now moved into the Modal component */}
+            <Button variant="primary" onClick={handleShowAdd}>
+              Add
+            </Button>
+          </>
+        }
+      />
+      <PageBody>
+      <ContentCard flush>
           <TempReceiveTable 
             onEdit={openEditModal} 
             onItemCountChange={setTableItemCount}
           />
-        </div>
-      </div>
+      </ContentCard>
+      </PageBody>
 
       {/* --- Modal Component for Add Receive Form --- */}
       <Modal show={showModal} onHide={handleClose} size="xl" scrollable className="modal-xl">
@@ -1075,7 +1064,7 @@ const ReceivedProduct = ({
           </Button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </PageLayout>
   );
 };
 

@@ -15,9 +15,12 @@
 }
 
 .master-list-container {
-    /* Padding is often inherited from the parent HomeLab component, but we ensure it fills the space */
     width: 100%;
-    /* No background here, letting the parent's card background show */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
 }
 
 /* --- Action Bar (Notifications and Download) --- */
@@ -27,9 +30,10 @@
     align-items: center;
     gap: 1rem;
     position: relative;
-    top: -1.5rem; /* Pull up to sit alongside the HomeLab header content */
-    margin-bottom: -1rem;
-    padding-right: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--lims-border, #e2e8f0);
+    flex-shrink: 0;
+    background: var(--lims-surface, #ffffff);
 }
 
 .download-btn {
@@ -37,17 +41,18 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background-color: var(--color-success);
+    background-color: var(--lims-text, #1a3d2a);
     color: white;
     border: none;
     border-radius: 6px;
     font-weight: 600;
+    font-size: 0.875rem;
     cursor: pointer;
     transition: background-color var(--transition-speed);
 }
 
 .download-btn:hover {
-    background-color: #059669; /* Darker green */
+    background-color: #0f2d1c;
 }
 
 /* --- Notification Dropdown --- */
@@ -127,31 +132,34 @@
 /* --- Equipment Action Buttons --- */
 .equipment-actions {
     display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--lims-border, #e2e8f0);
+    flex-shrink: 0;
+    margin-bottom: 0;
     justify-content: flex-start;
 }
 
 .action-btn {
-    padding: 0.6rem 1.25rem;
-    border: 1px solid var(--color-accent);
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--lims-text, #1a3d2a);
     border-radius: 6px;
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--transition-speed);
-    font-size: 0.9rem;
-    background-color: var(--color-background-light);
-    color: var(--color-accent);
+    transition: all 0.15s ease;
+    font-size: 0.875rem;
+    background-color: #fff;
+    color: var(--lims-text, #1a3d2a);
 }
 
 .action-btn:hover {
-    background-color: #eff6ff; /* Very light blue */
+    background-color: var(--lims-active-bg, rgba(197, 234, 49, 0.18));
 }
 
 .action-btn.active-update {
-    background-color: var(--color-accent);
+    background-color: var(--lims-text, #1a3d2a);
     color: white;
-    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+    border-color: var(--lims-text, #1a3d2a);
 }
 
 .action-btn.view-btn {
@@ -166,59 +174,65 @@
 
 /* --- Table Styles --- */
 .table-wrapper {
-    overflow-x: auto;
-    max-height: 350px; /* Kept the max-height for scrollable table */
-    overflow-y: auto;
-    border: 1px solid var(--color-border-light);
-    border-radius: 8px;
+    overflow: auto;
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+    border: none;
+    border-radius: 0;
     background: var(--color-background-light);
 }
 
 .inventory-table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 1000px; /* Ensure wide enough for content and filters */
-    table-layout: fixed; /* Better control over column width */
+    min-width: 1000px;
+    table-layout: auto;
 }
 
 .table-header {
-    background-color: var(--color-background-gray);
-    color: var(--color-text-dark);
     text-align: center;
     vertical-align: top;
     padding: 0.75rem 0.5rem;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
     font-weight: 600;
     border: 1px solid var(--color-border-light);
-    position: sticky; /* Sticky header for scrollable table */
+    position: sticky;
     top: 0;
     z-index: 10;
 }
 
 .filter-input {
     width: 100%;
-    padding: 0.3rem 0.5rem;
-    margin-top: 5px;
-    border: 1px solid #ccc;
+    padding: 0.35rem 0.5rem;
+    margin-top: 4px;
+    border: 1px solid var(--lims-border, #e2e8f0);
     border-radius: 4px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     box-sizing: border-box;
+    background: #fff;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: var(--lims-accent, #c5ea31);
+    box-shadow: 0 0 0 2px rgba(197, 234, 49, 0.25);
 }
 
 .table-cell {
     text-align: center;
     vertical-align: middle;
-    padding: 10px;
+    padding: 10px 12px;
     border: 1px solid var(--color-border-light);
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100px; /* Set a max width for content cells */
 }
 
 .item-name-cell {
-    max-width: 150px; /* Give item name more space */
+    min-width: 140px;
+    max-width: 280px;
     white-space: normal;
 }
 
@@ -346,21 +360,22 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
-  margin: 1rem 0;
+  padding: 0.65rem 1rem;
+  flex-shrink: 0;
   border-bottom: 1px solid var(--color-border-light);
+  background: #fafbfc;
+  font-size: 0.875rem;
 }
 
 .pagination-controls.top {
-  border-bottom: none;
-  margin-bottom: 0.5rem;
-  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: 0;
 }
 
 .pagination-controls.bottom {
   border-top: 1px solid var(--color-border-light);
-  margin-top: 1rem;
-  padding-top: 1rem;
+  border-bottom: none;
+  margin-top: 0;
 }
 
 .pagination-info {
@@ -396,7 +411,8 @@
 
 .items-per-page-select:focus {
   outline: none;
-  border-color: var(--color-accent);
+  border-color: var(--lims-accent-dark, #b5da21);
+  box-shadow: 0 0 0 2px rgba(197, 234, 49, 0.25);
 }
 
 .pagination-navigation {
@@ -436,9 +452,9 @@
 }
 
 .pagination-btn.active {
-  background: var(--color-accent);
-  color: white;
-  border-color: var(--color-accent);
+  background: var(--lims-accent, #c5ea31);
+  color: var(--lims-text, #1a3d2a);
+  border-color: var(--lims-accent-dark, #b5da21);
 }
 
 .pagination-btn.page-btn {

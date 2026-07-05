@@ -1,5 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import "./styles/tokens.css";
+import "./styles/layout/app-shell.css";
+import "./styles/layout/sidebar.css";
+import "./styles/components/content.css";
+import "./styles/components/tables.css";
+import "./styles/components/ui.css";
 import "./index.css";
 import { Provider } from "react-redux";
 import store from "./store";

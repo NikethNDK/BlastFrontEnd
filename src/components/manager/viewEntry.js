@@ -3,6 +3,7 @@ import { getViewEntryApi } from '../../services/AppinfoService';
 import "../../App.css";
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
+import { PageLayout, PageHeader, PageBody, ContentCard } from '../layout/content';
 
 const ViewEntry = () => {
   const [masters, setMasters] = useState([]);
@@ -190,10 +191,10 @@ const ViewEntry = () => {
   ];
 
   return (
-    <div>
-        <div style={{ background: "#C5EA31", height: '70px' }} className="header">
-            <h2 style={{ textAlign: 'center', paddingTop: '15px' }}>VIEW ENTRY</h2>
-        </div>
+    <PageLayout>
+        <PageHeader title="View entry" />
+        <PageBody>
+        <ContentCard flush>
         <div style={{ overflowY: 'scroll', maxHeight: '500px' }}>
             <div className="row side-row" style={{ textAlign: 'center' }}>
                 <BootstrapTable
@@ -209,7 +210,9 @@ const ViewEntry = () => {
                 />
             </div>
         </div>
-    </div>
+        </ContentCard>
+        </PageBody>
+    </PageLayout>
 );
 };
 

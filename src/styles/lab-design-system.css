@@ -139,116 +139,10 @@
 
 .lab-body-container {
   display: flex;
-  /* margin-top: 160px;  */
   background: #f2f5e6;
-  min-height: 100vh;
   flex: 1;
   width: 100%;
-}
-
-/* Modern Lab Sidebar */
-/* .lab-sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 280px;
-  background: linear-gradient(180deg, var(--lab-primary-600) 0%, var(--lab-primary-800) 100%);
-  color: white;
-  z-index: 1000;
-  transition: all var(--lab-transition-normal);
-  box-shadow: var(--lab-shadow-xl);
-  overflow-y: auto;
-} */
-.lab-sidebar {
-  position: relative; /* Change from fixed to relative */
-  width: 280px;
-  height: calc(100vh - 120px);
-  background: #f2f5e6;
-  border-right: 1px solid var(--lab-neutral-200);
-  box-shadow: var(--lab-shadow-sm);
-  z-index: 999;
-  transition: all var(--lab-transition-normal);
-}
-
-.lab-sidebar.collapsed {
-  width: 80px;
-}
-
-.lab-sidebar-header {
-  padding: var(--lab-space-6);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.1);
-}
-
-.lab-sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: var(--lab-space-3);
-  font-size: var(--lab-text-xl);
-  font-weight: 700;
-  color: white;
-  text-decoration: none;
-}
-
-.lab-sidebar-brand:hover {
-  color: white;
-  text-decoration: none;
-}
-
-.lab-sidebar-logo {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--lab-radius-lg);
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--lab-text-lg);
-  font-weight: bold;
-  color: var(--lab-primary-600);
-}
-
-.lab-sidebar-menu {
-  padding: var(--lab-space-4) 0;
-}
-
-.lab-sidebar-item {
-  display: block;
-  padding: var(--lab-space-4) var(--lab-space-6);
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  transition: all var(--lab-transition-fast);
-  border-left: 3px solid transparent;
-  position: relative;
-}
-
-.lab-sidebar-item:hover {
-  color: white;
-  background: rgba(255, 255, 255, 0.1);
-  text-decoration: none;
-  border-left-color: var(--lab-secondary-400);
-}
-
-.lab-sidebar-item.active {
-  color: white;
-  background: rgba(255, 255, 255, 0.15);
-  border-left-color: var(--lab-secondary-400);
-  font-weight: 600;
-}
-
-.lab-sidebar-item-icon {
-  width: 24px;
-  height: 24px;
-  margin-right: var(--lab-space-3);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.lab-sidebar-item-text {
-  font-size: var(--lab-text-sm);
-  font-weight: 500;
+  min-height: 0;
 }
 
 /* Modern Lab Header */
@@ -664,14 +558,6 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .lab-sidebar {
-    transform: translateX(-100%);
-  }
-  
-  .lab-sidebar.open {
-    transform: translateX(0);
-  }
-  
   .lab-main-content {
     margin-left: 0;
   }

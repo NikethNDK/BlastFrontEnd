@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import LabNavigation1 from "./LabNavigation1";
 import "../entries/TransferredDataTable.css";
 import { AiOutlineDownload } from "react-icons/ai";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../services/AppinfoService";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
 
 const EquipmentList = () => {
   const [equipmentData, setEquipmentData] = useState([]);
@@ -120,17 +120,35 @@ const EquipmentList = () => {
 
   if (loading) {
     return (
-      <div className="loading-state">
-        Loading equipment data...
-      </div>
+      <PageLayout>
+        <PageHeader title="Equipment details" />
+        <PageBody>
+        <ContentCard>
+          <div className="loading-state">
+            Loading equipment data...
+          </div>
+        </ContentCard>
+        </PageBody>
+      </PageLayout>
     );
   }
 
   return (
-    <div>
-      <div className="table-container">
-        <h2>Equipment Details</h2>
-        
+    <PageLayout>
+      <PageHeader
+        title="Equipment details"
+        actions={
+          <button
+            className="download-button"
+            onClick={handleDownload}
+            title="Download Excel"
+          >
+            <AiOutlineDownload size={20} />
+          </button>
+        }
+      />
+      <PageBody>
+      <ContentCard flush>
         {/* Total Summary */}
         <div className="total-summary" style={{ 
           marginBottom: "1rem", 
@@ -149,22 +167,9 @@ const EquipmentList = () => {
           </p>
         </div>
 
-        {/* Header Controls */}
-        <div className="table-header-controls">
-          <div></div> {/* Empty div for spacing */}
-          
-          <button
-            className="download-button"
-            onClick={handleDownload}
-            title="Download Excel"
-          >
-            <AiOutlineDownload size={20} />
-          </button>
-        </div>
-
         {/* Table Wrapper */}
-        <div className="table-wrapper">
-          <table className="data-table">
+        <div className="table-wrapper lims-table-wrap">
+          <table className="data-table lims-table">
             <thead>
               <tr>
                 {tableHeadings.map(({ label, key, className }, index) => (
@@ -212,8 +217,9 @@ const EquipmentList = () => {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

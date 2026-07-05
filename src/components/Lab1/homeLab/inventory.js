@@ -5,11 +5,12 @@ import {
   getEquipmentDetailsByEntryNo,
 } from "../../../services/AppinfoService";
 import * as XLSX from "xlsx";
-import { FaBell, FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaBell, FaTimes } from "react-icons/fa";
 import { AiOutlineDownload } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
+import Pagination from "../../common/Pagination";
 import "./inventory.css";
 
 const MasterListTable = ({
@@ -232,23 +233,6 @@ const MasterListTable = ({
     setCurrentPage(pageNumber);
   };
 
-  const handleItemsPerPageChange = (e) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // Reset to first page when changing items per page
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
   // --- Effects ---
 
   // 1. Data Fetching
@@ -401,7 +385,7 @@ const MasterListTable = ({
     );
 
   return (
-    <div className="master-list-container">
+    <div className="master-list-container lims-data-fill">
       {/* --- Action Bar (Notifications and Download) --- */}
       <div className="action-bar">
         <div className="notification-wrapper">
@@ -461,31 +445,27 @@ const MasterListTable = ({
         </div>
       )} */}
 
-      {/* --- Pagination Controls (Top) --- */}
-      <div className="pagination-controls top">
-        <div className="pagination-info">
-          Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} items
-        </div>
-        <div className="pagination-options">
-          <label className="items-per-page-label">
-            Items per page:
-            <select 
-              value={itemsPerPage} 
-              onChange={handleItemsPerPageChange}
-              className="items-per-page-select"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </label>
-        </div>
-      </div>
+      <Pagination
+        position="top"
+        showPageNumbers={false}
+        showItemsPerPage
+        showSummary
+        totalItems={totalItems}
+        startIndex={startIndex}
+        endIndex={endIndex}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={(n) => {
+          setItemsPerPage(n);
+          setCurrentPage(1);
+        }}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {/* --- Main Data Table --- */}
-      <div className="table-wrapper">
-        <table className="inventory-table">
+      <div className="table-wrapper lims-table-wrap">
+        <table className="inventory-table lims-table">
           <thead>
             <tr>
               {masterType === "Equipment" && (
@@ -559,48 +539,12 @@ const MasterListTable = ({
         </table>
       </div>
 
-      {/* --- Pagination Controls (Bottom) --- */}
-      {totalPages > 1 && (
-        <div className="pagination-controls bottom">
-          <div className="pagination-navigation">
-            <button
-              onClick={handlePrevPage}
-              disabled={currentPage === 1}
-              className="pagination-btn prev-btn"
-            >
-              <FaChevronLeft size={14} />
-              Previous
-            </button>
-            
-            <div className="pagination-numbers">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`pagination-btn page-btn ${
-                    currentPage === page ? "active" : ""
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-            </div>
-            
-            <button
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-              className="pagination-btn next-btn"
-            >
-              Next
-              <FaChevronRight size={14} />
-            </button>
-          </div>
-          
-          <div className="pagination-summary">
-            Page {currentPage} of {totalPages}
-          </div>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+      />
 
       {/* --- Equipment Update Modal --- */}
       {showModal && selectedItem && (

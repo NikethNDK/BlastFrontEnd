@@ -6,10 +6,10 @@ import toast from "react-hot-toast";
 import { Download } from "lucide-react";
 import { AiOutlineDownload } from "react-icons/ai";
 import { getmanagerEmployeeApi } from "../../../services/AppinfoService";
-import LabNavigation1 from "../homeLab/LabNavigation1";
 import { BASE_URL } from "../../../services/AppinfoService";
 import { useSelector } from "react-redux";
 import { Modal, Button, Form } from "react-bootstrap";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
 
 const TransferredDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -292,42 +292,31 @@ const TransferredDataTable = ({
   ];
   console.log(data)
   return (
-    <div style={{ marginTop: "1px", width: "100%" }}>
-      <div>
-        <h1 style={{
-          fontSize: "var(--lab-text-3xl, 1.8rem)",
-          fontWeight: 700,
-          color: "var(--lab-neutral-800, #1e293b)",
-          margin: 0,
-          textAlign: "left",
-        }}>
-          TRANSFERRED ITEMS
-          <Button
-            variant="primary"
-            onClick={openPopup}
-            disabled={!selectedItem}
-            style={{
-              width: "100px",
-              float: "right",
-              marginLeft: "8px",
-            }}
-          >
-            Return
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleDownload}
-            style={{ float: "right" }}
-            title="Download Excel"
-          >
-            <AiOutlineDownload size={18} style={{ marginRight: "4px" }} />
-            Download
-          </Button>
-        </h1>
-      </div>
-      <p></p>
-
-      <div style={{ paddingTop: "10px" }}>
+    <PageLayout>
+      <PageHeader
+        title="Transferred items"
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={handleDownload}
+              title="Download Excel"
+            >
+              <AiOutlineDownload size={18} style={{ marginRight: "4px" }} />
+              Download
+            </Button>
+            <Button
+              variant="primary"
+              onClick={openPopup}
+              disabled={!selectedItem}
+            >
+              Return
+            </Button>
+          </>
+        }
+      />
+      <PageBody>
+      <ContentCard flush>
         <div className="transferred-table-container">
 
           {/* Table Wrapper */}
@@ -473,8 +462,9 @@ const TransferredDataTable = ({
             </Button>
           </Modal.Footer>
         </Modal>
-      </div>
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

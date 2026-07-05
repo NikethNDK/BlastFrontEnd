@@ -6,6 +6,7 @@ import { confirmIssue } from '../../services/AppinfoService';
 import { setResearcherPendingConfirmations } from '../../store/slices/notificationSlice';
 import { getIssueItemsByStatus } from '../../services/AppinfoService';
 import toast from 'react-hot-toast';
+import { PageLayout, PageHeader, PageBody, ContentCard } from '../layout/content';
 
 const ConfirmIssue = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   const dispatch = useDispatch();
@@ -77,425 +78,81 @@ const ConfirmIssue = ({ userDetails = { name: "", lab: "", designation: "" } }) 
   };
 
   return (
-    <div style={{ width: '100%', backgroundColor: '#f2f5e6', minHeight: '100vh' }}>
-      <div
-        style={{
-          backgroundColor: '#f8fafc',
-          padding: '20px',
-          borderBottom: '2px solid #e2e8f0',
-        }}
-      >
-        <h2
-          style={{
-            textAlign: 'center',
-            margin: 0,
-            fontSize: '1.75rem',
-            fontWeight: 600,
-            color: '#1e293b',
-          }}
-        >
-          PENDING CONFIRMATIONS
-        </h2>
-      </div>
-
-      <div style={{ padding: '20px' }}>
-        <div
-          style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '8px',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-            overflow: 'hidden',
-          }}
-        >
-          <div
-            style={{
-              overflowX: 'auto',
-              maxHeight: '600px',
-              overflowY: 'auto',
-            }}
-          >
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'separate',
-                borderSpacing: 0,
-                minWidth: '1400px',
-              }}
-            >
-              <thead>
+    <PageLayout>
+      <PageHeader title="Pending confirmations" />
+      <PageBody>
+      <ContentCard flush>
+        <div className="lims-notification-scroll">
+          <table className="lims-notification-table lims-table">
+            <thead>
+              <tr>
+                <th style={{ minWidth: '100px' }}>Entry No</th>
+                <th style={{ minWidth: '120px' }}>Item Code</th>
+                <th style={{ minWidth: '150px' }}>Item Name</th>
+                <th style={{ minWidth: '100px' }}>Quantity</th>
+                <th style={{ minWidth: '120px' }}>Project Code</th>
+                <th style={{ minWidth: '150px' }}>Project Name</th>
+                <th style={{ minWidth: '130px' }}>Lab Assistant</th>
+                <th style={{ minWidth: '120px' }}>Request Date</th>
+                <th style={{ minWidth: '120px' }}>Status</th>
+                <th style={{ minWidth: '200px' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {pendingConfirmations.length === 0 ? (
                 <tr>
-                  <th
-                    style={{
-                      backgroundColor: '#f8fafc',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: '#1e293b',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: '100px',
-                    }}
-                  >
-                    Entry No
-                  </th>
-                  <th
-                    style={{
-                      backgroundColor: '#f8fafc',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: '#1e293b',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: '120px',
-                    }}
-                  >
-                    Item Code
-                  </th>
-                  <th
-                    style={{
-                      backgroundColor: '#f8fafc',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: '#1e293b',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: '150px',
-                    }}
-                  >
-                    Item Name
-                  </th>
-                  <th
-                    style={{
-                      backgroundColor: '#f8fafc',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: '#1e293b',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: '100px',
-                    }}
-                  >
-                    Quantity
-                  </th>
-                  <th
-                    style={{
-                      backgroundColor: '#f8fafc',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: '#1e293b',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: '120px',
-                    }}
-                  >
-                    Project Code
-                  </th>
-                  <th
-                    style={{
-                      backgroundColor: '#f8fafc',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: '#1e293b',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: '150px',
-                    }}
-                  >
-                    Project Name
-                  </th>
-                  <th
-                    style={{
-                      backgroundColor: '#f8fafc',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: '#1e293b',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: '130px',
-                    }}
-                  >
-                    Lab Assistant
-                  </th>
-                  <th
-                    style={{
-                      backgroundColor: '#f8fafc',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: '#1e293b',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: '120px',
-                    }}
-                  >
-                    Request Date
-                  </th>
-                  <th
-                    style={{
-                      backgroundColor: '#f8fafc',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: '#1e293b',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: '120px',
-                    }}
-                  >
-                    Status
-                  </th>
-                  <th
-                    style={{
-                      backgroundColor: '#f8fafc',
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      border: '1px solid #e2e8f0',
-                      fontWeight: 600,
-                      fontSize: '0.875rem',
-                      color: '#1e293b',
-                      position: 'sticky',
-                      top: 0,
-                      zIndex: 10,
-                      minWidth: '200px',
-                    }}
-                  >
-                    Action
-                  </th>
+                  <td colSpan={10} className="lims-notification-empty">
+                    No items waiting for your confirmation.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {pendingConfirmations.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={10}
-                      style={{
-                        textAlign: 'center',
-                        padding: '40px',
-                        color: '#64748b',
-                        border: '1px solid #e2e8f0',
-                      }}
-                    >
-                      No items waiting for your confirmation.
+              ) : (
+                pendingConfirmations.map((item) => (
+                  <tr key={item.entry_no}>
+                    <td>{item.entry_no || '-'}</td>
+                    <td>{item.item_code || '-'}</td>
+                    <td>{item.item_name || '-'}</td>
+                    <td>{item.quantity_issued || '-'}</td>
+                    <td>{item.project_code || '-'}</td>
+                    <td>{item.project_name || '-'}</td>
+                    <td>{item.lab_assistant_name || '-'}</td>
+                    <td>{formatDate(item.issue_date)}</td>
+                    <td>
+                      <Badge bg="warning" text="dark">
+                        {item.status || 'RSR-CONFIRM'}
+                      </Badge>
+                    </td>
+                    <td>
+                      <div className="lims-notification-actions">
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={() => handleConfirm(item, 'accept')}
+                          disabled={loading[item.entry_no]}
+                        >
+                          <FaCheck />
+                          {loading[item.entry_no] ? 'Confirming...' : 'Confirm'}
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => handleConfirm(item, 'decline')}
+                          disabled={loading[item.entry_no]}
+                        >
+                          <FaTimes />
+                          {loading[item.entry_no] ? 'Declining...' : 'Decline'}
+                        </Button>
+                      </div>
                     </td>
                   </tr>
-                ) : (
-                  pendingConfirmations.map((item, index) => (
-                    <tr
-                      key={item.entry_no}
-                      style={{
-                        transition: 'background-color 0.15s',
-                        backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc',
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = '#f1f5f9';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor =
-                          index % 2 === 0 ? '#ffffff' : '#f8fafc';
-                      }}
-                    >
-                      <td
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e2e8f0',
-                          padding: '12px',
-                          fontSize: '0.875rem',
-                          color: '#475569',
-                        }}
-                      >
-                        {item.entry_no || '-'}
-                      </td>
-                      <td
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e2e8f0',
-                          padding: '12px',
-                          fontSize: '0.875rem',
-                          color: '#475569',
-                        }}
-                      >
-                        {item.item_code || '-'}
-                      </td>
-                      <td
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e2e8f0',
-                          padding: '12px',
-                          fontSize: '0.875rem',
-                          color: '#475569',
-                        }}
-                      >
-                        {item.item_name || '-'}
-                      </td>
-                      <td
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e2e8f0',
-                          padding: '12px',
-                          fontSize: '0.875rem',
-                          color: '#475569',
-                        }}
-                      >
-                        {item.quantity_issued || '-'}
-                      </td>
-                      <td
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e2e8f0',
-                          padding: '12px',
-                          fontSize: '0.875rem',
-                          color: '#475569',
-                        }}
-                      >
-                        {item.project_code || '-'}
-                      </td>
-                      <td
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e2e8f0',
-                          padding: '12px',
-                          fontSize: '0.875rem',
-                          color: '#475569',
-                        }}
-                      >
-                        {item.project_name || '-'}
-                      </td>
-                      <td
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e2e8f0',
-                          padding: '12px',
-                          fontSize: '0.875rem',
-                          color: '#475569',
-                        }}
-                      >
-                        {item.lab_assistant_name || '-'}
-                      </td>
-                      <td
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e2e8f0',
-                          padding: '12px',
-                          fontSize: '0.875rem',
-                          color: '#475569',
-                        }}
-                      >
-                        {formatDate(item.issue_date)}
-                      </td>
-                      <td
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e2e8f0',
-                          padding: '12px',
-                          fontSize: '0.875rem',
-                        }}
-                      >
-                        <Badge
-                          bg="warning"
-                          text="dark"
-                          style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '0.75rem',
-                            fontWeight: 500,
-                          }}
-                        >
-                          {item.status || 'RSR-CONFIRM'}
-                        </Badge>
-                      </td>
-                      <td
-                        style={{
-                          textAlign: 'center',
-                          border: '1px solid #e2e8f0',
-                          padding: '12px',
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: 'flex',
-                            gap: '8px',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                          }}
-                        >
-                          <Button
-                            variant="success"
-                            size="sm"
-                            onClick={() => handleConfirm(item, 'accept')}
-                            disabled={loading[item.entry_no]}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              minWidth: '90px',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <FaCheck />
-                            {loading[item.entry_no] ? 'Confirming...' : 'Confirm'}
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleConfirm(item, 'decline')}
-                            disabled={loading[item.entry_no]}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              minWidth: '90px',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            <FaTimes />
-                            {loading[item.entry_no] ? 'Declining...' : 'Decline'}
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      </div>
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 
 export default ConfirmIssue;
-

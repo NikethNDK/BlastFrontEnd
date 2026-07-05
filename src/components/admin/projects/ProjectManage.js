@@ -9,7 +9,9 @@ import {
 } from "../../../services/AppinfoService";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
+import Pagination from "../../common/Pagination";
 import "./ProjectManage.css";
+import { PageLayout, PageHeader } from "../../layout/content";
 
 const ProjectManage = () => {
   const [projects, setProjects] = useState([]);
@@ -153,6 +155,8 @@ const ProjectManage = () => {
     const startIndex = (currentPage - 1) * pageSize;
     return filteredAndSortedProjects.slice(startIndex, startIndex + pageSize);
   }, [filteredAndSortedProjects, currentPage, pageSize]);
+  const paginationStartIndex = (currentPage - 1) * pageSize;
+  const paginationEndIndex = paginationStartIndex + pageSize;
 
   let AddModelClose = () => setAddModalShow(false);
   let EditModelClose = () => setEditModalShow(false);
@@ -165,25 +169,18 @@ const ProjectManage = () => {
   };
 
   return (
-    <div className="project-manage-container">
-      <div className="project-manage-wrapper">
-        {/* Header */}
-        <div className="project-manage-header">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <h1>
-                <FaEye style={{ marginRight: '0.75rem' }} />
-                PROJECT MANAGEMENT
-              </h1>
-              <p>Manage and organize your research projects efficiently</p>
-            </div>
-            <button className="project-btn project-btn-primary project-btn-lg" onClick={handleAdd}>
-              <FaPlus />
-              Add New Project
-            </button>
-          </div>
-        </div>
+    <PageLayout>
+      <PageHeader
+        title="Project management"
+        actions={
+          <button className="project-btn project-btn-primary project-btn-lg" onClick={handleAdd}>
+            <FaPlus />
+            Add New Project
+          </button>
+        }
+      />
 
+      <div className="project-manage-wrapper">
         {/* Stats Cards */}
         <div className="project-stats-container">
           <div className="project-stat-card">
@@ -392,61 +389,15 @@ const ProjectManage = () => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <>
-                    <div className="project-pagination">
-                      <button
-                        className="project-btn project-btn-outline-primary project-btn-sm"
-                        onClick={() => handlePageChange(1)}
-                        disabled={currentPage === 1}
-                      >
-                        First
-                      </button>
-                      <button
-                        className="project-btn project-btn-outline-primary project-btn-sm"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </button>
-                      
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-                        if (page > totalPages) return null;
-                        
-                        return (
-                          <button
-                            key={page}
-                            className={`project-btn project-btn-outline-primary project-btn-sm ${
-                              currentPage === page ? 'active' : ''
-                            }`}
-                            onClick={() => handlePageChange(page)}
-                          >
-                            {page}
-                          </button>
-                        );
-                      })}
-                      
-                      <button
-                        className="project-btn project-btn-outline-primary project-btn-sm"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </button>
-                      <button
-                        className="project-btn project-btn-outline-primary project-btn-sm"
-                        onClick={() => handlePageChange(totalPages)}
-                        disabled={currentPage === totalPages}
-                      >
-                        Last
-                      </button>
-                    </div>
-
-                    {/* Pagination Info */}
-                    <div className="project-pagination-info">
-                      Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredAndSortedProjects.length)} of {filteredAndSortedProjects.length} projects
-                    </div>
-                  </>
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                    totalItems={filteredAndSortedProjects.length}
+                    startIndex={paginationStartIndex}
+                    endIndex={paginationEndIndex}
+                    position="bottom"
+                  />
                 )}
               </>
             )}
@@ -515,7 +466,7 @@ const ProjectManage = () => {
           </Modal.Footer>
         </Modal>
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

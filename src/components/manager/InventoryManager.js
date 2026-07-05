@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Table, Button } from "react-bootstrap";
 import { getInventoryApi } from "../../services/AppinfoService";
 import "../../App.css";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
 
 const InventoryManager = () => {
   const [inventory, setInventory] = useState([]);
@@ -22,12 +23,10 @@ const InventoryManager = () => {
   }, []);
 
   return (
-    <div className="container-fluid side-container">
-      <div className="header-container">
-        <h2 style={{ textAlign: "center" }} className="appinfo-header">
-          Dashboard
-        </h2>
-      </div>
+    <PageLayout>
+      <PageHeader title="Inventory" />
+      <PageBody>
+      <ContentCard flush>
       <div className="row side-row">
         <p id="before-table"></p>
         <Table
@@ -83,7 +82,9 @@ const InventoryManager = () => {
           </tbody>
         </Table>
       </div>
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

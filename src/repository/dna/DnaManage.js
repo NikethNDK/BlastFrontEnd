@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { FiEye, FiCopy, FiDownload, FiTrash } from "react-icons/fi";
-import { Table, Button, Modal, Pagination } from "react-bootstrap";
+import { Table, Button, Modal } from "react-bootstrap";
+import LimsPagination from "../../components/common/Pagination";
 import { FcSearch } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 
-import Header from "../../components/Lab1/homeLab/Header";
-import Navigation from "../navigation/Navigation";
+import AppShell from "../../components/layout/AppShell";
+import AppSidebar from "../../components/layout/AppSidebar";
+import { repositoryMenuConfig } from "../../config/sidebar/repositoryMenu";
 import { FileDownload } from "@mui/icons-material";
 import {
   getPartialApi,
@@ -15,6 +17,7 @@ import {
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "./DnaManage.css";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../components/layout/content";
 
 const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
   const [partialNames, setPartialNames] = useState([]);
@@ -186,13 +189,15 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
   console.log("dnas", dnas);
   
   return (
-    <div className="dna-manage-container">
-      <header>
-        <Header />
-      </header>
-      <div className="dna-manage-content">
-        <Navigation userDetails={userDetails} />
-        <div className="dna-manage-main">
+    <AppShell
+      sidebar={
+        <AppSidebar config={repositoryMenuConfig} userDetails={userDetails} />
+      }
+    >
+      <PageLayout>
+        <PageHeader title="DNA management" />
+        <PageBody>
+        <ContentCard className="dna-manage-main">
 
           <div className="dna-manage-search-bar">
             <label
@@ -337,56 +342,15 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="pagination-container">
-                <Pagination className="custom-pagination">
-                  <Pagination.First 
-                    onClick={() => handlePageChange(1)} 
-                    disabled={currentPage === 1}
-                  />
-                  <Pagination.Prev 
-                    onClick={() => handlePageChange(currentPage - 1)} 
-                    disabled={currentPage === 1}
-                  />
-                  
-                  {[...Array(totalPages)].map((_, index) => {
-                    const pageNumber = index + 1;
-                    // Show first page, last page, current page, and pages around current
-                    if (
-                      pageNumber === 1 ||
-                      pageNumber === totalPages ||
-                      (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
-                    ) {
-                      return (
-                        <Pagination.Item
-                          key={pageNumber}
-                          active={pageNumber === currentPage}
-                          onClick={() => handlePageChange(pageNumber)}
-                        >
-                          {pageNumber}
-                        </Pagination.Item>
-                      );
-                    } else if (
-                      pageNumber === currentPage - 2 ||
-                      pageNumber === currentPage + 2
-                    ) {
-                      return <Pagination.Ellipsis key={pageNumber} disabled />;
-                    }
-                    return null;
-                  })}
-                  
-                  <Pagination.Next 
-                    onClick={() => handlePageChange(currentPage + 1)} 
-                    disabled={currentPage === totalPages}
-                  />
-                  <Pagination.Last 
-                    onClick={() => handlePageChange(totalPages)} 
-                    disabled={currentPage === totalPages}
-                  />
-                </Pagination>
-                <div className="pagination-info">
-                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredDnas.length)} of {filteredDnas.length} entries
-                </div>
-              </div>
+              <LimsPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                totalItems={filteredDnas.length}
+                startIndex={indexOfFirstItem}
+                endIndex={indexOfLastItem}
+                position="bottom"
+              />
             )}
 
             <Modal 
@@ -421,9 +385,10 @@ const DnaManage = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
               </Modal.Footer>
             </Modal>
           </div>
-        </div>
-      </div>
-    </div>
+        </ContentCard>
+        </PageBody>
+      </PageLayout>
+    </AppShell>
   );
 };
 

@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Button, ButtonGroup } from "react-bootstrap";
-import { CDBContainer } from "cdbreact";
 import ProjectFilter from "./dashboard/ProjectFilter";
 import MasterFilter from "./dashboard/MasterFilter";
 import EmployeeFilter from "./dashboard/EmployeeFilter";
@@ -8,9 +6,9 @@ import ReceivedFilter from "./dashboard/ReceivedFilter";
 import IssuedFilter from "./dashboard/IssuedFilter";
 import Inven from "../Lab1/homeLab/forDashboard";
 import ReturnDataTable from "../manager/returnData";
-import ManagerNavigation from "../manager/ManagerNavigation";
 import { FaBell } from "react-icons/fa";
-import "./Dashboard.css"; // New CSS file
+import "./Dashboard.css";
+import { PageLayout, PageHeader, PageToolbar, PageBody, ContentCard } from "../layout/content";
 
 const Dashboard = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   const [receivedCount, setReceivedCount] = useState(0);
@@ -18,7 +16,6 @@ const Dashboard = ({ userDetails = { name: "", lab: "", designation: "" } }) => 
   const [initialReceivedCount, setInitialReceivedCount] = useState(0);
   const [highlightNew, setHighlightNew] = useState(false);
 
-  // Dashboard sections
   const dashboardSections = [
     { key: "ProjectFilter", label: "Project" },
     { key: "Inven", label: "Inventory" },
@@ -30,13 +27,12 @@ const Dashboard = ({ userDetails = { name: "", lab: "", designation: "" } }) => 
 
   useEffect(() => {
     const fetchInitialCount = async () => {
-      const currentCount = 5; // Replace with API result
+      const currentCount = 5;
       handleReceivedCount(currentCount);
     };
 
     fetchInitialCount();
 
-    // Set default selected section
     if (dashboardSections.length > 0) {
       setSelectedButton(dashboardSections[0].key);
     }
@@ -64,78 +60,53 @@ const Dashboard = ({ userDetails = { name: "", lab: "", designation: "" } }) => 
     setSelectedButton(buttonName);
   };
 
-  // Get notification status for styling
-  const getNotificationClass = () => {
+  const getNotificationBadgeClass = () => {
     if (receivedCount > 0) {
-      return highlightNew ? "notification-new" : "notification-active";
+      return highlightNew ? "lims-meta-badge--warning lims-meta-badge--pulse" : "lims-meta-badge--warning";
     }
-    return "notification-none";
+    return "lims-meta-badge--neutral";
   };
 
-  return (
-    <div className="dashboard-page-container">
-      {/* Content Header */}
-      <div className="content-header">
-        <h1 className="page-title">DASHBOARD</h1>
-        
-        {/* Notification Indicator Card */}
-        {receivedCount > 0 && (
-          <div className={`notification-indicator-card ${getNotificationClass()}`}>
-            <FaBell
-              style={{
-                fontSize: "1.2rem",
-                marginRight: "0.5rem",
-              }}
-            />
-            <label className="notification-label">
-              {receivedCount} New Item{receivedCount > 1 ? 's' : ''} Received
-            </label>
-          </div>
-        )}
-      </div>
-      {/* Dashboard Section Selector */}
-      <div className="dashboard-selector-bar">
-        <ButtonGroup className="dashboard-section-group">
-          {dashboardSections.map((section) => (
-            <Button
-              key={section.key}
-              variant="light"
-              className={`dashboard-section-button ${
-                selectedButton === section.key ? "active" : ""
-              } ${
-                section.key === "ReceivedFilter" && receivedCount > 0 ? "has-badge" : ""
-              }`}
-              onClick={() => handleButtonClick(section.key)}
-            >
-              {section.key === "ReceivedFilter" && receivedCount > 0 && (
-                <span
-                  className={`notification-badge ${
-                    highlightNew ? "badge-new" : "badge-active"
-                  }`}
-                >
-                  {receivedCount}
-                </span>
-              )}
-              {section.label}
-            </Button>
-          ))}
-        </ButtonGroup>
-      </div>
+  const toolbarItems = dashboardSections.map((section) => ({
+    id: section.key,
+    label: section.label,
+    badge: section.key === "ReceivedFilter" ? receivedCount : undefined,
+    badgeHighlight: section.key === "ReceivedFilter" && highlightNew,
+  }));
 
-      {/* Main Data Container */}
-      <div className="data-table-container">
-        <CDBContainer>
-          {selectedButton === "ProjectFilter" && <ProjectFilter />}
-          {selectedButton === "Inven" && <Inven userDetails={userDetails} />}
-          {selectedButton === "EmployeeFilter" && <EmployeeFilter />}
-          {selectedButton === "ReceivedFilter" && (
-            <ReceivedFilter setReceivedCount={handleReceivedCount} />
-          )}
-          {selectedButton === "IssuedFilter" && <IssuedFilter />}
-          {selectedButton === "ReturnFilter" && <ReturnDataTable />}
-        </CDBContainer>
-      </div>
-    </div>
+  return (
+    <PageLayout>
+      <PageHeader
+        title="Dashboard"
+        meta={
+          receivedCount > 0 ? (
+            <div className={`lims-meta-badge ${getNotificationBadgeClass()}`}>
+              <FaBell className="lims-meta-badge-icon" />
+              {receivedCount} New Item{receivedCount > 1 ? "s" : ""} Received
+            </div>
+          ) : null
+        }
+      />
+      <PageToolbar
+        items={toolbarItems}
+        activeId={selectedButton}
+        onChange={handleButtonClick}
+      />
+      <PageBody>
+        <ContentCard flush>
+          <div className="lims-data-fill">
+            {selectedButton === "ProjectFilter" && <ProjectFilter />}
+            {selectedButton === "Inven" && <Inven userDetails={userDetails} />}
+            {selectedButton === "EmployeeFilter" && <EmployeeFilter />}
+            {selectedButton === "ReceivedFilter" && (
+              <ReceivedFilter setReceivedCount={handleReceivedCount} />
+            )}
+            {selectedButton === "IssuedFilter" && <IssuedFilter />}
+            {selectedButton === "ReturnFilter" && <ReturnDataTable />}
+          </div>
+        </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 

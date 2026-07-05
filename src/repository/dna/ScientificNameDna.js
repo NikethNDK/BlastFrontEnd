@@ -3,6 +3,7 @@ import { getDnaApi } from "../../services/AppinfoService";
 import "../../App.css";
 import BootstrapTable from "react-bootstrap-table-next";
 import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
+import { PageLayout, PageHeader, PageBody, ContentCard } from "../../components/layout/content";
 
 const ScientificNameDna = () => {
   const [dnas, setDnas] = useState([]);
@@ -157,21 +158,11 @@ const ScientificNameDna = () => {
   ];
 
   return (
-    <div>
-      <div style={{ background: "#C5EA31", height: "70px" }} className="header">
-        <h2
-          style={{
-            textAlign: "center",
-            paddingTop: "15px",
-            marginRight: "8px",
-          }}
-        >
-          SCIENTIFIC NAME DETAILS
-        </h2>
-      </div>
-      <div style={{ overflowY: "scroll", maxHeight: "450px" }}>
-        <div className="row side-row" style={{ textAlign: "center" }}>
-          <p id="manage"></p>
+    <PageLayout>
+      <PageHeader title="Scientific name details" />
+      <PageBody>
+      <ContentCard flush>
+        <div className="lims-table-wrap row side-row">
           <BootstrapTable
             keyField="s_no"
             data={dnas}
@@ -180,13 +171,13 @@ const ScientificNameDna = () => {
             striped
             bordered
             hover
-            className="react-bootstrap-table"
+            className="react-bootstrap-table lims-table"
             id="dataTable"
-            style={{ margin: "auto", width: "1000px" }}
           />
         </div>
-      </div>
-    </div>
+      </ContentCard>
+      </PageBody>
+    </PageLayout>
   );
 };
 
