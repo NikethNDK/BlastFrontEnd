@@ -41,6 +41,7 @@ function Layout({ userId, userDetails }) {
 
   return (
     <AppShell
+      workspace="admin"
       sidebar={
         <AppSidebar
           config={managerMenuConfig}

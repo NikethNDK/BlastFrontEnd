@@ -1,0 +1,28 @@
+.md-rtn-page .project-table thead th.md-rtn-col--entry { min-width: 4.75rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--name { min-width: 6rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--code { min-width: 5rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--qty { min-width: 7.5rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--batch { min-width: 6.5rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--receipt-date { min-width: 6.25rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--expiry { min-width: 6rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--manufacturer { min-width: 7rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--supplier { min-width: 5.5rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--project { min-width: 7rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--invoice { min-width: 5.75rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--return-date { min-width: 6.25rem; }
+.md-rtn-page .project-table thead th.md-rtn-col--remarks { min-width: 5.5rem; }
+
+.md-rtn-page .project-table tbody td.md-rtn-col--name,
+.md-rtn-page .project-table tbody td.md-rtn-col--manufacturer,
+.md-rtn-page .project-table tbody td.md-rtn-col--project,
+.md-rtn-page .project-table tbody td.md-rtn-col--remarks {
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-rtn-page .project-table tbody td.md-rtn-col--qty {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

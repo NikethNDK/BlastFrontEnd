@@ -188,11 +188,11 @@ function PasswordReset() {
                 <table className="project-table">
                   <thead>
                     <tr>
-                      <th scope="col">Username</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Role</th>
-                      <th scope="col">Designation</th>
-                      <th scope="col" className="project-th-actions">
+                      <th scope="col" className="pt-col pt-col--username">Username</th>
+                      <th scope="col" className="pt-col pt-col--emp-name">Name</th>
+                      <th scope="col" className="pt-col pt-col--role">Role</th>
+                      <th scope="col" className="pt-col pt-col--designation">Designation</th>
+                      <th scope="col" className="pt-col pt-col--actions project-th-actions">
                         Actions
                       </th>
                     </tr>
@@ -223,12 +223,12 @@ function PasswordReset() {
                     ) : (
                       paginatedUsers.map((user) => (
                         <tr key={user.username} className="project-table-row">
-                          <td data-label="Username">
+                          <td className="pt-col pt-col--username" data-label="Username">
                             <span className="password-reset-username">
                               {user.username || "—"}
                             </span>
                           </td>
-                          <td data-label="Name">
+                          <td className="pt-col pt-col--emp-name" data-label="Name">
                             <span
                               className={
                                 user.name ? "project-name" : "password-reset-na"
@@ -237,7 +237,7 @@ function PasswordReset() {
                               {user.name || "N/A"}
                             </span>
                           </td>
-                          <td data-label="Role">
+                          <td className="pt-col pt-col--role" data-label="Role">
                             <span
                               className={`project-badge ${getRoleBadgeClass(
                                 user.role
@@ -246,7 +246,7 @@ function PasswordReset() {
                               {user.role || "N/A"}
                             </span>
                           </td>
-                          <td data-label="Designation">
+                          <td className="pt-col pt-col--designation" data-label="Designation">
                             {user.designation ? (
                               <span>{user.designation}</span>
                             ) : (
@@ -255,7 +255,7 @@ function PasswordReset() {
                           </td>
                           <td
                             data-label="Actions"
-                            className="project-td-actions"
+                            className="pt-col pt-col--actions project-td-actions"
                           >
                             <div className="project-row-actions">
                               <button

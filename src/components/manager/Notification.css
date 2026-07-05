@@ -1,0 +1,215 @@
+/* Issue notification — matches EmployeeManage table UI */
+
+.issue-notification-page {
+  --mn-bg: #ffffff;
+  --mn-fg: #1a3d2a;
+  --mn-fg-strong: #09090b;
+  --mn-muted: #64748b;
+  --mn-border: #e2e8f0;
+  --mn-brand-soft: #f3fae8;
+  --mn-radius-lg: 0.75rem;
+  --mn-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+.issue-notification-page .project-panel {
+  background: var(--mn-bg);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-lg);
+  box-shadow: var(--mn-shadow);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.issue-notification-page .project-table-section {
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.issue-notification-page .project-table-shell {
+  overflow-x: auto;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.issue-notification-page .project-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  border: none;
+  min-width: max-content;
+  table-layout: auto;
+}
+
+.issue-notification-page .project-table thead tr {
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.issue-notification-page .project-table thead th {
+  height: 2rem;
+  padding: 0.4375rem 1rem;
+  background: #f4f4f5 !important;
+  color: #52525b !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  vertical-align: middle;
+  white-space: nowrap;
+  border: none !important;
+  position: static !important;
+}
+
+.issue-notification-page .project-th-actions,
+.issue-notification-page .project-table tbody td.project-td-actions {
+  text-align: center !important;
+}
+
+.issue-notification-page .project-table tbody tr:not(.project-table-row--empty) {
+  border-bottom: 1px solid var(--mn-border) !important;
+  transition: background-color 0.15s ease;
+}
+
+.issue-notification-page .project-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.issue-notification-page .project-table tbody tr:hover {
+  background: #fafafa !important;
+}
+
+.issue-notification-page .project-table tbody td {
+  padding: 0.4375rem 0.625rem !important;
+  color: var(--mn-fg-strong) !important;
+  vertical-align: middle;
+  border: none !important;
+  text-align: left !important;
+  font-size: 0.8125rem;
+}
+
+.issue-notification-page .project-table-row--empty,
+.issue-notification-page .project-table-row--empty:hover {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.issue-notification-page .project-table-row--empty td {
+  padding: 0 !important;
+  border: none !important;
+}
+
+.issue-notification-page .project-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--mn-muted);
+  font-size: 0.875rem;
+}
+
+.issue-notification-page .project-empty p {
+  margin: 0;
+}
+
+/* Column sizing */
+
+.issue-notification-page .project-table thead th.mn-iss-col {
+  padding: 0.4375rem 0.625rem !important;
+  line-height: 1.25;
+}
+
+.issue-notification-page .project-table thead th.mn-iss-col--master-type { min-width: 6.25rem; }
+.issue-notification-page .project-table thead th.mn-iss-col--code { min-width: 5.5rem; }
+.issue-notification-page .project-table thead th.mn-iss-col--name { min-width: 6.5rem; }
+.issue-notification-page .project-table thead th.mn-iss-col--qty { min-width: 4.5rem; }
+.issue-notification-page .project-table thead th.mn-iss-col--project-code { min-width: 6.5rem; }
+.issue-notification-page .project-table thead th.mn-iss-col--project-name { min-width: 7rem; }
+.issue-notification-page .project-table thead th.mn-iss-col--date { min-width: 6.25rem; }
+.issue-notification-page .project-table thead th.mn-iss-col--requested-by { min-width: 6.5rem; }
+.issue-notification-page .project-table thead th.mn-iss-col--send-to { min-width: 6.5rem; }
+.issue-notification-page .project-table thead th.mn-iss-col--actions { min-width: 9rem; }
+
+.issue-notification-page .project-table tbody td.mn-iss-col--name,
+.issue-notification-page .project-table tbody td.mn-iss-col--project-name {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issue-notification-page .project-table tbody td.mn-iss-col--code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.issue-notification-page .project-table tbody td.mn-iss-col--qty {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.issue-notification-page .project-table tbody td.mn-iss-col--actions {
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+/* Actions — keep existing button classes */
+
+.issue-notification-page .lims-notification-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.issue-notification-page .lims-btn-accept,
+.issue-notification-page .lims-btn-decline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.75rem;
+  padding: 0 0.625rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  box-shadow: none;
+}
+
+.issue-notification-page .lims-btn-accept {
+  color: #065f46;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.issue-notification-page .lims-btn-accept:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.issue-notification-page .lims-btn-decline {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.issue-notification-page .lims-btn-decline:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}

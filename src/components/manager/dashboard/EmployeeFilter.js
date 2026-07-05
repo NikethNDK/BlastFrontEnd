@@ -1,16 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import Pagination from "../../common/Pagination";
 import { getEmployeeApi } from "../../../services/AppinfoService";
-import "../../../components/Lab1/homeLab/inventory.css";
-import { ContentCard } from "../../layout/content";
+import "./ManagerDashboard.shared.css";
+import "./EmployeeFilter.css";
+
+const TABLE_HEADINGS = [
+  { label: "Employee Id", key: "emp_id", colClass: "md-emp-col--id", filterable: true },
+  { label: "Employee Name", key: "emp_name", colClass: "md-emp-col--name", filterable: true },
+  { label: "Designation", key: "designation", colClass: "md-emp-col--designation", filterable: true },
+  { label: "Lab", key: "lab", colClass: "md-emp-col--lab", filterable: false },
+  { label: "Project Code", key: "project_code", colClass: "md-emp-col--project-code", filterable: true },
+  { label: "Project Name", key: "project_name", colClass: "md-emp-col--project-name", filterable: true },
+];
 
 const EmployeeFilter = () => {
-  // Get user from Redux store to get username and labs
   const reduxUser = useSelector((state) => state.user.user);
   const username = reduxUser?.user_name || reduxUser?.name || null;
-  
-  // Get manager's assigned labs from Redux
+
   const userLabs = reduxUser?.lab || [];
   const managerLabs = Array.isArray(userLabs) ? userLabs : (userLabs ? [userLabs] : []);
 
@@ -18,25 +25,17 @@ const EmployeeFilter = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [selectedLab, setSelectedLab] = useState("All"); // Lab filter state
-
-  // Filter States
-  const [empIdFilter, setEmpIdFilter] = useState("");
-  const [empNameFilter, setEmpNameFilter] = useState("");
-  const [designationFilter, setDesignationFilter] = useState("");
-  const [projectCodeFilter, setProjectCodeFilter] = useState("");
-  const [projectNameFilter, setProjectNameFilter] = useState("");
+  const [selectedLab, setSelectedLab] = useState("All");
+  const [filters, setFilters] = useState({});
 
   useEffect(() => {
     const fetchData = async () => {
-      // Guard: Ensure username is available
       if (!username) {
         console.error("Username not available. Please ensure user is logged in.");
         return;
       }
 
       try {
-        // Pass lab parameter if a specific lab is selected (not "All")
         const labParam = selectedLab !== "All" ? selectedLab : null;
         const data = await getEmployeeApi(username, labParam);
         setEmployee(Array.isArray(data) ? data : [data]);
@@ -46,69 +45,65 @@ const EmployeeFilter = () => {
       }
     };
 
-    // Fetch data when username or selectedLab changes
     if (username) {
       fetchData();
     }
   }, [username, selectedLab]);
 
-  // Filtering Logic
   useEffect(() => {
-    const filteredEmployees = employee.filter(
-      (emp) => {
-        // Employee ID filter
-        const matchesEmpId = empIdFilter === "" ||
-          (emp.emp_id &&
-            String(emp.emp_id)
-              .toLowerCase()
-              .includes(empIdFilter.toLowerCase()));
-        
-        // Employee Name filter
-        const matchesEmpName = empNameFilter === "" ||
-          (emp.emp_name &&
-            emp.emp_name
-              .toLowerCase()
-              .includes(empNameFilter.toLowerCase()));
-        
-        // Designation filter
-        const matchesDesignation = designationFilter === "" ||
-          (emp.designation &&
-            emp.designation
-              .toLowerCase()
-              .includes(designationFilter.toLowerCase()));
-        
-        // Project Code filter (handle array)
-        const projectCodes = Array.isArray(emp.project_code) ? emp.project_code : [emp.project_code];
-        const matchesProjectCode = projectCodeFilter === "" ||
-          projectCodes.some(code =>
-            code && String(code).toLowerCase().includes(projectCodeFilter.toLowerCase())
-          );
-        
-        // Project Name filter (handle array)
-        const projectNames = Array.isArray(emp.project_name) ? emp.project_name : [emp.project_name];
-        const matchesProjectName = projectNameFilter === "" ||
-          projectNames.some(name =>
-            name && String(name).toLowerCase().includes(projectNameFilter.toLowerCase())
-          );
-        
-        return matchesEmpId && matchesEmpName && matchesDesignation && matchesProjectCode && matchesProjectName;
-      }
-    );
+    const filteredEmployees = employee.filter((emp) => {
+      const matchesEmpId =
+        !filters.emp_id ||
+        (emp.emp_id &&
+          String(emp.emp_id).toLowerCase().includes(filters.emp_id.toLowerCase()));
+
+      const matchesEmpName =
+        !filters.emp_name ||
+        (emp.emp_name &&
+          emp.emp_name.toLowerCase().includes(filters.emp_name.toLowerCase()));
+
+      const matchesDesignation =
+        !filters.designation ||
+        (emp.designation &&
+          emp.designation.toLowerCase().includes(filters.designation.toLowerCase()));
+
+      const projectCodes = Array.isArray(emp.project_code)
+        ? emp.project_code
+        : [emp.project_code];
+      const matchesProjectCode =
+        !filters.project_code ||
+        projectCodes.some(
+          (code) =>
+            code &&
+            String(code).toLowerCase().includes(filters.project_code.toLowerCase())
+        );
+
+      const projectNames = Array.isArray(emp.project_name)
+        ? emp.project_name
+        : [emp.project_name];
+      const matchesProjectName =
+        !filters.project_name ||
+        projectNames.some(
+          (name) =>
+            name &&
+            String(name).toLowerCase().includes(filters.project_name.toLowerCase())
+        );
+
+      return (
+        matchesEmpId &&
+        matchesEmpName &&
+        matchesDesignation &&
+        matchesProjectCode &&
+        matchesProjectName
+      );
+    });
 
     setFilteredData(filteredEmployees);
-    setCurrentPage(1); // Reset to first page when filtering
-  }, [
-    employee,
-    empIdFilter,
-    empNameFilter,
-    designationFilter,
-    projectCodeFilter,
-    projectNameFilter,
-  ]);
+    setCurrentPage(1);
+  }, [employee, filters]);
 
-  // Pagination calculations
   const totalItems = filteredData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentEmployees = filteredData.slice(startIndex, endIndex);
@@ -116,23 +111,20 @@ const EmployeeFilter = () => {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
+
+  const handleFilterChange = useCallback((e, key) => {
+    setFilters((prev) => ({ ...prev, [key]: e.target.value }));
+  }, []);
+
   return (
-    <ContentCard flush>
-    <div className="master-list-container lims-data-fill">
-      {/* --- Lab Filter Dropdown --- */}
-      <div style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
-        <label style={{ fontWeight: "500", fontSize: "14px" }}>Lab Name:</label>
+    <div className="manager-dash-panel md-emp-page">
+      <div className="manager-dash-lab-filter">
+        <label htmlFor="md-emp-lab-filter">Lab Name:</label>
         <select
+          id="md-emp-lab-filter"
+          className="manager-dash-lab-select"
           value={selectedLab}
           onChange={(e) => setSelectedLab(e.target.value)}
-          style={{
-            padding: "8px 12px",
-            fontSize: "14px",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            minWidth: "200px",
-            cursor: "pointer"
-          }}
         >
           <option value="All">All</option>
           {managerLabs.map((lab, index) => (
@@ -143,97 +135,95 @@ const EmployeeFilter = () => {
         </select>
       </div>
 
-      {/* --- Pagination Controls (Top) --- */}
-      <Pagination
-        position="top"
-        showPageNumbers={false}
-        showItemsPerPage
-        showSummary
-        totalItems={totalItems}
-        startIndex={startIndex}
-        endIndex={endIndex}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={(n) => {
-          setItemsPerPage(n);
-          setCurrentPage(1);
-        }}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-
-      {/* --- Main Data Table --- */}
-      <div className="table-wrapper">
-        <table className="inventory-table lims-table">
-          <thead>
-            <tr>
-              {/* Header Cells with Filters */}
-              {[
-                { label: "Employee Id", filter: empIdFilter, setFilter: setEmpIdFilter },
-                { label: "Employee Name", filter: empNameFilter, setFilter: setEmpNameFilter },
-                { label: "Designation", filter: designationFilter, setFilter: setDesignationFilter },
-                { label: "Lab", filter: "", setFilter: null },
-                { label: "Project Code", filter: projectCodeFilter, setFilter: setProjectCodeFilter },
-                { label: "Project Name", filter: projectNameFilter, setFilter: setProjectNameFilter },
-              ].map(({ label, filter, setFilter }) => (
-                <th key={label} className="table-header">
-                  {label}
-                  {setFilter && (
-                    <input
-                      type="text"
-                      placeholder={`Filter by ${label}`}
-                      value={filter}
-                      onChange={(e) => setFilter(e.target.value)}
-                      className="filter-input"
-                    />
-                  )}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentEmployees.length > 0 ? (
-              currentEmployees.map((emp, index) => (
-                <tr
-                  key={emp.emp_id || index}
-                  className="data-row"
-                >
-                  <td className="table-cell">{emp.emp_id || "-"}</td>
-                  <td className="table-cell">{emp.emp_name || "-"}</td>
-                  <td className="table-cell">{emp.designation || "-"}</td>
-                  <td className="table-cell">{emp.lab || "-"}</td>
-                  <td className="table-cell">
-                    {Array.isArray(emp.project_code) 
-                      ? emp.project_code.join(", ") 
-                      : (emp.project_code || "-")}
-                  </td>
-                  <td className="table-cell">
-                    {Array.isArray(emp.project_name) 
-                      ? emp.project_name.join(", ") 
-                      : (emp.project_name || "-")}
-                  </td>
+      <section className="project-panel" aria-label="Employees">
+        <div className="project-table-section">
+          <div className="project-table-shell">
+            <table className="project-table">
+              <thead>
+                <tr className="project-thead-labels">
+                  {TABLE_HEADINGS.map(({ label, colClass }) => (
+                    <th
+                      key={colClass}
+                      scope="col"
+                      className={`project-th-label-cell md-emp-col ${colClass}`}
+                    >
+                      {label}
+                    </th>
+                  ))}
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="no-data-cell">
-                  No employees matching your filter criteria.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                <tr className="project-thead-filters">
+                  {TABLE_HEADINGS.map(({ label, key, colClass, filterable }) => (
+                    <th
+                      key={key}
+                      scope="col"
+                      className={`project-th-filter-cell md-emp-col ${colClass}`}
+                    >
+                      {filterable ? (
+                        <input
+                          type="text"
+                          placeholder="Filter"
+                          className="md-col-filter"
+                          value={filters[key] || ""}
+                          onChange={(e) => handleFilterChange(e, key)}
+                          aria-label={`Filter by ${label}`}
+                        />
+                      ) : null}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {currentEmployees.length > 0 ? (
+                  currentEmployees.map((emp, index) => (
+                    <tr key={emp.emp_id || index} className="project-table-row">
+                      <td className="md-emp-col md-emp-col--id">{emp.emp_id || "—"}</td>
+                      <td className="md-emp-col md-emp-col--name">{emp.emp_name || "—"}</td>
+                      <td className="md-emp-col md-emp-col--designation">{emp.designation || "—"}</td>
+                      <td className="md-emp-col md-emp-col--lab">{emp.lab || "—"}</td>
+                      <td className="md-emp-col md-emp-col--project-code">
+                        {Array.isArray(emp.project_code)
+                          ? emp.project_code.join(", ")
+                          : emp.project_code || "—"}
+                      </td>
+                      <td className="md-emp-col md-emp-col--project-name">
+                        {Array.isArray(emp.project_name)
+                          ? emp.project_name.join(", ")
+                          : emp.project_name || "—"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr className="project-table-row project-table-row--empty">
+                    <td colSpan="6">
+                      <div className="project-empty">
+                        No employees matching your filter criteria.
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-      {/* --- Pagination Controls (Bottom) --- */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        position="bottom"
-      />
+          <Pagination
+            showSummary
+            showItemsPerPage
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={(n) => {
+              setItemsPerPage(n);
+              setCurrentPage(1);
+            }}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            position="bottom"
+          />
+        </div>
+      </section>
     </div>
-    </ContentCard>
   );
 };
 

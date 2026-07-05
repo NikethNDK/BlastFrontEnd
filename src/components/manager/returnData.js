@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
@@ -7,18 +7,33 @@ import toast from "react-hot-toast";
 import { AiOutlineDownload } from "react-icons/ai";
 import Pagination from "../common/Pagination";
 import { BASE_URL } from "../../services/AppinfoService";
-import "../../components/Lab1/homeLab/inventory.css";
 import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
+import "./dashboard/ManagerDashboard.shared.css";
+import "./dashboard/ManagerReturnData.css";
+
+const TABLE_HEADINGS = [
+  { label: "Entry No", key: "entry_no", colClass: "md-rtn-col--entry" },
+  { label: "Item Name", key: "item_name", colClass: "md-rtn-col--name" },
+  { label: "Item Code", key: "item_code", colClass: "md-rtn-col--code" },
+  { label: "Quantity Returned", key: "quantity_returned", colClass: "md-rtn-col--qty" },
+  { label: "Batch Number", key: "batch_number", colClass: "md-rtn-col--batch" },
+  { label: "Receipt Date", key: "receipt_date", colClass: "md-rtn-col--receipt-date" },
+  { label: "Expiry Date", key: "expiry_date", colClass: "md-rtn-col--expiry" },
+  { label: "Manufacturer", key: "manufacturer", colClass: "md-rtn-col--manufacturer" },
+  { label: "Supplier", key: "supplier", colClass: "md-rtn-col--supplier" },
+  { label: "Project Name", key: "project_name", colClass: "md-rtn-col--project" },
+  { label: "Invoice No", key: "invoice_no", colClass: "md-rtn-col--invoice" },
+  { label: "Return Date", key: "return_date", colClass: "md-rtn-col--return-date" },
+  { label: "Remarks", key: "remarks", colClass: "md-rtn-col--remarks" },
+];
 
 const ReturnDataTable = () => {
   const location = useLocation();
   const isEmbedded = location.pathname === "/dashboard";
 
-  // Get user from Redux store to get username and labs
   const reduxUser = useSelector((state) => state.user.user);
   const username = reduxUser?.user_name || reduxUser?.name || null;
-  
-  // Get manager's assigned labs from Redux
+
   const userLabs = reduxUser?.lab || [];
   const managerLabs = Array.isArray(userLabs) ? userLabs : (userLabs ? [userLabs] : []);
 
@@ -26,44 +41,22 @@ const ReturnDataTable = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [selectedLab, setSelectedLab] = useState("All"); // Lab filter state
-
-  // Filter States
-  const [entryNoFilter, setEntryNoFilter] = useState("");
-  const [itemNameFilter, setItemNameFilter] = useState("");
-  const [itemCodeFilter, setItemCodeFilter] = useState("");
-  const [quantityReturnedFilter, setQuantityReturnedFilter] = useState("");
-  const [batchNumberFilter, setBatchNumberFilter] = useState("");
-  const [receiptDateFilter, setReceiptDateFilter] = useState("");
-  const [expiryDateFilter, setExpiryDateFilter] = useState("");
-  const [manufacturerFilter, setManufacturerFilter] = useState("");
-  const [supplierFilter, setSupplierFilter] = useState("");
-  const [projectNameFilter, setProjectNameFilter] = useState("");
-  const [invoiceNoFilter, setInvoiceNoFilter] = useState("");
-  const [returnDateFilter, setReturnDateFilter] = useState("");
-  const [remarksFilter, setRemarksFilter] = useState("");
+  const [selectedLab, setSelectedLab] = useState("All");
+  const [filters, setFilters] = useState({});
 
   useEffect(() => {
-    // NOTE: Polling removed - data now fetched once on mount
-    // For notification updates, see centralized polling in ManagerNavigation
     const fetchData = async () => {
-      // Guard: Ensure username is available
       if (!username) {
         console.error("Username not available. Please ensure user is logged in.");
         return;
       }
 
       try {
-        // Build query parameters
-        const params = {
-          username: username
-        };
-        
-        // Add lab parameter if a specific lab is selected (not "All")
+        const params = { username };
         if (selectedLab !== "All") {
           params.lab = selectedLab;
         }
-        
+
         const response = await axios.get(`${BASE_URL}/item_return/`, { params });
         setData(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
@@ -71,107 +64,30 @@ const ReturnDataTable = () => {
       }
     };
 
-    // Fetch data when username or selectedLab changes
     if (username) {
       fetchData();
     }
   }, [username, selectedLab]);
 
-  // Filtering Logic
   useEffect(() => {
     const filteredItems = data
-      .filter(
-        (item) =>
-          (entryNoFilter === "" ||
-            (item.entry_no &&
-              String(item.entry_no)
-                .toLowerCase()
-                .includes(entryNoFilter.toLowerCase()))) &&
-          (itemNameFilter === "" ||
-            (item.item_name &&
-              item.item_name
-                .toLowerCase()
-                .includes(itemNameFilter.toLowerCase()))) &&
-          (itemCodeFilter === "" ||
-            (item.item_code &&
-              String(item.item_code)
-                .toLowerCase()
-                .includes(itemCodeFilter.toLowerCase()))) &&
-          (quantityReturnedFilter === "" ||
-            (item.quantity_returned &&
-              String(item.quantity_returned)
-                .toLowerCase()
-                .includes(quantityReturnedFilter.toLowerCase()))) &&
-          (batchNumberFilter === "" ||
-            (item.batch_number &&
-              String(item.batch_number)
-                .toLowerCase()
-                .includes(batchNumberFilter.toLowerCase()))) &&
-          (receiptDateFilter === "" ||
-            (item.receipt_date &&
-              String(item.receipt_date)
-                .toLowerCase()
-                .includes(receiptDateFilter.toLowerCase()))) &&
-          (expiryDateFilter === "" ||
-            (item.expiry_date &&
-              String(item.expiry_date)
-                .toLowerCase()
-                .includes(expiryDateFilter.toLowerCase()))) &&
-          (manufacturerFilter === "" ||
-            (item.manufacturer &&
-              item.manufacturer
-                .toLowerCase()
-                .includes(manufacturerFilter.toLowerCase()))) &&
-          (supplierFilter === "" ||
-            (item.supplier &&
-              item.supplier
-                .toLowerCase()
-                .includes(supplierFilter.toLowerCase()))) &&
-          (projectNameFilter === "" ||
-            (item.project_name &&
-              item.project_name
-                .toLowerCase()
-                .includes(projectNameFilter.toLowerCase()))) &&
-          (invoiceNoFilter === "" ||
-            (item.invoice_no &&
-              String(item.invoice_no)
-                .toLowerCase()
-                .includes(invoiceNoFilter.toLowerCase()))) &&
-          (returnDateFilter === "" ||
-            (item.return_date &&
-              String(item.return_date)
-                .toLowerCase()
-                .includes(returnDateFilter.toLowerCase()))) &&
-          (remarksFilter === "" ||
-            (item.remarks &&
-              item.remarks
-                .toLowerCase()
-                .includes(remarksFilter.toLowerCase())))
+      .filter((item) =>
+        TABLE_HEADINGS.every(({ key }) => {
+          const value = filters[key];
+          if (!value) return true;
+          const field = item[key];
+          if (field == null || field === "") return false;
+          return String(field).toLowerCase().includes(value.toLowerCase());
+        })
       )
       .sort((a, b) => a.entry_no - b.entry_no);
 
     setFilteredData(filteredItems);
-    setCurrentPage(1); // Reset to first page when filtering
-  }, [
-    data,
-    entryNoFilter,
-    itemNameFilter,
-    itemCodeFilter,
-    quantityReturnedFilter,
-    batchNumberFilter,
-    receiptDateFilter,
-    expiryDateFilter,
-    manufacturerFilter,
-    supplierFilter,
-    projectNameFilter,
-    invoiceNoFilter,
-    returnDateFilter,
-    remarksFilter,
-  ]);
+    setCurrentPage(1);
+  }, [data, filters]);
 
-  // Pagination calculations
   const totalItems = filteredData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredData.slice(startIndex, endIndex);
@@ -179,6 +95,11 @@ const ReturnDataTable = () => {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
+
+  const handleFilterChange = useCallback((e, key) => {
+    setFilters((prev) => ({ ...prev, [key]: e.target.value }));
+  }, []);
+
   const handleDownload = () => {
     if (filteredData.length === 0) {
       toast.error("No data to download!");
@@ -218,28 +139,20 @@ const ReturnDataTable = () => {
   // Kept for potential future use (not currently displayed)
   // eslint-disable-next-line no-unused-vars
   const totalQuantityReceived = filteredData.reduce(
-    (sum, item) => sum + (parseInt(item.quantity_returned) || 0),
+    (sum, item) => sum + (parseInt(item.quantity_returned, 10) || 0),
     0
   );
 
   const tableContent = (
-    <div className="master-list-container lims-data-fill">
-      {/* --- Lab Filter and Download Button --- */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-        {/* Lab Filter Dropdown */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <label style={{ fontWeight: "500", fontSize: "14px" }}>Lab Name:</label>
+    <div className="manager-dash-panel md-rtn-page">
+      <div className="manager-dash-toolbar-row">
+        <div className="manager-dash-lab-filter">
+          <label htmlFor="md-rtn-lab-filter">Lab Name:</label>
           <select
+            id="md-rtn-lab-filter"
+            className="manager-dash-lab-select"
             value={selectedLab}
             onChange={(e) => setSelectedLab(e.target.value)}
-            style={{
-              padding: "8px 12px",
-              fontSize: "14px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              minWidth: "200px",
-              cursor: "pointer"
-            }}
           >
             <option value="All">All</option>
             {managerLabs.map((lab, index) => (
@@ -250,115 +163,105 @@ const ReturnDataTable = () => {
           </select>
         </div>
 
-        {/* Download Button */}
         <button
+          type="button"
           onClick={handleDownload}
-          className="download-btn"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "0.5rem",
-          }}
+          className="manager-dash-download-btn"
+          title="Download Excel"
         >
-          <AiOutlineDownload size={18} />
+          <AiOutlineDownload size={18} aria-hidden />
           Download
         </button>
       </div>
 
-      {/* --- Pagination Controls (Top) --- */}
-      <Pagination
-        position="top"
-        showPageNumbers={false}
-        showItemsPerPage
-        showSummary
-        totalItems={totalItems}
-        startIndex={startIndex}
-        endIndex={endIndex}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={(n) => {
-          setItemsPerPage(n);
-          setCurrentPage(1);
-        }}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-
-      {/* --- Main Data Table --- */}
-      <div className="table-wrapper">
-        <table className="inventory-table">
-          <thead>
-            <tr>
-              {/* Header Cells with Filters */}
-              {[
-                { label: "Entry No", filter: entryNoFilter, setFilter: setEntryNoFilter },
-                { label: "Item Name", filter: itemNameFilter, setFilter: setItemNameFilter },
-                { label: "Item Code", filter: itemCodeFilter, setFilter: setItemCodeFilter },
-                { label: "Quantity Returned", filter: quantityReturnedFilter, setFilter: setQuantityReturnedFilter },
-                { label: "Batch Number", filter: batchNumberFilter, setFilter: setBatchNumberFilter },
-                { label: "Receipt Date", filter: receiptDateFilter, setFilter: setReceiptDateFilter },
-                { label: "Expiry Date", filter: expiryDateFilter, setFilter: setExpiryDateFilter },
-                { label: "Manufacturer", filter: manufacturerFilter, setFilter: setManufacturerFilter },
-                { label: "Supplier", filter: supplierFilter, setFilter: setSupplierFilter },
-                { label: "Project Name", filter: projectNameFilter, setFilter: setProjectNameFilter },
-                { label: "Invoice No", filter: invoiceNoFilter, setFilter: setInvoiceNoFilter },
-                { label: "Return Date", filter: returnDateFilter, setFilter: setReturnDateFilter },
-                { label: "Remarks", filter: remarksFilter, setFilter: setRemarksFilter },
-              ].map(({ label, filter, setFilter }) => (
-                <th key={label} className="table-header">
-                  {label}
-                  <input
-                    type="text"
-                    placeholder={`Filter by ${label}`}
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="filter-input"
-                  />
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.length > 0 ? (
-              currentItems.map((item, index) => (
-                <tr
-                  key={item.id || item.entry_no || index}
-                  className="data-row"
-                >
-                  <td className="table-cell">{item.entry_no || "-"}</td>
-                  <td className="table-cell">{item.item_name || "-"}</td>
-                  <td className="table-cell">{item.item_code || "-"}</td>
-                  <td className="table-cell">{item.quantity_returned || "-"}</td>
-                  <td className="table-cell">{item.batch_number || "-"}</td>
-                  <td className="table-cell">{item.receipt_date || "-"}</td>
-                  <td className="table-cell">{item.expiry_date || "-"}</td>
-                  <td className="table-cell">{item.manufacturer || "-"}</td>
-                  <td className="table-cell">{item.supplier || "-"}</td>
-                  <td className="table-cell">{item.project_name || "-"}</td>
-                  <td className="table-cell">{item.invoice_no || "-"}</td>
-                  <td className="table-cell">{item.return_date || "-"}</td>
-                  <td className="table-cell">{item.remarks || "-"}</td>
+      <section className="project-panel" aria-label="Returned items">
+        <div className="project-table-section">
+          <div className="project-table-shell">
+            <table className="project-table">
+              <thead>
+                <tr className="project-thead-labels">
+                  {TABLE_HEADINGS.map(({ label, colClass }) => (
+                    <th
+                      key={colClass}
+                      scope="col"
+                      className={`project-th-label-cell md-rtn-col ${colClass}`}
+                    >
+                      {label}
+                    </th>
+                  ))}
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="13" className="no-data-cell">
-                  No items matching your filter criteria.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                <tr className="project-thead-filters">
+                  {TABLE_HEADINGS.map(({ label, key, colClass }) => (
+                    <th
+                      key={key}
+                      scope="col"
+                      className={`project-th-filter-cell md-rtn-col ${colClass}`}
+                    >
+                      <input
+                        type="text"
+                        placeholder="Filter"
+                        className="md-col-filter"
+                        value={filters[key] || ""}
+                        onChange={(e) => handleFilterChange(e, key)}
+                        aria-label={`Filter by ${label}`}
+                      />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.length > 0 ? (
+                  currentItems.map((item, index) => (
+                    <tr
+                      key={item.id || item.entry_no || index}
+                      className="project-table-row"
+                    >
+                      <td className="md-rtn-col md-rtn-col--entry">{item.entry_no ?? "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--name">{item.item_name || "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--code">{item.item_code || "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--qty">{item.quantity_returned ?? "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--batch">{item.batch_number || "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--receipt-date">{item.receipt_date || "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--expiry">{item.expiry_date || "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--manufacturer">{item.manufacturer || "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--supplier">{item.supplier || "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--project">{item.project_name || "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--invoice">{item.invoice_no || "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--return-date">{item.return_date || "—"}</td>
+                      <td className="md-rtn-col md-rtn-col--remarks">{item.remarks || "—"}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr className="project-table-row project-table-row--empty">
+                    <td colSpan="13">
+                      <div className="project-empty">
+                        No items matching your filter criteria.
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-      {/* --- Pagination Controls (Bottom) --- */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        position="bottom"
-      />
+          <Pagination
+            showSummary
+            showItemsPerPage
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={(n) => {
+              setItemsPerPage(n);
+              setCurrentPage(1);
+            }}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            position="bottom"
+          />
+        </div>
+      </section>
     </div>
   );
 
@@ -370,9 +273,7 @@ const ReturnDataTable = () => {
     <PageLayout>
       <PageHeader title="Returned items" />
       <PageBody>
-      <ContentCard flush>
-        {tableContent}
-      </ContentCard>
+        <ContentCard flush>{tableContent}</ContentCard>
       </PageBody>
     </PageLayout>
   );

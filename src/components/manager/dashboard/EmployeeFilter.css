@@ -1,0 +1,21 @@
+.md-emp-page .project-table thead th.md-emp-col--id { min-width: 5.5rem; }
+.md-emp-page .project-table thead th.md-emp-col--name { min-width: 7rem; }
+.md-emp-page .project-table thead th.md-emp-col--designation { min-width: 6.5rem; }
+.md-emp-page .project-table thead th.md-emp-col--lab { min-width: 5rem; }
+.md-emp-page .project-table thead th.md-emp-col--project-code { min-width: 7rem; }
+.md-emp-page .project-table thead th.md-emp-col--project-name { min-width: 7.5rem; }
+
+.md-emp-page .project-table tbody td.md-emp-col--name,
+.md-emp-page .project-table tbody td.md-emp-col--project-name {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-emp-page .project-table tbody td.md-emp-col--project-code {
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

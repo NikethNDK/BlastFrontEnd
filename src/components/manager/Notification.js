@@ -5,7 +5,21 @@ import toast from "react-hot-toast";
 import AdminApprovalModal from "./AdminApproval";
 import { BASE_URL } from "../../services/AppinfoService";
 import { setManagerPendingIssues } from "../../store/slices/notificationSlice";
-import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
+import { PageLayout, PageHeader, PageBody } from "../layout/content";
+import "./Notification.css";
+
+const TABLE_HEADINGS = [
+  { label: "Master Type", colClass: "mn-iss-col--master-type" },
+  { label: "Item Code", colClass: "mn-iss-col--code" },
+  { label: "Item Name", colClass: "mn-iss-col--name" },
+  { label: "Quantity", colClass: "mn-iss-col--qty" },
+  { label: "Project Code", colClass: "mn-iss-col--project-code" },
+  { label: "Project Name", colClass: "mn-iss-col--project-name" },
+  { label: "Request Date", colClass: "mn-iss-col--date" },
+  { label: "Requested By", colClass: "mn-iss-col--requested-by" },
+  { label: "Send To", colClass: "mn-iss-col--send-to" },
+  { label: "Action", colClass: "mn-iss-col--actions", colSpan: 2 },
+];
 
 const Notification = ({
   no,
@@ -13,9 +27,7 @@ const Notification = ({
 }) => {
   const dispatch = useDispatch();
   const reduxUser = useSelector((state) => state.user.user);
-  
-  // NOTE: Data is now provided by centralized polling via Redux
-  // The useNotificationPolling hook in ManagerNavigation fetches and dispatches data
+
   const note = useSelector((state) => state.notifications.manager.pendingIssues || []);
 
   const [addModalShow, setAddModalShow] = useState(false);
@@ -45,7 +57,7 @@ const Notification = ({
       const payload = {
         id: item.entry_no,
         status: "LAB-OPEN",
-        username: username, // Add username for notification creation
+        username: username,
       };
 
       const response = await fetch(
@@ -61,8 +73,6 @@ const Notification = ({
       const result = await response.json();
 
       if (response.ok) {
-        // Remove the item from Redux state after successful update
-        // The next polling cycle will refresh the data automatically
         const updatedData = note.filter((n) => n.entry_no !== item.entry_no);
         dispatch(setManagerPendingIssues(updatedData));
         toast.success("Item has been accepted.");
@@ -83,7 +93,7 @@ const Notification = ({
       const payload = {
         id: item.entry_no,
         status: "MGR-DCL",
-        username: username, // Add username for notification creation
+        username: username,
       };
 
       const response = await fetch(
@@ -99,8 +109,6 @@ const Notification = ({
       const result = await response.json();
 
       if (response.ok) {
-        // Remove the item from Redux state after successful update
-        // The next polling cycle will refresh the data automatically
         const updatedData = note.filter((n) => n.entry_no !== item.entry_no);
         dispatch(setManagerPendingIssues(updatedData));
         toast.success("Item has been Declined.");
@@ -117,67 +125,97 @@ const Notification = ({
     <PageLayout>
       <PageHeader title="Request notification" />
       <PageBody>
-      <ContentCard flush>
-        <div className="lims-notification-scroll">
-          <table className="lims-notification-table lims-table">
-            <thead>
-              <tr>
-                <th style={{ minWidth: "120px" }}>Master Type</th>
-                <th style={{ minWidth: "120px" }}>Item Code</th>
-                <th style={{ minWidth: "150px" }}>Item Name</th>
-                <th style={{ minWidth: "100px" }}>Quantity</th>
-                <th style={{ minWidth: "120px" }}>Project Code</th>
-                <th style={{ minWidth: "150px" }}>Project Name</th>
-                <th style={{ minWidth: "120px" }}>Request Date</th>
-                <th style={{ minWidth: "130px" }}>Requested By</th>
-                <th style={{ minWidth: "130px" }}>Send To</th>
-                <th colSpan="2" style={{ minWidth: "150px" }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {note.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="lims-notification-empty">
-                    No pending issue requests. Data is automatically updated via centralized polling.
-                  </td>
-                </tr>
-              ) : (
-                note.map((no) => (
-                  <tr key={no.id}>
-                    <td>{no.master_type || ""}</td>
-                    <td>{no.item_code || ""}</td>
-                    <td>{no.item_name || ""}</td>
-                    <td>{no.quantity_issued || "-"}</td>
-                    <td>{no.project_code || ""}</td>
-                    <td>{no.project_name || ""}</td>
-                    <td>{no.issue_date || ""}</td>
-                    <td>{no.issued_to || "Researcher"}</td>
-                    <td>{no.lab_assistant_name || ""}</td>
-                    <td>
-                      <div className="lims-notification-actions">
-                        <button
-                          type="button"
-                          onClick={() => handleAccept(no)}
-                          className="lims-btn-accept"
+        <div className="issue-notification-page">
+          <section className="project-panel" aria-label="Pending issue requests">
+            <div className="project-table-section">
+              <div className="project-table-shell">
+                <table className="project-table">
+                  <thead>
+                    <tr>
+                      {TABLE_HEADINGS.map(({ label, colClass, colSpan }) => (
+                        <th
+                          key={colClass}
+                          scope="col"
+                          colSpan={colSpan}
+                          className={`mn-iss-col ${colClass}${
+                            colClass === "mn-iss-col--actions"
+                              ? " project-th-actions"
+                              : ""
+                          }`}
                         >
-                          <FaCheck size={14} /> Accept
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDecline(no)}
-                          className="lims-btn-decline"
-                        >
-                          <FaTimes size={14} /> Decline
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                          {label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {note.length === 0 ? (
+                      <tr className="project-table-row project-table-row--empty">
+                        <td colSpan={10}>
+                          <div className="project-empty">
+                            <p>
+                              No pending issue requests. Data is automatically updated via centralized polling.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      note.map((no) => (
+                        <tr key={no.id} className="project-table-row">
+                          <td className="mn-iss-col mn-iss-col--master-type">
+                            {no.master_type || ""}
+                          </td>
+                          <td className="mn-iss-col mn-iss-col--code">
+                            {no.item_code || ""}
+                          </td>
+                          <td className="mn-iss-col mn-iss-col--name">
+                            {no.item_name || ""}
+                          </td>
+                          <td className="mn-iss-col mn-iss-col--qty">
+                            {no.quantity_issued || "-"}
+                          </td>
+                          <td className="mn-iss-col mn-iss-col--project-code">
+                            {no.project_code || ""}
+                          </td>
+                          <td className="mn-iss-col mn-iss-col--project-name">
+                            {no.project_name || ""}
+                          </td>
+                          <td className="mn-iss-col mn-iss-col--date">
+                            {no.issue_date || ""}
+                          </td>
+                          <td className="mn-iss-col mn-iss-col--requested-by">
+                            {no.issued_to || "Researcher"}
+                          </td>
+                          <td className="mn-iss-col mn-iss-col--send-to">
+                            {no.lab_assistant_name || ""}
+                          </td>
+                          <td className="mn-iss-col mn-iss-col--actions project-td-actions">
+                            <div className="lims-notification-actions">
+                              <button
+                                type="button"
+                                onClick={() => handleAccept(no)}
+                                className="lims-btn-accept"
+                              >
+                                <FaCheck size={14} /> Accept
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDecline(no)}
+                                className="lims-btn-decline"
+                              >
+                                <FaTimes size={14} /> Decline
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
         </div>
-      </ContentCard>
       </PageBody>
     </PageLayout>
   );

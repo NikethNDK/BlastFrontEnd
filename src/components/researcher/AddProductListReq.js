@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Modal, Col, Row, Form, Button } from "react-bootstrap";
+import { Col, Row, Form, Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-// import {FormControl, FormGroup, FormLabel} from 'react-bootstrap';
 import {
   addItemIssueApi,
   addIssueResearcherApi,
@@ -19,11 +18,9 @@ import {
   getEmployeeApi,
   getEmployeeByUsernameApi,
 } from "../../services/AppinfoService";
-// import '../../inventory/formBorder.css';
 import Select from "react-select";
-import TempIssueTable from "../Lab1/issue/TempIssueTable";
-import { Heading2 } from "lucide-react";
-import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
+import { PageLayout, PageHeader, PageBody } from "../layout/content";
+import "./AddProductListReq.css";
 const AddProductListReq = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
@@ -940,364 +937,325 @@ const AddProductListReq = ({
       });
   };
 
+  const selectControlStyles = (hasError) => ({
+    control: (provided) => ({
+      ...provided,
+      borderColor: hasError ? "#dc2626" : "#e2e8f0",
+      minHeight: "2.25rem",
+      borderRadius: "0.5rem",
+      boxShadow: "none",
+      fontSize: "0.875rem",
+    }),
+    valueContainer: (provided) => ({
+      ...provided,
+      padding: "0 0.75rem",
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      fontSize: "0.875rem",
+      color: "#64748b",
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      fontSize: "0.875rem",
+      color: "#09090b",
+    }),
+  });
+
   return (
     <PageLayout>
       <PageHeader title="Request form" />
 
-      {!hasProjects && (
-        <div className="lims-form-warning">
-          <strong>No Projects Assigned</strong>
-          <br />
-          You have no projects assigned. Please contact your administrator to assign projects before requesting items.
-        </div>
-      )}
-
       <PageBody>
-      <ContentCard>
-        <Row>
-          <Col sm={12}>
-            {/* <Form onSubmit={handleAdd} ref={formRef}> */}
-            <Form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleAdd();
-              }}
-              ref={formRef}
-            >
-              <Row>
-                <Col>                 <Form.Group controlId="masterType">
-                    <Form.Label style={{ marginRight: "8px" }}>
-                      Master Type
-                    </Form.Label>
-                    <select
-                      required
-                      value={masterType}
-                      className="form-control"
-                      style={{
-                        borderColor: "black",
-                        display: "inline-block", // Add this line
-                        marginRight: "30px", // Make sure marginRight is still specified
-                      }}
-                      onChange={(e) => setMasterType(e.target.value)}
-                    >
-                      <option>Select Master Type</option>
-                      {masterTypeList.map((masterType)=>{
-                        return (
-                          <option value={masterType}>{masterType}</option>
-                        )
-                      })}
-                    </select>
-                    {errorMessages.masterType && (
-                      <div style={{ color: "red", marginTop: "5px" }}>
-                        {errorMessages.masterType}
-                      </div>
-                    )}
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="itemCode">
-                    <Form.Label>Item Code</Form.Label>
-                    <Select
-                      options={filteredItemsCodes.map((item) => ({
-                        value: item.value,
-                        label: item.label,
-                      }))}
-                      required
-                      value={selectedItemCode}
-                      onChange={handleItemCodeChange}
-                      placeholder={filteredItemsCodes.length === 0 ? "No items available" : "Select Item Code"}
-                      isDisabled={filteredItemsCodes.length === 0}
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          borderColor: "black",
-                        }),
-                      }}
-                    />
-                    {errorMessages.itemCode && (
-                      <div style={{ color: "red", marginTop: "5px" }}>
-                        {errorMessages.itemCode}
-                      </div>
-                    )}
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="itemName">
-                    <Form.Label>Item Name</Form.Label>
-                    <Select
-                      options={filteredItemsNames.map((item) => ({
-                        value: item.value,
-                        label: item.label,
-                      }))}
-                      required
-                      value={selectedItemName}
-                      onChange={handleItemNameChange}
-                      placeholder={filteredItemsNames.length === 0 ? "No items available" : "Select Item Name"}
-                      isDisabled={filteredItemsNames.length === 0}
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          borderColor: "black",
-                        }),
-                      }}
-                    />
-                    {errorMessages.itemName && (
-                      <div style={{ color: "red", marginTop: "5px" }}>
-                        {errorMessages.itemName}
-                      </div>
-                    )}
-                  </Form.Group>
-                </Col>
-              </Row>
-              <p></p>
+        <div className="product-req-page">
+          {!hasProjects && (
+            <div className="product-req-warning" role="alert">
+              <strong>No Projects Assigned</strong>
+              You have no projects assigned. Please contact your administrator to assign projects before requesting items.
+            </div>
+          )}
 
-              <Row></Row>
-              <p></p>
+          <section className="project-panel" aria-label="Item request form">
+            <div className="product-req-panel-heading">
+              <h2 className="product-req-panel-title">New request</h2>
+              <p className="product-req-panel-description">
+                Fill in the details below to submit an item request to your manager and lab assistant.
+              </p>
+            </div>
 
-              <Row>
-                <Col>
-                  <Form.Group controlId="managerName">
-                    <Form.Label>Manager</Form.Label>
-                    <Select
-                      required
-                      options={filteredManagerNames}
-                      value={selectedmanNames}
-                      onChange={setSelectedmanNames}
-                      placeholder={filteredManagerNames.length === 0 ? "No managers available" : "Select Manager Name"}
-                      isDisabled={filteredManagerNames.length === 0}
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          borderColor: "black",
-                        }),
-                      }}
-                    />
-                  </Form.Group>
-                  <span style={{ color: "red", float: "right" }}>
-                    {errorMessages.remarks}
-                  </span>
-                </Col>
-                {/* <Col>
-                  <Form.Group controlId="project">
-                    <Form.Label>Project Name</Form.Label>
-                    <Form.Control
-                      as="select"
-                      name="project"
-                      required
-                      style={{ border: "1px solid black" }}
-                      value={selectedProject}
-                      onChange={handleProjectChange}
-                    >
-                      <option value="">Select Project</option>
-                      {projectsMap.map((proj) => (
-                        <option key={proj.value} value={proj.value}>
-                          {proj.label}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                  <span style={{ color: "red", float: "right" }}>
-                    {errorMessages.remarks}
-                  </span>
-                </Col>
-                <Col>
-                  <Form.Group controlId="projectCode">
-                    <Form.Label>Project Code</Form.Label>
-                    <Select
-                      value={selectedCodes}
-                      placeholder="Project Code"
-                      required
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          borderColor: "black",
-                        }),
-                      }}
-                    />
-                  </Form.Group>
-                  <span style={{ color: "red", float: "right" }}>
-                    {errorMessages.remarks}
-                  </span>
-                </Col> */}
-                <Col>
-                  <Form.Group controlId="projectCode">
-                    <Form.Label>Project Code</Form.Label>
-                    <Select
-                      value={selectedCodes}
-                      onChange={(selectedOption) => {
-                        setSelectedCodes(selectedOption);
-                        // Automatically update project name
-                        const correspondingProject = filteredProjectsMap.find(
-                          (p) => p.code === selectedOption.value
-                        );
-                        if (correspondingProject) {
-                          setSelectedProject({
-                            value: correspondingProject.value,
-                            label: correspondingProject.label,
-                          });
-                        }
-                      }}
-                      options={filteredProjectsMap.map((item) => ({
-                        value: item.code,
-                        label: item.code,
-                      }))}
-                      placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Code"}
-                      isDisabled={filteredProjectsMap.length === 0}
-                    />
-                    {errorMessages.project && (
-                      <span className="text-danger">
-                        {errorMessages.project}
+            <div className="product-req-form-body">
+              <Form
+                className="product-req-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAdd();
+                }}
+                ref={formRef}
+              >
+                <Row>
+                  <Col md={4}>
+                    <Form.Group controlId="masterType" className="project-field">
+                      <Form.Label>Master Type</Form.Label>
+                      <Form.Select
+                        required
+                        value={masterType}
+                        className={`project-field-input${errorMessages.masterType ? " project-field-input--error" : ""}`}
+                        onChange={(e) => setMasterType(e.target.value)}
+                      >
+                        <option value="">Select Master Type</option>
+                        {masterTypeList.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      {errorMessages.masterType && (
+                        <span className="project-field-error">
+                          {errorMessages.masterType}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group controlId="itemCode" className="product-req-select-field">
+                      <Form.Label>Item Code</Form.Label>
+                      <Select
+                        options={filteredItemsCodes.map((item) => ({
+                          value: item.value,
+                          label: item.label,
+                        }))}
+                        required
+                        value={selectedItemCode}
+                        onChange={handleItemCodeChange}
+                        placeholder={filteredItemsCodes.length === 0 ? "No items available" : "Select Item Code"}
+                        isDisabled={filteredItemsCodes.length === 0}
+                        styles={selectControlStyles(!!errorMessages.itemCode)}
+                      />
+                      {errorMessages.itemCode && (
+                        <span className="project-field-error">
+                          {errorMessages.itemCode}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group controlId="itemName" className="product-req-select-field">
+                      <Form.Label>Item Name</Form.Label>
+                      <Select
+                        options={filteredItemsNames.map((item) => ({
+                          value: item.value,
+                          label: item.label,
+                        }))}
+                        required
+                        value={selectedItemName}
+                        onChange={handleItemNameChange}
+                        placeholder={filteredItemsNames.length === 0 ? "No items available" : "Select Item Name"}
+                        isDisabled={filteredItemsNames.length === 0}
+                        styles={selectControlStyles(!!errorMessages.itemName)}
+                      />
+                      {errorMessages.itemName && (
+                        <span className="project-field-error">
+                          {errorMessages.itemName}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={4}>
+                    <Form.Group controlId="managerName" className="product-req-select-field">
+                      <Form.Label>Manager</Form.Label>
+                      <Select
+                        required
+                        options={filteredManagerNames}
+                        value={selectedmanNames}
+                        onChange={setSelectedmanNames}
+                        placeholder={filteredManagerNames.length === 0 ? "No managers available" : "Select Manager Name"}
+                        isDisabled={filteredManagerNames.length === 0}
+                        styles={selectControlStyles(!!errorMessages.supervisor)}
+                      />
+                      {errorMessages.supervisor && (
+                        <span className="project-field-error">
+                          {errorMessages.supervisor}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group controlId="projectCode" className="product-req-select-field">
+                      <Form.Label>Project Code</Form.Label>
+                      <Select
+                        value={selectedCodes}
+                        onChange={(selectedOption) => {
+                          setSelectedCodes(selectedOption);
+                          const correspondingProject = filteredProjectsMap.find(
+                            (p) => p.code === selectedOption.value
+                          );
+                          if (correspondingProject) {
+                            setSelectedProject({
+                              value: correspondingProject.value,
+                              label: correspondingProject.label,
+                            });
+                          }
+                        }}
+                        options={filteredProjectsMap.map((item) => ({
+                          value: item.code,
+                          label: item.code,
+                        }))}
+                        placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Code"}
+                        isDisabled={filteredProjectsMap.length === 0}
+                        styles={selectControlStyles(!!errorMessages.project)}
+                      />
+                      {errorMessages.project && (
+                        <span className="project-field-error">
+                          {errorMessages.project}
+                        </span>
+                      )}
+                      {!hasProjects && (
+                        <span className="project-field-hint project-field-hint--warning">
+                          No projects assigned to researcher
+                        </span>
+                      )}
+                      {filteredProjectsMap.length === 0 && selectedmanNames && hasProjects && (
+                        <span className="project-field-hint">
+                          No common projects between researcher and selected manager
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group controlId="projectName" className="product-req-select-field">
+                      <Form.Label>Project Name</Form.Label>
+                      <Select
+                        value={selectedProject}
+                        onChange={(selectedOption) => {
+                          setSelectedProject(selectedOption);
+                          const correspondingProject = filteredProjectsMap.find(
+                            (p) => p.label === selectedOption.label
+                          );
+                          if (correspondingProject) {
+                            setSelectedCodes({
+                              value: correspondingProject.code,
+                              label: correspondingProject.code,
+                            });
+                          }
+                        }}
+                        options={filteredProjectsMap.map((item) => ({
+                          value: item.value,
+                          label: item.label,
+                        }))}
+                        placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Name"}
+                        isDisabled={filteredProjectsMap.length === 0}
+                        styles={selectControlStyles(!!errorMessages.project)}
+                      />
+                      {!hasProjects && (
+                        <span className="project-field-hint project-field-hint--warning">
+                          No projects assigned to researcher
+                        </span>
+                      )}
+                      {filteredProjectsMap.length === 0 && selectedmanNames && hasProjects && (
+                        <span className="project-field-hint">
+                          No common projects between researcher and selected manager
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={4}>
+                    <Form.Group controlId="remarks" className="project-field">
+                      <Form.Label>Remarks</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="remarks"
+                        required
+                        placeholder=""
+                        className={`project-field-input${errorMessages.remarks ? " project-field-input--error" : ""}`}
+                      />
+                      {errorMessages.remarks && (
+                        <span className="project-field-error">
+                          {errorMessages.remarks}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group controlId="issuedTo" className="project-field">
+                      <Form.Label>Requested By</Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="issuedTo"
+                        value={reduxUser?.user_name || userDetails.name}
+                        readOnly
+                        className="project-field-input"
+                      />
+                      {errorMessages.issuedTo && (
+                        <span className="project-field-error">
+                          {errorMessages.issuedTo}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                  <Col md={4}>
+                    <Form.Group controlId="labAssistantName" className="product-req-select-field">
+                      <Form.Label>Select Lab Assistant</Form.Label>
+                      <Select
+                        options={labassistantNames}
+                        value={selectedLabAssistant}
+                        onChange={setSelectedLabAssistant}
+                        placeholder="Lab Assistant Name"
+                        styles={selectControlStyles(!!errorMessages.labAssistant)}
+                      />
+                      {errorMessages.labAssistant && (
+                        <span className="project-field-error">
+                          {errorMessages.labAssistant}
+                        </span>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
+
+                <Row>
+                  <Col md={4}>
+                    <Form.Group controlId="quantityIssued" className="project-field">
+                      <Form.Label>Quantity</Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="quantityIssued"
+                        min="1"
+                        value={quantityIssued}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '' || (parseInt(value) >= 1)) {
+                            setQuantityIssued(value);
+                          }
+                        }}
+                        placeholder="Optional"
+                        className="project-field-input"
+                      />
+                      <span className="project-field-hint">
+                        Quantity can be adjusted by Lab Assistant before issuing
                       </span>
-                    )}
-                    {!hasProjects && (
-                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px", color: "#856404" }}>
-                        No projects assigned to researcher
-                      </Form.Text>
-                    )}
-                    {filteredProjectsMap.length === 0 && selectedmanNames && hasProjects && (
-                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
-                        No common projects between researcher and selected manager
-                      </Form.Text>
-                    )}
-                  </Form.Group>
-                </Col>
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </Form>
 
-                <Col>
-                  <Form.Group controlId="projectName">
-                    <Form.Label>Project Name</Form.Label>
-                    <Select
-                      value={selectedProject}
-                      onChange={(selectedOption) => {
-                        setSelectedProject(selectedOption);
-                        // Automatically update project code
-                        const correspondingProject = filteredProjectsMap.find(
-                          (p) => p.label === selectedOption.label
-                        );
-                        if (correspondingProject) {
-                          setSelectedCodes({
-                            value: correspondingProject.code,
-                            label: correspondingProject.code,
-                          });
-                        }
-                      }}
-                      options={filteredProjectsMap.map((item) => ({
-                        value: item.value,
-                        label: item.label,
-                      }))}
-                      placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Name"}
-                      isDisabled={filteredProjectsMap.length === 0}
-                    />
-                    {!hasProjects && (
-                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px", color: "#856404" }}>
-                        No projects assigned to researcher
-                      </Form.Text>
-                    )}
-                    {filteredProjectsMap.length === 0 && selectedmanNames && hasProjects && (
-                      <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
-                        No common projects between researcher and selected manager
-                      </Form.Text>
-                    )}
-                  </Form.Group>
-                </Col>
-              </Row>
-              <p></p>
-              <Row>
-                <Col>
-                  <Form.Group controlId="remarks">
-                    <Form.Label>Remarks</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="remarks"
-                      required
-                      placeholder=""
-                      style={{ borderColor: "black" }}
-                    />
-                    {errorMessages.remarks && (
-                      <div style={{ color: "red", marginTop: "5px" }}>
-                        {errorMessages.remarks}
-                      </div>
-                    )}
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="issuedTo">
-                    <Form.Label>Requested By</Form.Label>
-                    <Form.Control
-                      type="text"
-                      name="issuedTo"
-                      value={reduxUser?.user_name || userDetails.name}
-                      readOnly
-                      style={{ borderColor: "black" }}
-                    />
-                    {errorMessages.issuedTo && (
-                      <div style={{ color: "red", marginTop: "5px" }}>
-                        {errorMessages.issuedTo}
-                      </div>
-                    )}
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group controlId="labAssistantName">
-                    <Form.Label>Select Lab Assistant</Form.Label>
-                    <Select
-                      options={labassistantNames}
-                      value={selectedLabAssistant}
-                      onChange={setSelectedLabAssistant}
-                      placeholder="Lab Assistant Name"
-                      styles={{
-                        control: (provided) => ({
-                          ...provided,
-                          borderColor: "black",
-                        }),
-                      }}
-                    />
-                    {errorMessages.labAssistant && (
-                      <div style={{ color: "red", marginTop: "5px" }}>
-                        {errorMessages.labAssistant}
-                      </div>
-                    )}
-                  </Form.Group>
-                </Col>
-              </Row>
-              <p></p>
-              <Row>
-                <Col>
-                  <Form.Group controlId="quantityIssued">
-                    <Form.Label>Quantity</Form.Label>
-                    <Form.Control
-                      type="number"
-                      name="quantityIssued"
-                      min="1"
-                      value={quantityIssued}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (value === '' || (parseInt(value) >= 1)) {
-                          setQuantityIssued(value);
-                        }
-                      }}
-                      placeholder="Optional"
-                      style={{ borderColor: "black" }}
-                    />
-                    <Form.Text className="text-muted" style={{ fontSize: "0.875rem", marginTop: "4px" }}>
-                      Quantity can be adjusted by Lab Assistant before issuing
-                    </Form.Text>
-                  </Form.Group>
-                </Col>
-                <Col></Col>
-                <Col></Col>
-              </Row>
-            </Form>
-            <Button
-              variant="primary"
-              onClick={handleAdd}
-              disabled={!hasProjects || !selectedItemCode || !selectedCodes || !selectedmanNames || !selectedLabAssistant}
-              className="lims-form-submit-btn"
-            >
-              Submit Request
-            </Button>
-          </Col>
-        </Row>
-      </ContentCard>
+              <div className="product-req-form-actions">
+                <Button
+                  variant="primary"
+                  onClick={handleAdd}
+                  disabled={!hasProjects || !selectedItemCode || !selectedCodes || !selectedmanNames || !selectedLabAssistant}
+                  className="product-req-submit-btn"
+                >
+                  Submit Request
+                </Button>
+              </div>
+            </div>
+          </section>
+        </div>
       </PageBody>
     </PageLayout>
   );

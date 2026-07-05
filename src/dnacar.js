@@ -1,6 +1,7 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./styles/lab-design-system.css";
+import "./styles/layout/admin-workspace.css";
 import { BrowserRouter, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from 'react-redux';
 import { logoutUser } from './store/slices/userSlice';
@@ -69,6 +70,7 @@ function Layout({ userDetails, userId }) {
           onLogout={handleLogout}
         />
       }
+      workspace="admin"
     >
       <Routes>
         <Route path="/master" element={<HomeLab userDetails={userDetails} />} />

@@ -530,6 +530,44 @@
   background: #fafafa !important;
 }
 
+/* Column sizing */
+
+.project-manage .project-table {
+  min-width: max-content;
+  table-layout: auto;
+}
+
+.project-manage .project-table thead th.pt-col {
+  white-space: nowrap !important;
+  padding: 0.4375rem 0.625rem !important;
+  line-height: 1.25;
+}
+
+.project-manage .project-table thead th.pt-col--project-code { min-width: 6.75rem; }
+.project-manage .project-table thead th.pt-col--project { min-width: 6.75rem; }
+.project-manage .project-table thead th.pt-col--status { min-width: 5.5rem; }
+.project-manage .project-table thead th.pt-col--date { min-width: 6.25rem; }
+.project-manage .project-table thead th.pt-col--actions { min-width: 5.5rem; }
+
+.project-manage .project-table tbody td.pt-col {
+  padding: 0.4375rem 0.625rem !important;
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-manage .project-table tbody td.pt-col--project {
+  max-width: 10rem;
+}
+
+.project-manage .project-table tbody td.pt-col--actions,
+.project-manage .project-table tbody td.pt-col--status {
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
+}
+
 .project-code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.8125rem;

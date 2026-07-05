@@ -357,7 +357,7 @@ const ProjectManage = () => {
                 <table className="project-table">
                   <thead>
                     <tr>
-                      <th scope="col">
+                      <th scope="col" className="pt-col pt-col--project-code">
                         <button
                           type="button"
                           className="project-th-sort"
@@ -367,7 +367,7 @@ const ProjectManage = () => {
                           {renderSortIcon("project_code")}
                         </button>
                       </th>
-                      <th scope="col">
+                      <th scope="col" className="pt-col pt-col--project">
                         <button
                           type="button"
                           className="project-th-sort"
@@ -377,9 +377,9 @@ const ProjectManage = () => {
                           {renderSortIcon("project_name")}
                         </button>
                       </th>
-                      <th scope="col">Status</th>
-                      <th scope="col">Created</th>
-                      <th scope="col" className="project-th-actions">
+                      <th scope="col" className="pt-col pt-col--status">Status</th>
+                      <th scope="col" className="pt-col pt-col--date">Created</th>
+                      <th scope="col" className="pt-col pt-col--actions project-th-actions">
                         Actions
                       </th>
                     </tr>
@@ -404,17 +404,17 @@ const ProjectManage = () => {
                     ) : (
                       paginatedProjects.map((project) => (
                         <tr key={project.project_code} className="project-table-row">
-                          <td data-label="Code">
+                          <td className="pt-col pt-col--project-code" data-label="Code">
                             <span className="project-code">
                               {project.project_code}
                             </span>
                           </td>
-                          <td data-label="Name">
+                          <td className="pt-col pt-col--project" data-label="Name">
                             <span className="project-name">
                               {project.project_name}
                             </span>
                           </td>
-                          <td data-label="Status">
+                          <td className="pt-col pt-col--status" data-label="Status">
                             <span
                               className={`project-badge ${
                                 project.deleted === 0
@@ -425,7 +425,7 @@ const ProjectManage = () => {
                               {project.deleted === 0 ? "Active" : "Inactive"}
                             </span>
                           </td>
-                          <td data-label="Created">
+                          <td className="pt-col pt-col--date" data-label="Created">
                             <time
                               className="project-date"
                               dateTime={project.created_at || undefined}
@@ -441,7 +441,7 @@ const ProjectManage = () => {
                                 : "—"}
                             </time>
                           </td>
-                          <td data-label="Actions" className="project-td-actions">
+                          <td data-label="Actions" className="pt-col pt-col--actions project-td-actions">
                             <div className="project-row-actions">
                               <button
                                 type="button"

@@ -520,6 +520,8 @@
   font-size: 0.875rem;
   caption-side: bottom;
   border: none;
+  min-width: max-content;
+  table-layout: auto;
 }
 
 .register-users .project-table thead tr {
@@ -616,6 +618,42 @@
 .register-users .project-table-row--empty td {
   padding: 0 !important;
   border: none !important;
+}
+
+/* Column sizing */
+
+.register-users .project-table thead th.pt-col {
+  white-space: nowrap !important;
+  padding: 0.4375rem 0.625rem !important;
+  line-height: 1.25;
+}
+
+.register-users .project-table thead th.pt-col--username { min-width: 7rem; }
+.register-users .project-table thead th.pt-col--emp-name { min-width: 7rem; }
+.register-users .project-table thead th.pt-col--role { min-width: 6.5rem; }
+.register-users .project-table thead th.pt-col--designation { min-width: 6.5rem; }
+.register-users .project-table thead th.pt-col--lab { min-width: 5.5rem; }
+.register-users .project-table thead th.pt-col--actions { min-width: 5.5rem; }
+
+.register-users .project-table tbody td.pt-col {
+  padding: 0.4375rem 0.625rem !important;
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.register-users .project-table tbody td.pt-col--emp-name,
+.register-users .project-table tbody td.pt-col--username {
+  max-width: 10rem;
+}
+
+.register-users .project-table tbody td.pt-col--actions,
+.register-users .project-table tbody td.pt-col--role,
+.register-users .project-table tbody td.pt-col--lab {
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
 }
 
 .register-users .project-name {

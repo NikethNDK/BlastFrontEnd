@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react
 
 export const HEADER_INTRO_KEY = 'lims-header-intro';
 const TRANSITION_MS = 300;
+const INTRO_VISIBLE_MS = 400;
 const ARM_IDLE_MS = 200;
 const WHEEL_REVEAL_DELTA = -8;
 const WHEEL_HIDE_DELTA = 8;
@@ -34,7 +35,6 @@ export function useAppHeader({ enabled, headerRef, mainRef, shellRef }) {
   const headerVisibleRef = useRef(headerVisible);
   const lastScrollTopRef = useRef(0);
   const touchStartYRef = useRef(0);
-  const introPlayedRef = useRef(false);
   const armedAtTopRef = useRef(false);
   const wheelIdleTimerRef = useRef(null);
 
@@ -122,24 +122,19 @@ export function useAppHeader({ enabled, headerRef, mainRef, shellRef }) {
     updateMeasuredHeight();
 
     const hasIntro = sessionStorage.getItem(HEADER_INTRO_KEY) === '1';
-    if (hasIntro && !introPlayedRef.current) {
-      introPlayedRef.current = true;
-      setHeaderVisible(true);
-
-      const introTimer = window.setTimeout(() => {
-        sessionStorage.removeItem(HEADER_INTRO_KEY);
-        hideHeader();
-      }, prefersReducedMotion() ? 0 : 120);
-
-      return () => window.clearTimeout(introTimer);
-    }
-
-    if (!hasIntro && !introPlayedRef.current) {
-      introPlayedRef.current = true;
+    if (!hasIntro) {
       setHeaderVisible(false);
+      return undefined;
     }
 
-    return undefined;
+    setHeaderVisible(true);
+
+    const introTimer = window.setTimeout(() => {
+      sessionStorage.removeItem(HEADER_INTRO_KEY);
+      hideHeader();
+    }, prefersReducedMotion() ? 0 : INTRO_VISIBLE_MS);
+
+    return () => window.clearTimeout(introTimer);
   }, [enabled, hideHeader, updateMeasuredHeight]);
 
   useEffect(() => {

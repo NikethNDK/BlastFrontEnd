@@ -1,0 +1,698 @@
+/* Transferred entry table — admin-matching UI (scoped) */
+
+.transferred-entry-page {
+  --te-bg: #ffffff;
+  --te-fg: #1a3d2a;
+  --te-fg-strong: #09090b;
+  --te-muted: #64748b;
+  --te-muted-bg: #f8fafc;
+  --te-border: #e2e8f0;
+  --te-ring: var(--lims-accent-dark, #b5da21);
+  --te-brand: var(--lims-accent, #c5ea31);
+  --te-brand-dark: var(--lims-accent-dark, #b5da21);
+  --te-brand-soft: #f3fae8;
+  --te-blue-soft: #eff6ff;
+  --te-blue: #2563eb;
+  --te-green-soft: #ecfdf5;
+  --te-green: #059669;
+  --te-radius: 0.5rem;
+  --te-radius-lg: 0.75rem;
+  --te-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* ── Header button disabled ──────────────────────────────── */
+
+.lims-page-header-actions .lims-header-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Stats ───────────────────────────────────────────────── */
+
+.transferred-entry-page .project-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem;
+  max-width: 36rem;
+}
+
+.transferred-entry-page .project-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1rem 1.125rem;
+  background: var(--te-bg);
+  border: 1px solid var(--te-border);
+  border-radius: var(--te-radius-lg);
+  box-shadow: var(--te-shadow);
+  min-width: 0;
+}
+
+.transferred-entry-page .project-stat-icon {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--te-radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9375rem;
+  border: 1px solid transparent;
+}
+
+.transferred-entry-page .project-stat-icon--total {
+  background: var(--te-blue-soft);
+  color: var(--te-blue);
+  border-color: #dbeafe;
+}
+
+.transferred-entry-page .project-stat-icon--selected {
+  background: var(--te-green-soft);
+  color: var(--te-green);
+  border-color: #a7f3d0;
+}
+
+.transferred-entry-page .project-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.transferred-entry-page .project-stat-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--te-fg-strong);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.transferred-entry-page .project-stat-label {
+  font-size: 0.75rem;
+  color: var(--te-muted);
+  line-height: 1.3;
+}
+
+/* ── Panel ───────────────────────────────────────────────── */
+
+.transferred-entry-page .project-panel {
+  background: var(--te-bg);
+  border: 1px solid var(--te-border);
+  border-radius: var(--te-radius-lg);
+  box-shadow: var(--te-shadow);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.transferred-entry-page .project-table-section {
+  padding-bottom: 1rem;
+}
+
+.transferred-entry-page .project-table-shell {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.transferred-entry-page .project-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  border: none;
+  min-width: max-content;
+  table-layout: auto;
+}
+
+.transferred-entry-page .project-table thead tr.project-thead-labels {
+  border-bottom: 1px solid #e8e8ec;
+}
+
+.transferred-entry-page .project-table thead tr.project-thead-filters {
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.transferred-entry-page .project-table thead th {
+  background: #f4f4f5 !important;
+  color: #52525b !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  border: none !important;
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
+}
+
+.transferred-entry-page .project-table thead th.project-th-label-cell {
+  font-size: 0.8125rem !important;
+  line-height: 1.25;
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+.transferred-entry-page .project-table thead th.project-th-filter-cell {
+  padding: 0.375rem 0.5rem 0.5rem !important;
+  font-size: 0.75rem !important;
+  font-weight: 400 !important;
+  vertical-align: top !important;
+  white-space: normal;
+}
+
+.transferred-entry-page .te-col-filter {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 1.75rem;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  color: var(--te-fg-strong);
+  background: var(--te-bg);
+  border: 1px solid var(--te-border);
+  border-radius: calc(var(--te-radius) - 2px);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.transferred-entry-page .te-col-filter::placeholder {
+  color: var(--te-muted);
+  opacity: 1;
+}
+
+.transferred-entry-page .te-col-filter:focus {
+  outline: none;
+  border-color: var(--te-brand-dark);
+  box-shadow: 0 0 0 2px rgba(197, 234, 49, 0.2);
+}
+
+/* ── Table body ──────────────────────────────────────────── */
+
+.transferred-entry-page .project-table tbody tr:not(.project-table-row--empty) {
+  border-bottom: 1px solid var(--te-border) !important;
+  transition: background-color 0.15s ease;
+}
+
+.transferred-entry-page .project-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.transferred-entry-page .project-table tbody tr:nth-child(even) {
+  background: transparent !important;
+}
+
+.transferred-entry-page .project-table tbody tr:hover {
+  background: #fafafa !important;
+}
+
+.transferred-entry-page .project-table tbody tr.te-row--selected {
+  background: var(--te-brand-soft) !important;
+}
+
+.transferred-entry-page .project-table tbody tr.te-row--selected:hover {
+  background: #eaf5d0 !important;
+}
+
+.transferred-entry-page .project-table tbody td {
+  color: var(--te-fg-strong) !important;
+  vertical-align: middle;
+  border: none !important;
+  text-align: left !important;
+  font-size: 0.8125rem;
+}
+
+/* Column sizing — widths matched to header labels + typical cell content */
+
+.transferred-entry-page .project-table thead th.te-col,
+.transferred-entry-page .project-table tbody td.te-col {
+  padding: 0.4375rem 0.625rem !important;
+  line-height: 1.25;
+}
+
+.transferred-entry-page .project-table thead th.te-col {
+  white-space: nowrap !important;
+}
+
+.transferred-entry-page .project-table thead th.project-th-filter-cell.te-col {
+  padding-top: 0.375rem !important;
+  padding-bottom: 0.5rem !important;
+  font-weight: 400 !important;
+  vertical-align: top !important;
+}
+
+/* Select — radio only */
+.transferred-entry-page .project-table thead th.te-col--select,
+.transferred-entry-page .project-table tbody td.te-col--select {
+  width: 3.25rem;
+  min-width: 3.25rem;
+  max-width: 3.25rem;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+  text-align: center !important;
+  overflow: visible;
+}
+
+/* Entry No — compact id */
+.transferred-entry-page .project-table thead th.te-col--entry {
+  min-width: 4.75rem;
+  width: 4.75rem;
+}
+
+/* Item Code */
+.transferred-entry-page .project-table thead th.te-col--code {
+  min-width: 4.5rem;
+  width: 5rem;
+}
+
+/* Item Name — primary text column */
+.transferred-entry-page .project-table thead th.te-col--name {
+  min-width: 6rem;
+}
+
+/* Price — numeric, narrow */
+.transferred-entry-page .project-table thead th.te-col--price {
+  min-width: 3.75rem;
+  width: 4.5rem;
+}
+
+/* Remaining Stock — long header, numeric body */
+.transferred-entry-page .project-table thead th.te-col--stock {
+  min-width: 8.75rem;
+}
+
+.transferred-entry-page .project-table tbody td.te-col--stock {
+  min-width: 4.5rem;
+  width: 5.25rem;
+}
+
+/* Batch Number */
+.transferred-entry-page .project-table thead th.te-col--batch {
+  min-width: 6.75rem;
+}
+
+/* Remarks */
+.transferred-entry-page .project-table thead th.te-col--remarks {
+  min-width: 5.5rem;
+}
+
+/* Dates */
+.transferred-entry-page .project-table thead th.te-col--date {
+  min-width: 6.5rem;
+}
+
+.transferred-entry-page .project-table thead th.te-col--expiry {
+  min-width: 6.25rem;
+}
+
+/* Manufacturer / Supplier */
+.transferred-entry-page .project-table thead th.te-col--manufacturer {
+  min-width: 7.25rem;
+}
+
+.transferred-entry-page .project-table thead th.te-col--supplier {
+  min-width: 5.25rem;
+}
+
+/* Project Name */
+.transferred-entry-page .project-table thead th.te-col--project {
+  min-width: 7rem;
+}
+
+/* Combined no/date columns — wider headers */
+.transferred-entry-page .project-table thead th.te-col--invoice {
+  min-width: 8.5rem;
+}
+
+.transferred-entry-page .project-table thead th.te-col--catalogue {
+  min-width: 7rem;
+}
+
+.transferred-entry-page .project-table thead th.te-col--po {
+  min-width: 8.25rem;
+}
+
+/* Location */
+.transferred-entry-page .project-table thead th.te-col--location {
+  min-width: 5rem;
+}
+
+/* Body: compact columns — no forced ellipsis */
+.transferred-entry-page .project-table tbody td.te-col--select,
+.transferred-entry-page .project-table tbody td.te-col--entry,
+.transferred-entry-page .project-table tbody td.te-col--code,
+.transferred-entry-page .project-table tbody td.te-col--price,
+.transferred-entry-page .project-table tbody td.te-col--stock,
+.transferred-entry-page .project-table tbody td.te-col--date,
+.transferred-entry-page .project-table tbody td.te-col--expiry,
+.transferred-entry-page .project-table tbody td.te-col--location {
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+/* Body: text columns — ellipsis when long */
+.transferred-entry-page .project-table tbody td.te-col--name {
+  max-width: 8.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transferred-entry-page .project-table tbody td.te-col--batch {
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transferred-entry-page .project-table tbody td.te-col--remarks {
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transferred-entry-page .project-table tbody td.te-col--manufacturer {
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transferred-entry-page .project-table tbody td.te-col--supplier {
+  max-width: 7.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transferred-entry-page .project-table tbody td.te-col--project {
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transferred-entry-page .project-table tbody td.te-col--invoice,
+.transferred-entry-page .project-table tbody td.te-col--catalogue,
+.transferred-entry-page .project-table tbody td.te-col--po {
+  max-width: 9.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transferred-entry-page .te-row-radio {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--te-brand-dark);
+}
+
+.transferred-entry-page .te-entry-no {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #3f3f46;
+}
+
+.transferred-entry-page .te-qty {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.transferred-entry-page .te-date {
+  font-size: 0.8125rem;
+  color: var(--te-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.transferred-entry-page .te-remarks {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+
+.transferred-entry-page .project-table-row--empty,
+.transferred-entry-page .project-table-row--empty:hover {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.transferred-entry-page .project-table-row--empty td {
+  padding: 0 !important;
+  border: none !important;
+}
+
+.transferred-entry-page .project-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--te-muted);
+}
+
+.transferred-entry-page .project-empty-icon-wrap {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 0.75rem;
+  border-radius: var(--te-radius-lg);
+  background: var(--te-brand-soft);
+  color: var(--te-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  border: 1px solid #dcecc0;
+}
+
+.transferred-entry-page .project-empty h3 {
+  margin: 0 0 0.375rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--te-fg);
+}
+
+.transferred-entry-page .project-empty p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* ── Return modal (project-modal pattern) ────────────────── */
+
+.project-modal.te-return-modal {
+  --pm-bg: #ffffff;
+  --pm-fg: #1a3d2a;
+  --pm-fg-strong: #09090b;
+  --pm-muted: #64748b;
+  --pm-muted-bg: #f8fafc;
+  --pm-border: #e2e8f0;
+  --pm-ring: var(--lims-accent-dark, #b5da21);
+  --pm-brand: var(--lims-accent, #c5ea31);
+  --pm-brand-dark: var(--lims-accent-dark, #b5da21);
+  --pm-brand-soft: #f3fae8;
+  --pm-radius: 0.5rem;
+  --pm-radius-lg: 0.75rem;
+  --pm-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.project-modal.te-return-modal .modal-content,
+.project-modal.te-return-modal .project-modal-content {
+  border: 1px solid var(--pm-border);
+  border-radius: var(--pm-radius-lg);
+  box-shadow: 0 10px 38px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  background: var(--pm-bg);
+  border-top: 3px solid var(--pm-brand);
+}
+
+.project-modal.te-return-modal .modal-body {
+  padding: 0;
+}
+
+.project-modal.te-return-modal .project-modal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1.25rem 1.25rem 0;
+  position: relative;
+}
+
+.project-modal.te-return-modal .project-modal-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--pm-fg);
+  letter-spacing: -0.015em;
+  padding-right: 2rem;
+}
+
+.project-modal.te-return-modal .project-modal-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--pm-muted);
+  line-height: 1.45;
+}
+
+.project-modal.te-return-modal .project-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: var(--pm-radius);
+  background: transparent;
+  color: var(--pm-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.project-modal.te-return-modal .project-modal-close:hover {
+  opacity: 1;
+  background: var(--pm-muted-bg);
+  color: var(--pm-fg);
+}
+
+.project-modal.te-return-modal .project-modal-close:focus-visible {
+  outline: 2px solid var(--pm-ring);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+.project-modal.te-return-modal .project-modal-body {
+  padding: 1.25rem !important;
+}
+
+.project-modal.te-return-modal .project-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.project-modal.te-return-modal .project-field {
+  margin-bottom: 1rem;
+}
+
+.project-modal.te-return-modal .project-field .form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pm-fg);
+  margin-bottom: 0.375rem;
+}
+
+.project-modal.te-return-modal .project-field-input,
+.project-modal.te-return-modal .form-control.project-field-input,
+.project-modal.te-return-modal .form-select.project-field-input {
+  height: 2.25rem;
+  padding: 0 0.75rem !important;
+  border: 1px solid var(--pm-border) !important;
+  border-radius: var(--pm-radius) !important;
+  font-size: 0.875rem !important;
+  background: var(--pm-bg) !important;
+  color: var(--pm-fg) !important;
+  box-shadow: var(--pm-shadow);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.project-modal.te-return-modal .form-select.project-field-input {
+  padding-right: 2rem !important;
+}
+
+.project-modal.te-return-modal .project-field-input--readonly {
+  background: var(--pm-muted-bg) !important;
+  color: var(--pm-muted) !important;
+  border-color: var(--pm-border) !important;
+  box-shadow: none !important;
+}
+
+.project-modal.te-return-modal .project-field-input--success {
+  color: var(--te-green) !important;
+  font-weight: 600;
+}
+
+.project-modal.te-return-modal .project-field-input:focus,
+.project-modal.te-return-modal .form-control.project-field-input:focus,
+.project-modal.te-return-modal .form-select.project-field-input:focus {
+  border-color: var(--pm-brand-dark) !important;
+  box-shadow: 0 0 0 3px rgba(197, 234, 49, 0.2) !important;
+}
+
+.project-modal.te-return-modal .project-modal-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 0.25rem;
+}
+
+.project-modal.te-return-modal .project-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.25rem;
+  padding: 0 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: var(--pm-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.project-modal.te-return-modal .project-btn:focus-visible {
+  outline: 2px solid var(--pm-ring);
+  outline-offset: 2px;
+}
+
+.project-modal.te-return-modal .project-btn-primary {
+  color: var(--pm-fg);
+  background: var(--pm-brand);
+  border-color: var(--pm-brand-dark);
+}
+
+.project-modal.te-return-modal .project-btn-primary:hover {
+  background: var(--pm-brand-dark);
+  border-color: #a8cc1e;
+}
+
+.project-modal.te-return-modal .project-btn-outline {
+  color: var(--pm-fg);
+  background: var(--pm-bg);
+  border-color: var(--pm-border);
+}
+
+.project-modal.te-return-modal .project-btn-outline:hover {
+  background: var(--pm-muted-bg);
+}
+
+@media (max-width: 640px) {
+  .transferred-entry-page .project-stats {
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transferred-entry-page .project-table tbody tr,
+  .project-modal.te-return-modal .project-btn,
+  .project-modal.te-return-modal .project-modal-close {
+    transition: none;
+  }
+}

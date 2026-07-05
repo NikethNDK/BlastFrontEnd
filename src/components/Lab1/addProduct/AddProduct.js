@@ -15,26 +15,23 @@ import {
   getUnitsApi,
 } from "../../../services/AppinfoService";
 import toast from "react-hot-toast";
-import { Button, Modal, Nav, Tab, Row, Col, Form } from "react-bootstrap";
+import { Modal, Nav, Tab, Row, Col, Form } from "react-bootstrap";
+import { FaBox, FaPlus, FaTimes } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import Pagination from "../../common/Pagination";
-import "../homeLab/inventory.css";
 import "./AddProduct.css";
-import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
+import { PageLayout, PageHeader } from "../../layout/content";
 
 const AddProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
-  // Get user from Redux store (preferred over userDetails prop)
   const reduxUser = useSelector((state) => state.user.user);
   const username = reduxUser?.user_name || userDetails.name;
 
-  // Category Modal States
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [inputValue, setInputValue] = useState("");
 
-  // Product Modal States
   const [showProductModal, setShowProductModal] = useState(false);
   const [masterType, setMasterType] = useState("");
   const [itemCode, setItemCode] = useState("");
@@ -42,37 +39,30 @@ const AddProduct = ({
   const [units, setUnits] = useState("");
   const [reqStock, setReqStock] = useState("");
 
-  // Data States
   const [masterTypes, setMasterTypes] = useState([]);
   const [locations, setLocations] = useState([]);
   const [manufacturers, setManufacturers] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState([]);
 
-  // Category Tab State
   const [activeCategoryTab, setActiveCategoryTab] = useState("master-types");
 
-  // Pagination States
   const [productsCurrentPage, setProductsCurrentPage] = useState(1);
   const [categoriesCurrentPage, setCategoriesCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Error Messages
   const [errorMessages, setErrorMessages] = useState({});
 
-  // Fetch all data on component mount
   useEffect(() => {
     fetchAllData();
   }, [username]);
 
-  // Reset categories pagination when tab changes
   useEffect(() => {
     setCategoriesCurrentPage(1);
   }, [activeCategoryTab]);
 
   const fetchAllData = async () => {
     try {
-      // Fetch categories
       const masterTypesData = await getMastertyApi();
       setMasterTypes(masterTypesData);
 
@@ -87,7 +77,6 @@ const AddProduct = ({
         setSuppliers(suppliersData || []);
       }
 
-      // Fetch products
       if (username) {
         const productsData = await getMasterApi(null, username);
         setProducts(productsData || []);
@@ -97,7 +86,6 @@ const AddProduct = ({
     }
   };
 
-  // Category Modal Handlers
   const handleShowCategoryModal = () => {
     setShowCategoryModal(true);
     setSelectedCategory("");
@@ -131,14 +119,13 @@ const AddProduct = ({
 
       toast.success(`${selectedCategory} added successfully!`);
       handleCloseCategoryModal();
-      fetchAllData(); // Refresh data
+      fetchAllData();
     } catch (error) {
       toast.error(`Failed to add ${selectedCategory}.`);
       console.error("Error adding category:", error);
     }
   };
 
-  // Product Modal Handlers
   const handleShowProductModal = () => {
     setShowProductModal(true);
     setMasterType("");
@@ -162,7 +149,6 @@ const AddProduct = ({
   const handleProductSubmit = async () => {
     const newErrorMessages = {};
 
-    // Validate required fields
     if (!masterType) {
       newErrorMessages.masterType = "Please select a master type";
     }
@@ -184,7 +170,6 @@ const AddProduct = ({
       return;
     }
 
-    // Get lab ID
     let labId = null;
     let labName = null;
 
@@ -222,14 +207,13 @@ const AddProduct = ({
       await addLabMasterApi(masterData, userDetails);
       toast.success("Product added successfully");
       handleCloseProductModal();
-      fetchAllData(); // Refresh products
+      fetchAllData();
     } catch (error) {
       toast.error("Failed to add product.");
       console.error("Error adding product:", error);
     }
   };
 
-  // Get current category data based on active tab
   const getCurrentCategoryData = () => {
     switch (activeCategoryTab) {
       case "master-types":
@@ -245,20 +229,17 @@ const AddProduct = ({
     }
   };
 
-  // Products pagination calculations
-  const productsTotalPages = Math.ceil(products.length / itemsPerPage);
+  const productsTotalPages = Math.ceil(products.length / itemsPerPage) || 1;
   const productsStartIndex = (productsCurrentPage - 1) * itemsPerPage;
   const productsEndIndex = productsStartIndex + itemsPerPage;
   const currentProducts = products.slice(productsStartIndex, productsEndIndex);
 
-  // Categories pagination calculations
   const categoryData = getCurrentCategoryData();
-  const categoriesTotalPages = Math.ceil(categoryData.length / itemsPerPage);
+  const categoriesTotalPages = Math.ceil(categoryData.length / itemsPerPage) || 1;
   const categoriesStartIndex = (categoriesCurrentPage - 1) * itemsPerPage;
   const categoriesEndIndex = categoriesStartIndex + itemsPerPage;
   const currentCategories = categoryData.slice(categoriesStartIndex, categoriesEndIndex);
 
-  // Pagination handlers
   const handleProductsPageChange = (pageNumber) => {
     setProductsCurrentPage(pageNumber);
   };
@@ -267,89 +248,160 @@ const AddProduct = ({
     setCategoriesCurrentPage(pageNumber);
   };
 
+  const renderFieldError = (message) =>
+    message ? <span className="project-field-error">{message}</span> : null;
+
+  const renderCategoryTable = (columns, rows, emptyMessage) => (
+    <section className="project-panel" aria-label="Category list">
+      <div className="project-table-section">
+        <div className="project-table-shell">
+          <table className="project-table">
+            <thead>
+              <tr>
+                {columns.map((col) => (
+                  <th key={col.key} scope="col" className={`pt-col ${col.colClass || ""}`}>
+                    {col.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length > 0 ? (
+                rows.map((row) => (
+                  <tr key={row.key} className="project-table-row">
+                    {columns.map((col) => (
+                      <td key={col.key} className={`pt-col ${col.colClass || ""}`} data-label={col.label}>
+                        {col.render(row.data)}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr className="project-table-row project-table-row--empty">
+                  <td colSpan={columns.length}>
+                    <div className="project-empty">
+                      <p>{emptyMessage}</p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+
   return (
     <PageLayout>
       <PageHeader
         title="Product & category management"
         actions={
           <>
-            <Button
-              variant="outline-primary"
-              onClick={handleShowCategoryModal}
-              className="add-product-btn-modern"
-            >
-              Add Category
-            </Button>
-            <Button
-              variant="primary"
+            <button
+              type="button"
+              className="lims-header-btn"
               onClick={handleShowProductModal}
-              className="add-product-btn-modern"
             >
+              <FaPlus aria-hidden />
               Add Product
-            </Button>
+            </button>
+            <button
+              type="button"
+              className="lims-header-btn"
+              onClick={handleShowCategoryModal}
+            >
+              <FaPlus aria-hidden />
+              Add Category
+            </button>
           </>
         }
       />
-      <PageBody>
-      <ContentCard flush>
-        <div className="add-product-modern-container">
-      {/* Products Card */}
-      <div className="add-product-card-modern">
-        <div className="add-product-card-header-modern">
-          <h2 className="add-product-card-title">Products</h2>
-          <span className="add-product-count-badge">{products.length} items</span>
-        </div>
-        <div className="add-product-card-body-modern">
-          <div className="table-wrapper-modern">
-            <table className="inventory-table-modern lims-table">
-              <thead>
-                <tr>
-                  <th className="table-header-modern">Item Code</th>
-                  <th className="table-header-modern">Item Name</th>
-                  <th className="table-header-modern">Master Type</th>
-                  <th className="table-header-modern">Units</th>
-                  <th className="table-header-modern">Minimum Required Stock</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentProducts.length > 0 ? (
-                  currentProducts.map((product, index) => (
-                    <tr key={product.c_id || index} className="data-row-modern">
-                      <td className="table-cell-modern">{product.item_code || "-"}</td>
-                      <td className="table-cell-modern">{product.item_name || "-"}</td>
-                      <td className="table-cell-modern">{product.master_type || "-"}</td>
-                      <td className="table-cell-modern">{product.units || "-"}</td>
-                      <td className="table-cell-modern">{product.min_req_stock || "-"}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="no-data-cell-modern">
-                      No products found. Add a product to get started.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          {/* Products Pagination */}
-          <Pagination
-            currentPage={productsCurrentPage}
-            totalPages={productsTotalPages}
-            onPageChange={handleProductsPageChange}
-            position="bottom"
-          />
-        </div>
-      </div>
 
-      {/* Categories Card */}
-      <div className="add-product-card-modern">
-        <div className="add-product-card-header-modern">
-          <h2 className="add-product-card-title">Categories</h2>
+      <div className="add-product-page">
+        <div className="project-stats" role="list">
+          <div className="project-stat-card" role="listitem">
+            <div className="project-stat-icon project-stat-icon--total">
+              <FaBox aria-hidden />
+            </div>
+            <div className="project-stat-content">
+              <span className="project-stat-value">{products.length}</span>
+              <span className="project-stat-label">Total products</span>
+            </div>
+          </div>
         </div>
-        <div className="add-product-card-body-modern">
-          <Tab.Container activeKey={activeCategoryTab} onSelect={(k) => setActiveCategoryTab(k || "master-types")}>
-            <Nav variant="tabs" className="add-product-tabs-modern">
+
+        <section className="project-panel" aria-label="Products">
+          <div className="add-product-panel-heading">
+            <h2 className="add-product-panel-title">Products</h2>
+          </div>
+          <div className="project-table-section">
+            <div className="project-table-shell">
+              <table className="project-table">
+                <thead>
+                  <tr>
+                    <th scope="col" className="pt-col pt-col--code">Item Code</th>
+                    <th scope="col" className="pt-col pt-col--name">Item Name</th>
+                    <th scope="col" className="pt-col pt-col--master-type">Master Type</th>
+                    <th scope="col" className="pt-col pt-col--units">Units</th>
+                    <th scope="col" className="pt-col pt-col--stock">Minimum Required Stock</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentProducts.length > 0 ? (
+                    currentProducts.map((product, index) => (
+                      <tr key={product.c_id || index} className="project-table-row">
+                        <td className="pt-col pt-col--code" data-label="Item Code">{product.item_code || "—"}</td>
+                        <td className="pt-col pt-col--name" data-label="Item Name">{product.item_name || "—"}</td>
+                        <td className="pt-col pt-col--master-type" data-label="Master Type">{product.master_type || "—"}</td>
+                        <td className="pt-col pt-col--units" data-label="Units">{product.units || "—"}</td>
+                        <td className="pt-col pt-col--stock" data-label="Minimum Required Stock">
+                          {product.min_req_stock || "—"}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr className="project-table-row project-table-row--empty">
+                      <td colSpan="5">
+                        <div className="project-empty">
+                          <div className="project-empty-icon-wrap">
+                            <FaBox aria-hidden />
+                          </div>
+                          <h3>No products found</h3>
+                          <p>Add a product to get started.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <Pagination
+              showSummary
+              showItemsPerPage={false}
+              totalItems={products.length}
+              startIndex={productsStartIndex}
+              endIndex={productsEndIndex}
+              itemsPerPage={itemsPerPage}
+              currentPage={productsCurrentPage}
+              totalPages={productsTotalPages}
+              onPageChange={handleProductsPageChange}
+              position="bottom"
+            />
+          </div>
+        </section>
+
+        <section className="add-product-categories" aria-label="Categories">
+          <div className="add-product-panel-heading">
+            <h2 className="add-product-panel-title">Categories</h2>
+          </div>
+
+          <Tab.Container
+            activeKey={activeCategoryTab}
+            onSelect={(k) => setActiveCategoryTab(k || "master-types")}
+          >
+            <Nav variant="tabs" className="add-product-category-tabs">
               <Nav.Item>
                 <Nav.Link eventKey="master-types">Master Types</Nav.Link>
               </Nav.Item>
@@ -366,177 +418,149 @@ const AddProduct = ({
 
             <Tab.Content className="add-product-tab-content">
               <Tab.Pane eventKey="master-types">
-                <div className="table-wrapper-modern">
-                  <table className="inventory-table-modern lims-table">
-                    <thead>
-                      <tr>
-                        <th className="table-header-modern">ID</th>
-                        <th className="table-header-modern">Name</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentCategories.length > 0 ? (
-                        currentCategories.map((type) => (
-                          <tr key={type.id} className="data-row-modern">
-                            <td className="table-cell-modern">{type.id}</td>
-                            <td className="table-cell-modern">{type.name}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="2" className="no-data-cell-modern">
-                            No master types found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                {renderCategoryTable(
+                  [
+                    { key: "id", label: "ID", colClass: "pt-col--id", render: (type) => type.id },
+                    { key: "name", label: "Name", colClass: "pt-col--name", render: (type) => type.name },
+                  ],
+                  currentCategories.map((type) => ({
+                    key: type.id,
+                    data: type,
+                  })),
+                  "No master types found."
+                )}
               </Tab.Pane>
 
               <Tab.Pane eventKey="locations">
-                <div className="table-wrapper-modern">
-                  <table className="inventory-table-modern lims-table">
-                    <thead>
-                      <tr>
-                        <th className="table-header-modern">ID</th>
-                        <th className="table-header-modern">Location</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentCategories.length > 0 ? (
-                        currentCategories.map((location) => (
-                          <tr key={location.id} className="data-row-modern">
-                            <td className="table-cell-modern">{location.id}</td>
-                            <td className="table-cell-modern">{location.location}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="2" className="no-data-cell-modern">
-                            No locations found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                {renderCategoryTable(
+                  [
+                    { key: "id", label: "ID", colClass: "pt-col--id", render: (loc) => loc.id },
+                    {
+                      key: "location",
+                      label: "Location",
+                      colClass: "pt-col--location",
+                      render: (loc) => loc.location,
+                    },
+                  ],
+                  currentCategories.map((location) => ({
+                    key: location.id,
+                    data: location,
+                  })),
+                  "No locations found."
+                )}
               </Tab.Pane>
 
               <Tab.Pane eventKey="manufacturers">
-                <div className="table-wrapper-modern">
-                  <table className="inventory-table-modern lims-table">
-                    <thead>
-                      <tr>
-                        <th className="table-header-modern">ID</th>
-                        <th className="table-header-modern">Manufacturer</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentCategories.length > 0 ? (
-                        currentCategories.map((manufacturer) => (
-                          <tr key={manufacturer.id} className="data-row-modern">
-                            <td className="table-cell-modern">{manufacturer.id}</td>
-                            <td className="table-cell-modern">{manufacturer.manufacturer}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="2" className="no-data-cell-modern">
-                            No manufacturers found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                {renderCategoryTable(
+                  [
+                    { key: "id", label: "ID", colClass: "pt-col--id", render: (m) => m.id },
+                    {
+                      key: "manufacturer",
+                      label: "Manufacturer",
+                      colClass: "pt-col--manufacturer",
+                      render: (m) => m.manufacturer,
+                    },
+                  ],
+                  currentCategories.map((manufacturer) => ({
+                    key: manufacturer.id,
+                    data: manufacturer,
+                  })),
+                  "No manufacturers found."
+                )}
               </Tab.Pane>
 
               <Tab.Pane eventKey="suppliers">
-                <div className="table-wrapper-modern">
-                  <table className="inventory-table-modern lims-table">
-                    <thead>
-                      <tr>
-                        <th className="table-header-modern">ID</th>
-                        <th className="table-header-modern">Supplier</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentCategories.length > 0 ? (
-                        currentCategories.map((supplier) => (
-                          <tr key={supplier.id} className="data-row-modern">
-                            <td className="table-cell-modern">{supplier.id}</td>
-                            <td className="table-cell-modern">{supplier.supplier}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="2" className="no-data-cell-modern">
-                            No suppliers found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                {renderCategoryTable(
+                  [
+                    { key: "id", label: "ID", colClass: "pt-col--id", render: (s) => s.id },
+                    {
+                      key: "supplier",
+                      label: "Supplier",
+                      colClass: "pt-col--supplier",
+                      render: (s) => s.supplier,
+                    },
+                  ],
+                  currentCategories.map((supplier) => ({
+                    key: supplier.id,
+                    data: supplier,
+                  })),
+                  "No suppliers found."
+                )}
               </Tab.Pane>
 
               <Tab.Pane eventKey="units">
-                <div className="table-wrapper-modern">
-                  <table className="inventory-table-modern lims-table">
-                    <thead>
-                      <tr>
-                        <th className="table-header-modern">ID</th>
-                        <th className="table-header-modern">Unit Measure</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {currentCategories.length > 0 ? (
-                        currentCategories.map((unit) => (
-                          <tr key={unit.id} className="data-row-modern">
-                            <td className="table-cell-modern">{unit.id}</td>
-                            <td className="table-cell-modern">{unit.unit_measure}</td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="2" className="no-data-cell-modern">
-                            No units found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                {renderCategoryTable(
+                  [
+                    { key: "id", label: "ID", colClass: "pt-col--id", render: (u) => u.id },
+                    {
+                      key: "unit_measure",
+                      label: "Unit Measure",
+                      colClass: "pt-col--unit",
+                      render: (u) => u.unit_measure,
+                    },
+                  ],
+                  currentCategories.map((unit) => ({
+                    key: unit.id,
+                    data: unit,
+                  })),
+                  "No units found."
+                )}
               </Tab.Pane>
             </Tab.Content>
           </Tab.Container>
-          {/* Categories Pagination */}
+
           <Pagination
+            showSummary
+            showItemsPerPage={false}
+            totalItems={categoryData.length}
+            startIndex={categoriesStartIndex}
+            endIndex={categoriesEndIndex}
+            itemsPerPage={itemsPerPage}
             currentPage={categoriesCurrentPage}
             totalPages={categoriesTotalPages}
             onPageChange={handleCategoriesPageChange}
             position="bottom"
+            className="add-product-categories-pagination"
           />
-        </div>
+        </section>
       </div>
-      </div>
-      </ContentCard>
-      </PageBody>
 
-      {/* Add Category Modal */}
-      <Modal show={showCategoryModal} onHide={handleCloseCategoryModal} centered>
-        <Modal.Header closeButton className="add-product-modal-header">
-          <Modal.Title>Add Category</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="add-product-modal-body">
-          <Form>
-            <Form.Group className="mb-3">
+      <Modal
+        show={showCategoryModal}
+        onHide={handleCloseCategoryModal}
+        size="sm"
+        scrollable
+        centered
+        backdrop="static"
+        dialogClassName="project-modal project-modal--form"
+        contentClassName="project-modal-content"
+        aria-labelledby="add-category-modal-title"
+      >
+        <div className="project-modal-header">
+          <button
+            type="button"
+            className="project-modal-close"
+            onClick={handleCloseCategoryModal}
+            aria-label="Close"
+          >
+            <FaTimes aria-hidden />
+          </button>
+          <h2 id="add-category-modal-title" className="project-modal-title">
+            Add Category
+          </h2>
+          <p className="project-modal-description">
+            Add a master type, location, manufacturer, or supplier.
+          </p>
+        </div>
+        <Modal.Body className="project-modal-body">
+          <Form className="project-modal-form">
+            <Form.Group className="project-field">
               <Form.Label>Select Category</Form.Label>
-              <select
+              <Form.Select
                 value={selectedCategory}
-                className="form-control add-product-form-control-modern"
-                style={{ borderColor: errorMessages.category ? "red" : "#e2e8f0" }}
+                className={`project-field-input${
+                  errorMessages.category ? " project-field-input--error" : ""
+                }`}
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
                   setErrorMessages((prev) => ({ ...prev, category: "" }));
@@ -547,23 +571,20 @@ const AddProduct = ({
                 <option value="Location">Location</option>
                 <option value="Manufacturer">Manufacturer</option>
                 <option value="Supplier">Supplier</option>
-              </select>
-              {errorMessages.category && (
-                <span style={{ color: "red", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>
-                  {errorMessages.category}
-                </span>
-              )}
+              </Form.Select>
+              {renderFieldError(errorMessages.category)}
             </Form.Group>
 
             {selectedCategory && (
-              <Form.Group className="mb-3">
+              <Form.Group className="project-field">
                 <Form.Label>{selectedCategory} Name</Form.Label>
                 <Form.Control
                   type="text"
                   value={inputValue}
                   placeholder={`Enter ${selectedCategory} name`}
-                  className="add-product-form-control-modern"
-                  style={{ borderColor: errorMessages.category ? "red" : "#e2e8f0" }}
+                  className={`project-field-input${
+                    errorMessages.category ? " project-field-input--error" : ""
+                  }`}
                   onChange={(e) => {
                     setInputValue(e.target.value);
                     setErrorMessages((prev) => ({ ...prev, category: "" }));
@@ -571,33 +592,65 @@ const AddProduct = ({
                 />
               </Form.Group>
             )}
+
+            <div className="project-modal-form-actions">
+              <button
+                type="button"
+                className="project-btn project-btn-outline"
+                onClick={handleCloseCategoryModal}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="project-btn project-btn-primary"
+                onClick={handleCategorySubmit}
+              >
+                Add {selectedCategory || "Category"}
+              </button>
+            </div>
           </Form>
         </Modal.Body>
-        <Modal.Footer className="add-product-modal-footer">
-          <Button variant="outline-secondary" onClick={handleCloseCategoryModal}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleCategorySubmit}>
-            Add {selectedCategory || "Category"}
-          </Button>
-        </Modal.Footer>
       </Modal>
 
-      {/* Add Product Modal */}
-      <Modal show={showProductModal} onHide={handleCloseProductModal} size="lg" scrollable>
-        <Modal.Header closeButton className="add-product-modal-header">
-          <Modal.Title>Add Product</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="add-product-modal-body">
-          <Form>
+      <Modal
+        show={showProductModal}
+        onHide={handleCloseProductModal}
+        size="lg"
+        scrollable
+        centered
+        backdrop="static"
+        dialogClassName="project-modal project-modal--wide"
+        contentClassName="project-modal-content"
+        aria-labelledby="add-product-modal-title"
+      >
+        <div className="project-modal-header">
+          <button
+            type="button"
+            className="project-modal-close"
+            onClick={handleCloseProductModal}
+            aria-label="Close"
+          >
+            <FaTimes aria-hidden />
+          </button>
+          <h2 id="add-product-modal-title" className="project-modal-title">
+            Add Product
+          </h2>
+          <p className="project-modal-description">
+            Define item details, master type, units, and minimum stock level.
+          </p>
+        </div>
+        <Modal.Body className="project-modal-body">
+          <Form className="project-modal-form">
             <Row>
-              <Col>
-                <Form.Group className="mb-3">
+              <Col md={6}>
+                <Form.Group className="project-field">
                   <Form.Label>Master Type</Form.Label>
-                  <select
+                  <Form.Select
                     value={masterType}
-                    className="form-control add-product-form-control-modern"
-                    style={{ borderColor: errorMessages.masterType ? "red" : "#e2e8f0" }}
+                    className={`project-field-input${
+                      errorMessages.masterType ? " project-field-input--error" : ""
+                    }`}
                     onChange={(e) => {
                       setMasterType(e.target.value);
                       setErrorMessages((prev) => ({ ...prev, masterType: "" }));
@@ -609,115 +662,108 @@ const AddProduct = ({
                         {type.name}
                       </option>
                     ))}
-                  </select>
-                  {errorMessages.masterType && (
-                    <span style={{ color: "red", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>
-                      {errorMessages.masterType}
-                    </span>
-                  )}
+                  </Form.Select>
+                  {renderFieldError(errorMessages.masterType)}
                 </Form.Group>
               </Col>
-              <Col>
-                <Form.Group className="mb-3">
+              <Col md={6}>
+                <Form.Group className="project-field">
                   <Form.Label>Unit</Form.Label>
                   <Form.Control
                     type="text"
                     value={units}
                     placeholder="Enter unit"
-                    className="add-product-form-control-modern"
-                    style={{ borderColor: errorMessages.units ? "red" : "#e2e8f0" }}
+                    className={`project-field-input${
+                      errorMessages.units ? " project-field-input--error" : ""
+                    }`}
                     onChange={(e) => {
                       setUnits(e.target.value);
                       setErrorMessages((prev) => ({ ...prev, units: "" }));
                     }}
                   />
-                  {errorMessages.units && (
-                    <span style={{ color: "red", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>
-                      {errorMessages.units}
-                    </span>
-                  )}
+                  {renderFieldError(errorMessages.units)}
                 </Form.Group>
               </Col>
             </Row>
 
             <Row>
-              <Col>
-                <Form.Group className="mb-3">
+              <Col md={6}>
+                <Form.Group className="project-field">
                   <Form.Label>Item Name</Form.Label>
                   <Form.Control
                     type="text"
                     value={itemName}
                     placeholder="Enter item name"
-                    className="add-product-form-control-modern"
-                    style={{ borderColor: errorMessages.itemName ? "red" : "#e2e8f0" }}
+                    className={`project-field-input${
+                      errorMessages.itemName ? " project-field-input--error" : ""
+                    }`}
                     onChange={(e) => {
                       setItemName(e.target.value);
                       setErrorMessages((prev) => ({ ...prev, itemName: "" }));
                     }}
                   />
-                  {errorMessages.itemName && (
-                    <span style={{ color: "red", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>
-                      {errorMessages.itemName}
-                    </span>
-                  )}
+                  {renderFieldError(errorMessages.itemName)}
                 </Form.Group>
               </Col>
-              <Col>
-                <Form.Group className="mb-3">
+              <Col md={6}>
+                <Form.Group className="project-field">
                   <Form.Label>Item Code</Form.Label>
                   <Form.Control
                     type="text"
                     value={itemCode}
                     placeholder="Enter item code"
-                    className="add-product-form-control-modern"
-                    style={{ borderColor: errorMessages.itemCode ? "red" : "#e2e8f0" }}
+                    className={`project-field-input${
+                      errorMessages.itemCode ? " project-field-input--error" : ""
+                    }`}
                     onChange={(e) => {
                       setItemCode(e.target.value);
                       setErrorMessages((prev) => ({ ...prev, itemCode: "" }));
                     }}
                   />
-                  {errorMessages.itemCode && (
-                    <span style={{ color: "red", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>
-                      {errorMessages.itemCode}
-                    </span>
-                  )}
+                  {renderFieldError(errorMessages.itemCode)}
                 </Form.Group>
               </Col>
             </Row>
 
             <Row>
-              <Col>
-                <Form.Group className="mb-3">
+              <Col md={6}>
+                <Form.Group className="project-field">
                   <Form.Label>Minimum Required Stock</Form.Label>
                   <Form.Control
                     type="number"
                     value={reqStock}
                     placeholder="Enter minimum stock"
-                    className="add-product-form-control-modern"
-                    style={{ borderColor: errorMessages.reqStock ? "red" : "#e2e8f0" }}
+                    className={`project-field-input${
+                      errorMessages.reqStock ? " project-field-input--error" : ""
+                    }`}
                     onChange={(e) => {
                       setReqStock(e.target.value);
                       setErrorMessages((prev) => ({ ...prev, reqStock: "" }));
                     }}
                   />
-                  {errorMessages.reqStock && (
-                    <span style={{ color: "red", fontSize: "0.85rem", marginTop: "4px", display: "block" }}>
-                      {errorMessages.reqStock}
-                    </span>
-                  )}
+                  {renderFieldError(errorMessages.reqStock)}
                 </Form.Group>
               </Col>
             </Row>
+
+            <div className="project-modal-form-actions">
+              <button
+                type="button"
+                className="project-btn project-btn-outline"
+                onClick={handleCloseProductModal}
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                className="project-btn project-btn-primary"
+                onClick={handleProductSubmit}
+              >
+                Add Product
+              </button>
+            </div>
           </Form>
         </Modal.Body>
-        <Modal.Footer className="add-product-modal-footer">
-          <Button variant="outline-secondary" onClick={handleCloseProductModal}>
-            Close
-          </Button>
-          <Button variant="success" onClick={handleProductSubmit}>
-            Add Product
-          </Button>
-        </Modal.Footer>
       </Modal>
     </PageLayout>
   );

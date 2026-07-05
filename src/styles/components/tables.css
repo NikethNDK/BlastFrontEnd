@@ -195,3 +195,10 @@
   border-top: 1px solid var(--lims-border, #e2e8f0);
   margin-top: 0.75rem;
 }
+
+/* Admin + lab project-table — 13px body text (0.8125rem @ 16px root) */
+.lims-content .project-table tbody td,
+.lims-content-card .project-table tbody td,
+.project-table tbody td {
+  font-size: 0.8125rem !important;
+}

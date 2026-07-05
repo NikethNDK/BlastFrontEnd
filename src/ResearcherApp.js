@@ -37,6 +37,7 @@ function Layout({ userDetails }) {
       sidebar={
         <AppSidebar config={researcherMenuConfig} userDetails={userDetails} />
       }
+      workspace="admin"
     >
       <Routes>
         <Route path="/home" element={<Home userDetails={userDetails} />} />

@@ -1,0 +1,12 @@
+/* Project tab — column widths */
+
+.md-proj-page .project-table thead th.md-proj-col--code { min-width: 7rem; }
+.md-proj-page .project-table thead th.md-proj-col--name { min-width: 10rem; }
+.md-proj-page .project-table thead th.md-proj-col--status { min-width: 6.5rem; }
+
+.md-proj-page .project-table tbody td.md-proj-col--name {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

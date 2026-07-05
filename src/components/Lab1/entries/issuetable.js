@@ -1,41 +1,49 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import "./TransferredDataTable.css";
+import "./IssueDataTable.css";
 import { AiOutlineDownload } from "react-icons/ai";
+import { FaBox } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { BASE_URL } from "../../../services/AppinfoService";
 import { useSelector } from "react-redux";
-import { Button } from "react-bootstrap";
 import Pagination from "../../common/Pagination";
-import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
+import { PageLayout, PageHeader } from "../../layout/content";
 
 const IssueDataTable = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
   // Get user from Redux as fallback/primary source
   const reduxUser = useSelector((state) => state.user.user);
-  
+
   // Merge userDetails prop with Redux user data (Redux takes priority) - memoized to prevent infinite loops
   const effectiveUserDetails = useMemo(() => {
-    return reduxUser ? {
-      name: reduxUser.user_name || userDetails.name || "",
-      user_name: reduxUser.user_name || userDetails.user_name || userDetails.name || "",
-      lab: reduxUser.lab || userDetails.lab || "N/A",
-      designation: reduxUser.designation || userDetails.designation || "Not Assigned",
-      role: reduxUser.role || userDetails.role || ""
-    } : userDetails;
+    return reduxUser
+      ? {
+          name: reduxUser.user_name || userDetails.name || "",
+          user_name:
+            reduxUser.user_name ||
+            userDetails.user_name ||
+            userDetails.name ||
+            "",
+          lab: reduxUser.lab || userDetails.lab || "N/A",
+          designation:
+            reduxUser.designation || userDetails.designation || "Not Assigned",
+          role: reduxUser.role || userDetails.role || "",
+        }
+      : userDetails;
   }, [reduxUser, userDetails]);
 
   // Extract username and lab for dependency tracking
-  const username = useMemo(() => 
-    effectiveUserDetails.user_name || effectiveUserDetails.name || null,
+  const username = useMemo(
+    () => effectiveUserDetails.user_name || effectiveUserDetails.name || null,
     [effectiveUserDetails.user_name, effectiveUserDetails.name]
   );
-  const labName = useMemo(() => 
-    effectiveUserDetails.lab && effectiveUserDetails.lab !== 'N/A' 
-      ? effectiveUserDetails.lab 
-      : null,
+  const labName = useMemo(
+    () =>
+      effectiveUserDetails.lab && effectiveUserDetails.lab !== "N/A"
+        ? effectiveUserDetails.lab
+        : null,
     [effectiveUserDetails.lab]
   );
 
@@ -62,12 +70,15 @@ const IssueDataTable = ({
         params.lab = labName;
       }
 
-      console.log("🌐 [API] get_issued_data called with:", { username, lab: labName, params });
+      console.log("🌐 [API] get_issued_data called with:", {
+        username,
+        lab: labName,
+        params,
+      });
 
-      const response = await axios.get(
-        `${BASE_URL}/api/issue_data/`,
-        { params: params }
-      );
+      const response = await axios.get(`${BASE_URL}/api/issue_data/`, {
+        params: params,
+      });
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -151,142 +162,222 @@ const IssueDataTable = ({
   };
 
   const tableHeadings = [
-    { label: "Entry No", key: "entry_no", className: "entry-no-column" },
-    { label: "Item Name", key: "item_name", className: "item-name-column" },
-    { label: "Item Code", key: "item_code", className: "item-code-column" },
-    { label: "Quantity Issued", key: "quantity_issued", className: "quantity-column" },
-    { label: "Issued To", key: "researcher_name", className: "supplier-column" },
-    { label: "Issued Date", key: "issue_date", className: "date-column" },
-    { label: "Master Type", key: "master_type", className: "batch-column" },
-    { label: "Project Name", key: "project_name", className: "project-column" },
-    { label: "Project Code", key: "project_code", className: "catalogue-column" },
-    { label: "Remarks", key: "remarks", className: "remarks-column" },
+    { label: "Entry No", key: "entry_no", colClass: "idt-col--entry" },
+    { label: "Item Name", key: "item_name", colClass: "idt-col--name" },
+    { label: "Item Code", key: "item_code", colClass: "idt-col--code" },
+    { label: "Quantity Issued", key: "quantity_issued", colClass: "idt-col--qty" },
+    { label: "Issued To", key: "researcher_name", colClass: "idt-col--issued-to" },
+    { label: "Issued Date", key: "issue_date", colClass: "idt-col--date" },
+    { label: "Master Type", key: "master_type", colClass: "idt-col--master-type" },
+    { label: "Project Name", key: "project_name", colClass: "idt-col--project" },
+    { label: "Project Code", key: "project_code", colClass: "idt-col--project-code" },
+    { label: "Remarks", key: "remarks", colClass: "idt-col--remarks" },
   ];
+
+  const hasActiveFilters =
+    Object.values(filters).some((v) => v) || fromDate || toDate;
 
   return (
     <PageLayout>
       <PageHeader
         title="Issued data"
         actions={
-          <Button
-            variant="secondary"
+          <button
+            type="button"
+            className="lims-header-btn"
             onClick={handleDownload}
             title="Download Excel"
           >
-            <AiOutlineDownload size={18} style={{ marginRight: "4px" }} />
+            <AiOutlineDownload aria-hidden />
             Download
-          </Button>
+          </button>
         }
       />
-      <PageBody>
-      <ContentCard flush>
-        {/* Total Summary */}
-        <div className="total-summary" style={{ 
-          marginBottom: "1rem", 
-          padding: "1rem", 
-          backgroundColor: "#f7f9fc", 
-          borderRadius: "6px", 
-          display: "flex", 
-          justifyContent: "center",
-          fontWeight: "600"
-        }}>
-          <p>
-            <strong>Total Quantity Issued:</strong> {totalQuantityIssued}
-          </p>
+
+      <div className="issue-data-page">
+        <div className="project-stats" role="list">
+          <div className="project-stat-card" role="listitem">
+            <div className="project-stat-icon project-stat-icon--total">
+              <FaBox aria-hidden />
+            </div>
+            <div className="project-stat-content">
+              <span className="project-stat-value">{totalQuantityIssued}</span>
+              <span className="project-stat-label">Total Quantity Issued</span>
+            </div>
+          </div>
         </div>
 
-        <div className="issued-table-container">
-          {/* Table Wrapper */}
-          <div className="issued-table-wrapper">
-            <table className="issued-data-table">
-            <thead>
-              <tr>
-                {tableHeadings.map(({ label, key, className }, index) => (
-                  <th
-                    key={index}
-                    className={`table-header ${className}`}
-                  >
-                    {label}
-                    {key === "issue_date" ? (
-                      <>
-                        <br />
-                        <div className="date-filter-container">
-                          <div className="date-filter-row">
-                            <label className="date-filter-label">From:</label>
-                            <input
-                              type="date"
-                              value={fromDate}
-                              onChange={(e) => handleDateChange(e, "from")}
-                              className="date-filter-input"
-                            />
-                          </div>
-                          <div className="date-filter-row">
-                            <label className="date-filter-label">To:</label>
-                            <input
-                              type="date"
-                              value={toDate}
-                              onChange={(e) => handleDateChange(e, "to")}
-                              className="date-filter-input"
-                            />
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <br />
-                        <input
-                          type="text"
-                          placeholder="Filter"
-                          className="filter-input"
-                          value={filters[key] || ""}
-                          onChange={(e) => handleFilterChange(e, key)}
-                        />
-                      </>
-                    )}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {currentData.length > 0 ? (
-                currentData.map((item) => (
-                  <tr key={item.entry_no || item.id}>
-                    <td className="table-cell entry-no-column">{item.entry_no}</td>
-                    <td className="table-cell item-name-column">{item.item_name}</td>
-                    <td className="table-cell item-code-column">{item.item_code}</td>
-                    <td className="table-cell quantity-column">{item.quantity_issued}</td>
-                    <td className="table-cell supplier-column">{item.researcher_name}</td>
-                    <td className="table-cell date-column">{item.issue_date}</td>
-                    <td className="table-cell batch-column">{item.master_type}</td>
-                    <td className="table-cell project-column">{item.project_name}</td>
-                    <td className="table-cell catalogue-column">{item.project_code}</td>
-                    <td className="table-cell remarks-column">{item.remarks}</td>
+        <section className="project-panel" aria-label="Issued data list">
+          <div className="project-table-section">
+            <div className="project-table-shell">
+              <table className="project-table">
+                <thead>
+                  <tr className="project-thead-labels">
+                    {tableHeadings.map(({ label, key, colClass }) => (
+                      <th
+                        key={key}
+                        scope="col"
+                        className={`project-th-label-cell idt-col ${colClass}`}
+                      >
+                        {label}
+                      </th>
+                    ))}
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="10" className="no-data-state">
-                    No records found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                  <tr className="project-thead-filters">
+                    {tableHeadings.map(({ label, key, colClass }) => (
+                      <th
+                        key={key}
+                        scope="col"
+                        className={`project-th-filter-cell idt-col ${colClass}`}
+                      >
+                        {key === "issue_date" ? (
+                          <div className="project-date-filters">
+                            <div className="project-date-filter-row">
+                              <span className="project-date-filter-label">
+                                From:
+                              </span>
+                              <input
+                                type="date"
+                                value={fromDate}
+                                onChange={(e) => handleDateChange(e, "from")}
+                                className="project-date-filter"
+                                aria-label="Filter issued date from"
+                              />
+                            </div>
+                            <div className="project-date-filter-row">
+                              <span className="project-date-filter-label">
+                                To:
+                              </span>
+                              <input
+                                type="date"
+                                value={toDate}
+                                onChange={(e) => handleDateChange(e, "to")}
+                                className="project-date-filter"
+                                aria-label="Filter issued date to"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <input
+                            type="text"
+                            placeholder="Filter"
+                            className="project-col-filter"
+                            value={filters[key] || ""}
+                            onChange={(e) => handleFilterChange(e, key)}
+                            aria-label={`Filter by ${label}`}
+                          />
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentData.length === 0 ? (
+                    <tr className="project-table-row project-table-row--empty">
+                      <td colSpan="10">
+                        <div className="project-empty">
+                          <div className="project-empty-icon-wrap">
+                            <FaBox aria-hidden />
+                          </div>
+                          <h3>
+                            {hasActiveFilters
+                              ? "No records found"
+                              : "No issued data available"}
+                          </h3>
+                          <p>
+                            {hasActiveFilters
+                              ? "Try adjusting your column filters."
+                              : "Issued items will appear here once recorded."}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    currentData.map((item) => (
+                      <tr key={item.entry_no || item.id} className="project-table-row">
+                        <td className="idt-col idt-col--entry" data-label="Entry No">
+                          <span className="issue-entry-no">
+                            {item.entry_no || "—"}
+                          </span>
+                        </td>
+                        <td className="idt-col idt-col--name" data-label="Item Name">
+                          <span className="issue-item-name">
+                            {item.item_name || "—"}
+                          </span>
+                        </td>
+                        <td className="idt-col idt-col--code" data-label="Item Code">
+                          {item.item_code ? (
+                            <span>{item.item_code}</span>
+                          ) : (
+                            <span className="issue-cell-muted">—</span>
+                          )}
+                        </td>
+                        <td className="idt-col idt-col--qty" data-label="Quantity Issued">
+                          {item.quantity_issued ?? "—"}
+                        </td>
+                        <td className="idt-col idt-col--issued-to" data-label="Issued To">
+                          {item.researcher_name ? (
+                            <span>{item.researcher_name}</span>
+                          ) : (
+                            <span className="issue-cell-muted">—</span>
+                          )}
+                        </td>
+                        <td className="idt-col idt-col--date" data-label="Issued Date">
+                          {item.issue_date ? (
+                            <span>{item.issue_date}</span>
+                          ) : (
+                            <span className="issue-cell-muted">—</span>
+                          )}
+                        </td>
+                        <td className="idt-col idt-col--master-type" data-label="Master Type">
+                          {item.master_type ? (
+                            <span>{item.master_type}</span>
+                          ) : (
+                            <span className="issue-cell-muted">—</span>
+                          )}
+                        </td>
+                        <td className="idt-col idt-col--project" data-label="Project Name">
+                          {item.project_name ? (
+                            <span>{item.project_name}</span>
+                          ) : (
+                            <span className="issue-cell-muted">—</span>
+                          )}
+                        </td>
+                        <td className="idt-col idt-col--project-code" data-label="Project Code">
+                          {item.project_code ? (
+                            <span>{item.project_code}</span>
+                          ) : (
+                            <span className="issue-cell-muted">—</span>
+                          )}
+                        </td>
+                        <td className="idt-col idt-col--remarks" data-label="Remarks">
+                          {item.remarks ? (
+                            <span>{item.remarks}</span>
+                          ) : (
+                            <span className="issue-cell-muted">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            totalItems={filteredData.length}
-            position="bottom"
-          />
-        )}
+            <Pagination
+              showSummary
+              totalItems={filteredData.length}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              position="bottom"
+            />
+          </div>
+        </section>
       </div>
-      </ContentCard>
-      </PageBody>
     </PageLayout>
   );
 };

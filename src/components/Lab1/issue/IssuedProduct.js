@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Modal, Col, Row, Form, Button } from "react-bootstrap";
+import { Modal, Col, Row, Form } from "react-bootstrap";
+import { FaTimes } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import {
@@ -21,11 +22,11 @@ import {
   acceptTempIssueApi,
   getTempIssueApi,
 } from "../../../services/AppinfoService";
-import "../../inventory/formBorder.css";
 import Select from "react-select";
 import TempIssueTable from "./TempIssueTable";
 import { BASE_URL } from "../../../services/AppinfoService";
-import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
+import { PageLayout, PageHeader } from "../../layout/content";
+import "./IssuedProduct.css";
 
 const IssuedProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -914,471 +915,492 @@ const IssuedProduct = ({
     }
   };
 
+  const selectControlStyles = (hasError) => ({
+    control: (provided) => ({
+      ...provided,
+      borderColor: hasError ? "#dc2626" : "#e2e8f0",
+      minHeight: "2.25rem",
+      borderRadius: "0.5rem",
+      boxShadow: "none",
+    }),
+  });
+
   return (
     <PageLayout>
       <PageHeader
         title="Add issue"
         actions={
           <>
-            <Button
+            <button
+              type="button"
+              className="lims-header-btn"
               onClick={handleTransferData}
               disabled={tableItemCount === 0}
               title="Accept LAB-OPEN items and transfer LAB-ACT items"
             >
               Submit
-            </Button>
-            <Button variant="primary" onClick={handleShow}>
+            </button>
+            <button
+              type="button"
+              className="lims-header-btn"
+              onClick={handleShow}
+            >
               Add
-            </Button>
+            </button>
           </>
         }
       />
-      <PageBody>
-      <ContentCard flush>
-        <TempIssueTable 
-          onEdit={openIssueEditor} 
-          username={effectiveUserDetails.user_name || null}
-          onItemCountChange={setTableItemCount}
-        />
-      </ContentCard>
-      </PageBody>
 
-      {/* --- Modal Component for Add Issue Form --- */}
-      <Modal show={showModal} onHide={handleClose} size="xl" scrollable className="modal-xl">
-        <Modal.Header closeButton>
-          <Modal.Title>{isEditMode ? "Edit Issue Item" : "Add Issue Item"}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
-            <Col sm={12}>
-              <Form ref={formRef}>
-                <Row>
-                  <Col>
-                    <Form.Group controlId="masterType">
-                      <Form.Label style={{ marginRight: "8px" }}>
-                        Master Type
-                      </Form.Label>
-                      <select
-                        value={masterType}
-                        className="form-control"
-                        style={{
-                          borderColor: errorMessages.masterType ? "red" : "black",
-                        }}
-                        onChange={(e) => {
-                          setMasterType(e.target.value);
-                          if (errorMessages.masterType && e.target.value) {
-                            setErrorMessages((prev) => ({
-                              ...prev,
-                              masterType: "",
-                            }));
-                          }
-                        }}
-                      >
-                        <option value="">Select Master Type</option>
-                        {masterTypes.map((type) => (
-                          <option key={type.id} value={type.name}>
-                            {type.name}
-                          </option>
-                        ))}
-                      </select>
-                      {errorMessages.masterType && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.masterType}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
+      <div className="issued-product-page">
+        <section className="project-panel" aria-label="Staged issue items">
+          <TempIssueTable
+            onEdit={openIssueEditor}
+            username={effectiveUserDetails.user_name || null}
+            onItemCountChange={setTableItemCount}
+          />
+        </section>
+      </div>
 
-                  <Col>
-                    <Form.Group controlId="itemCode">
-                      <Form.Label>Item Code</Form.Label>
-                      <Select
-                        options={itemsCodes.map((item) => ({
-                          value: item.value,
-                          label: item.label,
-                        }))}
-                        value={selectedItemCode}
-                        onChange={(selected) => {
-                          handleItemCodeChange(selected);
-                          if (errorMessages.itemCode && selected) {
-                            setErrorMessages((prev) => ({
-                              ...prev,
-                              itemCode: "",
-                            }));
-                          }
-                        }}
-                        placeholder="Select Item Code"
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.itemCode ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.itemCode && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.itemCode}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
+      <Modal
+        show={showModal}
+        onHide={handleClose}
+        size="lg"
+        scrollable
+        centered
+        backdrop="static"
+        dialogClassName="project-modal project-modal--wide issued-product-modal"
+        contentClassName="project-modal-content"
+        aria-labelledby="issue-form-modal-title"
+      >
+        <div className="project-modal-header">
+          <button
+            type="button"
+            className="project-modal-close"
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            <FaTimes aria-hidden />
+          </button>
+          <h2 id="issue-form-modal-title" className="project-modal-title">
+            {isEditMode ? "Edit Issue Item" : "Add Issue Item"}
+          </h2>
+          <p className="project-modal-description">
+            {isEditMode
+              ? "Update the staged issue details before submitting to the researcher."
+              : "Stage an item for issue to a researcher."}
+          </p>
+        </div>
+        <Modal.Body className="project-modal-body">
+          <Form ref={formRef} className="project-modal-form">
+            <Row>
+              <Col md={4}>
+                <Form.Group controlId="masterType" className="project-field">
+                  <Form.Label>Master Type</Form.Label>
+                  <Form.Select
+                    value={masterType}
+                    className={`project-field-input${errorMessages.masterType ? " project-field-input--error" : ""}`}
+                    onChange={(e) => {
+                      setMasterType(e.target.value);
+                      if (errorMessages.masterType && e.target.value) {
+                        setErrorMessages((prev) => ({
+                          ...prev,
+                          masterType: "",
+                        }));
+                      }
+                    }}
+                  >
+                    <option value="">Select Master Type</option>
+                    {masterTypes.map((type) => (
+                      <option key={type.id} value={type.name}>
+                        {type.name}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  {errorMessages.masterType && (
+                    <span className="project-field-error">
+                      {errorMessages.masterType}
+                    </span>
+                  )}
+                </Form.Group>
+              </Col>
 
-                  <Col>
-                    <Form.Group controlId="itemName">
-                      <Form.Label>Item Name</Form.Label>
-                      <Select
-                        options={itemsNames.map((item) => ({
-                          value: item.value,
-                          label: item.label,
-                        }))}
-                        value={selectedItemName}
-                        onChange={(selected) => {
-                          setSelectedItemName(selected);
-                          if (errorMessages.itemName && selected) {
-                            setErrorMessages((prev) => ({
-                              ...prev,
-                              itemName: "",
-                            }));
-                          }
-                        }}
-                        placeholder="Select Item Name"
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.itemName ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.itemName && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.itemName}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                </Row>
+              <Col md={4}>
+                <Form.Group controlId="itemCode" className="issue-select-field">
+                  <Form.Label>Item Code</Form.Label>
+                  <Select
+                    options={itemsCodes.map((item) => ({
+                      value: item.value,
+                      label: item.label,
+                    }))}
+                    value={selectedItemCode}
+                    onChange={(selected) => {
+                      handleItemCodeChange(selected);
+                      if (errorMessages.itemCode && selected) {
+                        setErrorMessages((prev) => ({
+                          ...prev,
+                          itemCode: "",
+                        }));
+                      }
+                    }}
+                    placeholder="Select Item Code"
+                    styles={selectControlStyles(!!errorMessages.itemCode)}
+                  />
+                  {errorMessages.itemCode && (
+                    <span className="project-field-error">
+                      {errorMessages.itemCode}
+                    </span>
+                  )}
+                </Form.Group>
+              </Col>
 
-                <p></p>
+              <Col md={4}>
+                <Form.Group controlId="itemName" className="issue-select-field">
+                  <Form.Label>Item Name</Form.Label>
+                  <Select
+                    options={itemsNames.map((item) => ({
+                      value: item.value,
+                      label: item.label,
+                    }))}
+                    value={selectedItemName}
+                    onChange={(selected) => {
+                      setSelectedItemName(selected);
+                      if (errorMessages.itemName && selected) {
+                        setErrorMessages((prev) => ({
+                          ...prev,
+                          itemName: "",
+                        }));
+                      }
+                    }}
+                    placeholder="Select Item Name"
+                    styles={selectControlStyles(!!errorMessages.itemName)}
+                  />
+                  {errorMessages.itemName && (
+                    <span className="project-field-error">
+                      {errorMessages.itemName}
+                    </span>
+                  )}
+                </Form.Group>
+              </Col>
+            </Row>
 
-                <Row>
-                  <Col>
-                    <Form.Group controlId="project">
-                      <Form.Label>Project Name</Form.Label>
-                      <Form.Control
-                        as="select"
-                        name="project"
-                        required
-                        style={{ border: "1px solid black" }}
-                        value={selectedProject}
-                        onChange={handleProjectChange}
-                      >
-                        <option value="">Select Project</option>
-                        {projects.map((proj) => (
-                          <option key={proj.value} value={proj.value}>
-                            {proj.label}
-                          </option>
-                        ))}
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="projectCode">
-                      <Form.Label>Project Code</Form.Label>
-                      <Select
-                        value={selectedCodes}
-                        placeholder="Select Project Code"
-                        onChange={(option) => {
-                          handleProjectCodeChange(option);
-                          if (errorMessages.projectCode && option) {
-                            setErrorMessages((prev) => ({
-                              ...prev,
-                              projectCode: "",
-                            }));
-                          }
-                        }}
-                        options={projects.map((proj) => ({
-                          value: proj.code,
-                          label: proj.code,
-                        }))}
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.projectCode ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.projectCode && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.projectCode}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
+            <Row>
+              <Col md={4}>
+                <Form.Group controlId="project" className="project-field">
+                  <Form.Label>Project Name</Form.Label>
+                  <Form.Select
+                    name="project"
+                    required
+                    className={`project-field-input${errorMessages.project ? " project-field-input--error" : ""}`}
+                    value={selectedProject}
+                    onChange={handleProjectChange}
+                  >
+                    <option value="">Select Project</option>
+                    {projects.map((proj) => (
+                      <option key={proj.value} value={proj.value}>
+                        {proj.label}
+                      </option>
+                    ))}
+                  </Form.Select>
+                  {errorMessages.project && (
+                    <span className="project-field-error">
+                      {errorMessages.project}
+                    </span>
+                  )}
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group controlId="projectCode" className="issue-select-field">
+                  <Form.Label>Project Code</Form.Label>
+                  <Select
+                    value={selectedCodes}
+                    placeholder="Select Project Code"
+                    onChange={(option) => {
+                      handleProjectCodeChange(option);
+                      if (errorMessages.projectCode && option) {
+                        setErrorMessages((prev) => ({
+                          ...prev,
+                          projectCode: "",
+                        }));
+                      }
+                    }}
+                    options={projects.map((proj) => ({
+                      value: proj.code,
+                      label: proj.code,
+                    }))}
+                    styles={selectControlStyles(!!errorMessages.projectCode)}
+                  />
+                  {errorMessages.projectCode && (
+                    <span className="project-field-error">
+                      {errorMessages.projectCode}
+                    </span>
+                  )}
+                </Form.Group>
+              </Col>
 
-                  <Col>
-                    <Form.Group controlId="researcherName">
-                      <Form.Label>Issued to</Form.Label>
-                      <Select
-                        options={resNames}
-                        value={selectedNames}
-                        onChange={(selectedOption) => {
-                          setSelectedNames(selectedOption);
+              <Col md={4}>
+                <Form.Group controlId="researcherName" className="issue-select-field">
+                  <Form.Label>Issued to</Form.Label>
+                  <Select
+                    options={resNames}
+                    value={selectedNames}
+                    onChange={(selectedOption) => {
+                      setSelectedNames(selectedOption);
 
-                          if (errorMessages.researcherName && selectedOption) {
-                            setErrorMessages((prev) => ({
-                              ...prev,
-                              researcherName: "",
-                            }));
-                          }
-                        }}
-                        placeholder="Select Researcher Name"
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.researcherName
-                              ? "red"
-                              : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.researcherName && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.researcherName}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                </Row>
+                      if (errorMessages.issuedTo && selectedOption) {
+                        setErrorMessages((prev) => ({
+                          ...prev,
+                          issuedTo: "",
+                        }));
+                      }
+                    }}
+                    placeholder="Select Researcher Name"
+                    styles={selectControlStyles(!!errorMessages.issuedTo)}
+                  />
+                  {errorMessages.issuedTo && (
+                    <span className="project-field-error">
+                      {errorMessages.issuedTo}
+                    </span>
+                  )}
+                </Form.Group>
+              </Col>
+            </Row>
 
-                <p></p>
+            <Row>
+              <Col md={4}>
+                <Form.Group controlId="expiryDate" className="issue-select-field">
+                  <Form.Label>Expiry Date</Form.Label>
+                  <Select
+                    options={expiryDates}
+                    value={selectedExpiryDate}
+                    onChange={(selectedOption) => {
+                      setSelectedExpiryDate(selectedOption);
+                      if (errorMessages.expiryDate && selectedOption) {
+                        setErrorMessages((prev) => ({
+                          ...prev,
+                          expiryDate: "",
+                        }));
+                      }
+                    }}
+                    placeholder={
+                      expiryDates.length > 0
+                        ? "Select Expiry Date"
+                        : "No expiry dates available"
+                    }
+                    isDisabled={expiryDates.length === 0}
+                    styles={selectControlStyles(!!errorMessages.expiryDate)}
+                  />
+                  {errorMessages.expiryDate && (
+                    <span className="project-field-error">
+                      {errorMessages.expiryDate}
+                    </span>
+                  )}
+                  {expiryDates.length === 0 && selectedItemCode && (
+                    <span className="project-field-hint">
+                      No expiry dates found for this item
+                    </span>
+                  )}
+                </Form.Group>
+              </Col>
 
-                <Row>
-                  <Col>
-                    <Form.Group controlId="expiryDate">
-                      <Form.Label>Expiry Date</Form.Label>
-                      <Select
-                        options={expiryDates}
-                        value={selectedExpiryDate}
-                        onChange={(selectedOption) => {
-                          setSelectedExpiryDate(selectedOption);
-                          if (errorMessages.expiryDate && selectedOption) {
-                            setErrorMessages((prev) => ({
-                              ...prev,
-                              expiryDate: "",
-                            }));
-                          }
-                        }}
-                        placeholder={expiryDates.length > 0 ? "Select Expiry Date" : "No expiry dates available"}
-                        isDisabled={expiryDates.length === 0}
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.expiryDate ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.expiryDate && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.expiryDate}
-                        </span>
-                      )}
-                      {expiryDates.length === 0 && selectedItemCode && (
-                        <small className="text-muted">
-                          No expiry dates found for this item
-                        </small>
-                      )}
-                    </Form.Group>
-                  </Col>
+              <Col md={4}>
+                <Form.Group controlId="location" className="issue-select-field">
+                  <Form.Label>Location</Form.Label>
+                  <Select
+                    options={locations}
+                    value={selectedLocation}
+                    onChange={(selectedOption) => {
+                      setSelectedLocation(selectedOption);
+                      if (errorMessages.location && selectedOption) {
+                        setErrorMessages((prev) => ({
+                          ...prev,
+                          location: "",
+                        }));
+                      }
+                    }}
+                    placeholder={
+                      locations.length > 0
+                        ? "Select Location"
+                        : "No locations available"
+                    }
+                    isDisabled={locations.length === 0}
+                    styles={selectControlStyles(!!errorMessages.location)}
+                  />
+                  {errorMessages.location && (
+                    <span className="project-field-error">
+                      {errorMessages.location}
+                    </span>
+                  )}
+                  {locations.length === 0 && selectedItemCode && (
+                    <span className="project-field-hint">
+                      No locations found for this item
+                    </span>
+                  )}
+                </Form.Group>
+              </Col>
 
-                  <Col>
-                    <Form.Group controlId="location">
-                      <Form.Label>Location</Form.Label>
-                      <Select
-                        options={locations}
-                        value={selectedLocation}
-                        onChange={(selectedOption) => {
-                          setSelectedLocation(selectedOption);
-                          if (errorMessages.location && selectedOption) {
-                            setErrorMessages((prev) => ({
-                              ...prev,
-                              location: "",
-                            }));
-                          }
-                        }}
-                        placeholder={locations.length > 0 ? "Select Location" : "No locations available"}
-                        isDisabled={locations.length === 0}
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.location ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.location && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.location}
-                        </span>
-                      )}
-                      {locations.length === 0 && selectedItemCode && (
-                        <small className="text-muted">
-                          No locations found for this item
-                        </small>
-                      )}
-                    </Form.Group>
-                  </Col>
+              <Col md={4}>
+                <Form.Group controlId="quantityIssued" className="project-field">
+                  <Form.Label>Quantity Issued</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="quantityIssued"
+                    value={quantityIssued}
+                    onChange={(e) => {
+                      const enteredValue = e.target.value;
+                      const numericValue =
+                        enteredValue === "" ? "" : parseInt(enteredValue, 10);
+                      const maxQuantity = selectedItemDetails?.quantityIssued || 0;
 
-                  <Col>
-                    <Form.Group controlId="quantityIssued">
-                      <Form.Label>Quantity Issued</Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="quantityIssued"
-                        value={quantityIssued}
-                        onChange={(e) => {
-                          const enteredValue = e.target.value;
-                          const numericValue = enteredValue === "" ? "" : parseInt(enteredValue, 10);
-                          const maxQuantity = selectedItemDetails?.quantityIssued || 0;
+                      if (enteredValue === "") {
+                        setQuantityIssued("");
+                        return;
+                      }
 
-                          console.log("🔢 [QUANTITY INPUT] Quantity field changed:", {
-                            enteredValue,
-                            numericValue,
-                            maxQuantity,
-                            selectedItemDetails,
-                            selectedExpiryDate: !!selectedExpiryDate,
-                            selectedLocation: !!selectedLocation
-                          });
+                      if (isNaN(numericValue)) {
+                        return;
+                      }
 
-                          // Allow empty input for editing
-                          if (enteredValue === "") {
-                            console.log("🔢 [QUANTITY INPUT] Empty input - allowing");
-                            setQuantityIssued("");
-                            return;
-                          }
+                      if (!selectedExpiryDate || !selectedLocation) {
+                        setQuantityIssued("");
+                        toast.error(
+                          "Please select expiry date and location first to see available quantity"
+                        );
+                        return;
+                      }
 
-                          // Check if it's a valid number
-                          if (isNaN(numericValue)) {
-                            console.log("🔢 [QUANTITY INPUT] Invalid number - ignoring");
-                            return; // Don't update if not a valid number
-                          }
+                      if (numericValue <= 0) {
+                        setQuantityIssued("");
+                        toast.error(
+                          "Quantity must be a positive number (greater than 0)"
+                        );
+                        return;
+                      } else if (
+                        numericValue > maxQuantity &&
+                        maxQuantity > 0
+                      ) {
+                        setQuantityIssued(maxQuantity);
+                        toast.error(
+                          `Maximum available quantity is ${maxQuantity}`
+                        );
+                      } else {
+                        setQuantityIssued(numericValue);
+                      }
 
-                          // First check if expiry date and location are selected
-                          if (!selectedExpiryDate || !selectedLocation) {
-                            console.log("🔢 [QUANTITY INPUT] Expiry date or location not selected");
-                            setQuantityIssued("");
-                            toast.error("Please select expiry date and location first to see available quantity");
-                            return;
-                          }
+                      if (errorMessages.quantityIssued && enteredValue !== "") {
+                        setErrorMessages((prev) => ({
+                          ...prev,
+                          quantityIssued: "",
+                        }));
+                      }
+                    }}
+                    min="1"
+                    max={selectedItemDetails?.quantityIssued || 0}
+                    disabled={!selectedExpiryDate || !selectedLocation}
+                    className={`project-field-input${
+                      errorMessages.quantityIssued
+                        ? " project-field-input--error"
+                        : ""
+                    }${
+                      !selectedExpiryDate || !selectedLocation
+                        ? " project-field-input--disabled"
+                        : ""
+                    }`}
+                    placeholder={
+                      !selectedExpiryDate || !selectedLocation
+                        ? "Select expiry date and location first"
+                        : "Enter quantity"
+                    }
+                  />
+                  {errorMessages.quantityIssued && (
+                    <span className="project-field-error">
+                      {errorMessages.quantityIssued}
+                    </span>
+                  )}
+                  {selectedItemDetails?.quantityIssued ? (
+                    <span className="project-field-hint">
+                      Available: {selectedItemDetails.quantityIssued}
+                    </span>
+                  ) : null}
+                </Form.Group>
+              </Col>
+            </Row>
 
-                          // Apply constraints - only check max quantity if expiry date and location are selected
-                          if (numericValue <= 0) {
-                            console.log("🔢 [QUANTITY INPUT] Zero or negative value - not allowed");
-                            setQuantityIssued("");
-                            toast.error("Quantity must be a positive number (greater than 0)");
-                            return;
-                          } else if (numericValue > maxQuantity && maxQuantity > 0) {
-                            console.log("🔢 [QUANTITY INPUT] Exceeds max - setting to max");
-                            setQuantityIssued(maxQuantity);
-                            toast.error(`Maximum available quantity is ${maxQuantity}`);
-                          } else {
-                            console.log("🔢 [QUANTITY INPUT] Valid value - setting to:", numericValue);
-                            setQuantityIssued(numericValue);
-                          }
+            <Row>
+              <Col md={6}>
+                <Form.Group
+                  controlId="instruction_specification"
+                  className="project-field"
+                >
+                  <Form.Label>Instruction and Specification</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    name="instruction_specification"
+                    required
+                    value={instructionSpecification}
+                    placeholder=""
+                    className={`project-field-input project-field-input--textarea${
+                      errorMessages.instruction_specification
+                        ? " project-field-input--error"
+                        : ""
+                    }`}
+                    onChange={(e) => {
+                      setInstructionSpecification(e.target.value);
+                      setErrorMessages((prev) => ({
+                        ...prev,
+                        instruction_specification: "",
+                      }));
+                    }}
+                  />
+                  {errorMessages.instruction_specification && (
+                    <span className="project-field-error">
+                      {errorMessages.instruction_specification}
+                    </span>
+                  )}
+                </Form.Group>
+              </Col>
 
-                          // Clear error message
-                          if (errorMessages.quantityIssued && enteredValue !== "") {
-                            setErrorMessages((prev) => ({
-                              ...prev,
-                              quantityIssued: "",
-                            }));
-                          }
-                        }}
-                        min="1"
-                        max={selectedItemDetails?.quantityIssued || 0}
-                        disabled={!selectedExpiryDate || !selectedLocation}
-                        className="custom-border"
-                        style={{ 
-                          borderColor: errorMessages.quantityIssued ? "red" : "black",
-                          backgroundColor: (!selectedExpiryDate || !selectedLocation) ? "#f5f5f5" : "white",
-                          cursor: (!selectedExpiryDate || !selectedLocation) ? "not-allowed" : "text"
-                        }}
-                        placeholder={(!selectedExpiryDate || !selectedLocation) ? "Select expiry date and location first" : "Enter quantity"}
-                      />
-                      {errorMessages.quantityIssued && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.quantityIssued}
-                        </span>
-                      )}
-                      {selectedItemDetails?.quantityIssued && (
-                        <small className="text-muted">
-                          Available: {selectedItemDetails.quantityIssued}
-                        </small>
-                      )}
-                    </Form.Group>
-                  </Col>
-
-                  <Col>
-                    <Form.Group controlId="instruction_specification">
-                      <Form.Label>Instruction and Specification</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        name="instruction_specification"
-                        required
-                        value={instructionSpecification}
-                        placeholder=""
-                        className="custom-border"
-                        style={{
-                          borderColor: errorMessages.instruction_specification ? "red" : "black",
-                        }}
-                        onChange={(e) => {
-                          setInstructionSpecification(e.target.value);
-                          setErrorMessages(prev => ({...prev, instruction_specification: ""}));
-                        }}
-                      />
-                      {errorMessages.instruction_specification && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.instruction_specification}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-
-                  <Col>
-                    <Form.Group controlId="remarks">
-                      <Form.Label>Remarks</Form.Label>
-                      <Form.Control
-                        as="textarea"
-                        name="remarks"
-                        required
-                        value={remarks}
-                        placeholder=""
-                        className="custom-border"
-                        style={{
-                          borderColor: errorMessages.remarks ? "red" : "black",
-                        }}
-                        onChange={(e) => {
-                          setRemarks(e.target.value);
-                          setErrorMessages(prev => ({...prev, remarks: ""}));
-                        }}
-                      />
-                      {errorMessages.remarks && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.remarks}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </Form>
-            </Col>
-          </Row>
+              <Col md={6}>
+                <Form.Group controlId="remarks" className="project-field">
+                  <Form.Label>Remarks</Form.Label>
+                  <Form.Control
+                    as="textarea"
+                    name="remarks"
+                    required
+                    value={remarks}
+                    placeholder=""
+                    className={`project-field-input project-field-input--textarea${
+                      errorMessages.remarks ? " project-field-input--error" : ""
+                    }`}
+                    onChange={(e) => {
+                      setRemarks(e.target.value);
+                      setErrorMessages((prev) => ({ ...prev, remarks: "" }));
+                    }}
+                  />
+                  {errorMessages.remarks && (
+                    <span className="project-field-error">
+                      {errorMessages.remarks}
+                    </span>
+                  )}
+                </Form.Group>
+              </Col>
+            </Row>
+          </Form>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleAdd}>
+        <Modal.Footer className="project-modal-footer">
+          <button
+            type="button"
+            className="project-btn project-btn-outline"
+            onClick={handleClose}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="project-btn project-btn-primary"
+            onClick={handleAdd}
+          >
             {isEditMode ? "Update Item" : "Add Item"}
-          </Button>
+          </button>
         </Modal.Footer>
       </Modal>
     </PageLayout>

@@ -236,14 +236,14 @@ const EmployeeManage = () => {
               <table className="project-table">
                 <thead>
                   <tr>
-                    <th scope="col">Employee ID</th>
-                    <th scope="col">Employee name</th>
-                    <th scope="col">Project code</th>
-                    <th scope="col">Project name</th>
-                    <th scope="col">Lab</th>
-                    <th scope="col">Designation</th>
-                    <th scope="col">Status</th>
-                    <th scope="col" className="project-th-actions">
+                    <th scope="col" className="pt-col pt-col--emp-id">Employee ID</th>
+                    <th scope="col" className="pt-col pt-col--emp-name">Employee name</th>
+                    <th scope="col" className="pt-col pt-col--project-code">Project code</th>
+                    <th scope="col" className="pt-col pt-col--project">Project name</th>
+                    <th scope="col" className="pt-col pt-col--lab">Lab</th>
+                    <th scope="col" className="pt-col pt-col--designation">Designation</th>
+                    <th scope="col" className="pt-col pt-col--status">Status</th>
+                    <th scope="col" className="pt-col pt-col--actions project-th-actions">
                       Actions
                     </th>
                   </tr>
@@ -284,35 +284,35 @@ const EmployeeManage = () => {
                             isInactive ? " project-table-row--inactive" : ""
                           }`}
                         >
-                          <td data-label="Employee ID">
+                          <td className="pt-col pt-col--emp-id" data-label="Employee ID">
                             <span className="employee-id">{emp.emp_id}</span>
                           </td>
-                          <td data-label="Name">
+                          <td className="pt-col pt-col--emp-name" data-label="Name">
                             <span className="project-name">
                               {emp.emp_name || "—"}
                             </span>
                           </td>
-                          <td data-label="Project code">
+                          <td className="pt-col pt-col--project-code" data-label="Project code">
                             {renderProjectValues(emp.project_code)}
                           </td>
-                          <td data-label="Project name">
+                          <td className="pt-col pt-col--project" data-label="Project name">
                             {renderProjectValues(emp.project_name)}
                           </td>
-                          <td data-label="Lab">
+                          <td className="pt-col pt-col--lab" data-label="Lab">
                             {emp.lab ? (
                               <span>{emp.lab}</span>
                             ) : (
                               <span className="employee-cell-muted">—</span>
                             )}
                           </td>
-                          <td data-label="Designation">
+                          <td className="pt-col pt-col--designation" data-label="Designation">
                             {emp.designation ? (
                               <span>{emp.designation}</span>
                             ) : (
                               <span className="employee-cell-muted">—</span>
                             )}
                           </td>
-                          <td data-label="Status">
+                          <td className="pt-col pt-col--status" data-label="Status">
                             <span
                               className={`project-badge ${
                                 isInactive
@@ -325,7 +325,7 @@ const EmployeeManage = () => {
                           </td>
                           <td
                             data-label="Actions"
-                            className="project-td-actions"
+                            className="pt-col pt-col--actions project-td-actions"
                           >
                             <div className="project-row-actions">
                               {!isInactive ? (

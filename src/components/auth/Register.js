@@ -793,7 +793,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                 <table className="project-table">
                   <thead>
                     <tr>
-                      <th scope="col">
+                      <th scope="col" className="pt-col pt-col--username">
                         <button
                           type="button"
                           className="project-th-sort"
@@ -803,7 +803,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                           {renderSortIcon("username")}
                         </button>
                       </th>
-                      <th scope="col">
+                      <th scope="col" className="pt-col pt-col--emp-name">
                         <button
                           type="button"
                           className="project-th-sort"
@@ -813,10 +813,10 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                           {renderSortIcon("name")}
                         </button>
                       </th>
-                      <th scope="col">Role</th>
-                      <th scope="col">Designation</th>
-                      <th scope="col">Labs</th>
-                      <th scope="col" className="project-th-actions">
+                      <th scope="col" className="pt-col pt-col--role">Role</th>
+                      <th scope="col" className="pt-col pt-col--designation">Designation</th>
+                      <th scope="col" className="pt-col pt-col--lab">Labs</th>
+                      <th scope="col" className="pt-col pt-col--actions project-th-actions">
                         Actions
                       </th>
                     </tr>
@@ -849,12 +849,12 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                     ) : (
                       paginatedUsers.map((user) => (
                         <tr key={user.username} className="project-table-row">
-                          <td data-label="Username">
+                          <td className="pt-col pt-col--username" data-label="Username">
                             <span className="project-name register-username">
                               {user.username || "—"}
                             </span>
                           </td>
-                          <td data-label="Name">
+                          <td className="pt-col pt-col--emp-name" data-label="Name">
                             <span
                               className={
                                 user.name ? "project-name" : "register-na"
@@ -863,7 +863,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                               {user.name || "N/A"}
                             </span>
                           </td>
-                          <td data-label="Role">
+                          <td className="pt-col pt-col--role" data-label="Role">
                             <span
                               className={`project-badge ${getRoleBadgeClass(
                                 user.role
@@ -872,12 +872,12 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                               {user.role || "N/A"}
                             </span>
                           </td>
-                          <td data-label="Designation">
+                          <td className="pt-col pt-col--designation" data-label="Designation">
                             <span className="register-designation">
                               {user.designation || "—"}
                             </span>
                           </td>
-                          <td data-label="Labs">
+                          <td className="pt-col pt-col--lab" data-label="Labs">
                             {user.lab && user.lab.length > 0 ? (
                               <div className="register-lab-tags">
                                 {user.lab.map((lab) => (
@@ -895,7 +895,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                           </td>
                           <td
                             data-label="Actions"
-                            className="project-td-actions"
+                            className="pt-col pt-col--actions project-td-actions"
                           >
                             <div className="project-row-actions">
                               <button

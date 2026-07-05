@@ -1,16 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import Pagination from "../../common/Pagination";
 import { getItemIssueApi } from "../../../services/AppinfoService";
-import "../../../components/Lab1/homeLab/inventory.css";
-import { ContentCard } from "../../layout/content";
+import "./ManagerDashboard.shared.css";
+import "./IssuedFilter.css";
+
+const TABLE_HEADINGS = [
+  { label: "Entry No", key: "entry_no", colClass: "md-iss-col--entry" },
+  { label: "Item Code", key: "item_code", colClass: "md-iss-col--code" },
+  { label: "Item Name", key: "item_name", colClass: "md-iss-col--name" },
+  { label: "Issue Date", key: "issue_date", colClass: "md-iss-col--issue-date" },
+  { label: "Quantity Issued", key: "quantity_issued", colClass: "md-iss-col--qty" },
+  { label: "Project Code", key: "project_code", colClass: "md-iss-col--project-code" },
+  { label: "Project Name", key: "project_name", colClass: "md-iss-col--project-name" },
+  { label: "Issued To", key: "researcher_name", colClass: "md-iss-col--issued-to" },
+  { label: "Remarks", key: "remarks", colClass: "md-iss-col--remarks" },
+];
 
 const IssuedFilter = () => {
-  // Get user from Redux store to get username and labs
   const reduxUser = useSelector((state) => state.user.user);
   const username = reduxUser?.user_name || reduxUser?.name || null;
-  
-  // Get manager's assigned labs from Redux
+
   const userLabs = reduxUser?.lab || [];
   const managerLabs = Array.isArray(userLabs) ? userLabs : (userLabs ? [userLabs] : []);
 
@@ -18,29 +28,17 @@ const IssuedFilter = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [selectedLab, setSelectedLab] = useState("All"); // Lab filter state
-
-  // Filter States
-  const [entryNoFilter, setEntryNoFilter] = useState("");
-  const [itemCodeFilter, setItemCodeFilter] = useState("");
-  const [itemNameFilter, setItemNameFilter] = useState("");
-  const [issueDateFilter, setIssueDateFilter] = useState("");
-  const [quantityIssuedFilter, setQuantityIssuedFilter] = useState("");
-  const [projectCodeFilter, setProjectCodeFilter] = useState("");
-  const [projectNameFilter, setProjectNameFilter] = useState("");
-  const [issuedToFilter, setIssuedToFilter] = useState("");
-  const [remarksFilter, setRemarksFilter] = useState("");
+  const [selectedLab, setSelectedLab] = useState("All");
+  const [filters, setFilters] = useState({});
 
   useEffect(() => {
     let mounted = true;
-    
-    // Guard: Ensure username is available
+
     if (!username) {
       console.error("Username not available. Please ensure user is logged in.");
       return;
     }
 
-    // Pass lab parameter if a specific lab is selected (not "All")
     const labParam = selectedLab !== "All" ? selectedLab : null;
     getItemIssueApi(username, labParam)
       .then((data) => {
@@ -52,78 +50,28 @@ const IssuedFilter = () => {
         console.error("Error fetching data:", error);
       });
 
-    return () => (mounted = false);
+    return () => {
+      mounted = false;
+    };
   }, [username, selectedLab]);
 
-  // Filtering Logic
   useEffect(() => {
-    const filteredItems = issued.filter(
-      (item) =>
-        (entryNoFilter === "" ||
-          (item.entry_no &&
-            String(item.entry_no)
-              .toLowerCase()
-              .includes(entryNoFilter.toLowerCase()))) &&
-        (itemCodeFilter === "" ||
-          (item.item_code &&
-            String(item.item_code)
-              .toLowerCase()
-              .includes(itemCodeFilter.toLowerCase()))) &&
-        (itemNameFilter === "" ||
-          (item.item_name &&
-            item.item_name
-              .toLowerCase()
-              .includes(itemNameFilter.toLowerCase()))) &&
-        (issueDateFilter === "" ||
-          (item.issue_date &&
-            String(item.issue_date)
-              .toLowerCase()
-              .includes(issueDateFilter.toLowerCase()))) &&
-        (quantityIssuedFilter === "" ||
-          (item.quantity_issued &&
-            String(item.quantity_issued)
-              .toLowerCase()
-              .includes(quantityIssuedFilter.toLowerCase()))) &&
-        (projectCodeFilter === "" ||
-          (item.project_code &&
-            item.project_code
-              .toLowerCase()
-              .includes(projectCodeFilter.toLowerCase()))) &&
-        (projectNameFilter === "" ||
-          (item.project_name &&
-            item.project_name
-              .toLowerCase()
-              .includes(projectNameFilter.toLowerCase()))) &&
-        (issuedToFilter === "" ||
-          (item.researcher_name &&
-            item.researcher_name
-              .toLowerCase()
-              .includes(issuedToFilter.toLowerCase()))) &&
-        (remarksFilter === "" ||
-          (item.remarks &&
-            item.remarks
-              .toLowerCase()
-              .includes(remarksFilter.toLowerCase())))
+    const filteredItems = issued.filter((item) =>
+      TABLE_HEADINGS.every(({ key }) => {
+        const value = filters[key];
+        if (!value) return true;
+        const field = item[key];
+        if (field == null || field === "") return false;
+        return String(field).toLowerCase().includes(value.toLowerCase());
+      })
     );
 
     setFilteredData(filteredItems);
-    setCurrentPage(1); // Reset to first page when filtering
-  }, [
-    issued,
-    entryNoFilter,
-    itemCodeFilter,
-    itemNameFilter,
-    issueDateFilter,
-    quantityIssuedFilter,
-    projectCodeFilter,
-    projectNameFilter,
-    issuedToFilter,
-    remarksFilter,
-  ]);
+    setCurrentPage(1);
+  }, [issued, filters]);
 
-  // Pagination calculations
   const totalItems = filteredData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredData.slice(startIndex, endIndex);
@@ -131,23 +79,20 @@ const IssuedFilter = () => {
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
+
+  const handleFilterChange = useCallback((e, key) => {
+    setFilters((prev) => ({ ...prev, [key]: e.target.value }));
+  }, []);
+
   return (
-    <ContentCard flush>
-    <div className="master-list-container lims-data-fill">
-      {/* --- Lab Filter Dropdown --- */}
-      <div style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
-        <label style={{ fontWeight: "500", fontSize: "14px" }}>Lab Name:</label>
+    <div className="manager-dash-panel md-iss-page">
+      <div className="manager-dash-lab-filter">
+        <label htmlFor="md-iss-lab-filter">Lab Name:</label>
         <select
+          id="md-iss-lab-filter"
+          className="manager-dash-lab-select"
           value={selectedLab}
           onChange={(e) => setSelectedLab(e.target.value)}
-          style={{
-            padding: "8px 12px",
-            fontSize: "14px",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            minWidth: "200px",
-            cursor: "pointer"
-          }}
         >
           <option value="All">All</option>
           {managerLabs.map((lab, index) => (
@@ -158,93 +103,91 @@ const IssuedFilter = () => {
         </select>
       </div>
 
-      {/* --- Pagination Controls (Top) --- */}
-      <Pagination
-        position="top"
-        showPageNumbers={false}
-        showItemsPerPage
-        showSummary
-        totalItems={totalItems}
-        startIndex={startIndex}
-        endIndex={endIndex}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={(n) => {
-          setItemsPerPage(n);
-          setCurrentPage(1);
-        }}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
-
-      {/* --- Main Data Table --- */}
-      <div className="table-wrapper">
-        <table className="inventory-table lims-table">
-          <thead>
-            <tr>
-              {/* Header Cells with Filters */}
-              {[
-                { label: "Entry No", filter: entryNoFilter, setFilter: setEntryNoFilter },
-                { label: "Item Code", filter: itemCodeFilter, setFilter: setItemCodeFilter },
-                { label: "Item Name", filter: itemNameFilter, setFilter: setItemNameFilter },
-                { label: "Issue Date", filter: issueDateFilter, setFilter: setIssueDateFilter },
-                { label: "Quantity Issued", filter: quantityIssuedFilter, setFilter: setQuantityIssuedFilter },
-                { label: "Project Code", filter: projectCodeFilter, setFilter: setProjectCodeFilter },
-                { label: "Project Name", filter: projectNameFilter, setFilter: setProjectNameFilter },
-                { label: "Issued To", filter: issuedToFilter, setFilter: setIssuedToFilter },
-                { label: "Remarks", filter: remarksFilter, setFilter: setRemarksFilter },
-              ].map(({ label, filter, setFilter }) => (
-                <th key={label} className="table-header">
-                  {label}
-                  <input
-                    type="text"
-                    placeholder={`Filter by ${label}`}
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="filter-input"
-                  />
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.length > 0 ? (
-              currentItems.map((item, index) => (
-                <tr
-                  key={item.c_id ? `${item.c_id}-${index}` : index}
-                  className="data-row"
-                >
-                  <td className="table-cell">{item.entry_no || "-"}</td>
-                  <td className="table-cell">{item.item_code || "-"}</td>
-                  <td className="table-cell">{item.item_name || "-"}</td>
-                  <td className="table-cell">{item.issue_date || "-"}</td>
-                  <td className="table-cell">{item.quantity_issued || "-"}</td>
-                  <td className="table-cell">{item.project_code || "-"}</td>
-                  <td className="table-cell">{item.project_name || "-"}</td>
-                  <td className="table-cell">{item.researcher_name || "-"}</td>
-                  <td className="table-cell">{item.remarks || "-"}</td>
+      <section className="project-panel" aria-label="Issued items">
+        <div className="project-table-section">
+          <div className="project-table-shell">
+            <table className="project-table">
+              <thead>
+                <tr className="project-thead-labels">
+                  {TABLE_HEADINGS.map(({ label, colClass }) => (
+                    <th
+                      key={colClass}
+                      scope="col"
+                      className={`project-th-label-cell md-iss-col ${colClass}`}
+                    >
+                      {label}
+                    </th>
+                  ))}
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="9" className="no-data-cell">
-                  No items matching your filter criteria.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                <tr className="project-thead-filters">
+                  {TABLE_HEADINGS.map(({ label, key, colClass }) => (
+                    <th
+                      key={key}
+                      scope="col"
+                      className={`project-th-filter-cell md-iss-col ${colClass}`}
+                    >
+                      <input
+                        type="text"
+                        placeholder="Filter"
+                        className="md-col-filter"
+                        value={filters[key] || ""}
+                        onChange={(e) => handleFilterChange(e, key)}
+                        aria-label={`Filter by ${label}`}
+                      />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.length > 0 ? (
+                  currentItems.map((item, index) => (
+                    <tr
+                      key={item.c_id ? `${item.c_id}-${index}` : index}
+                      className="project-table-row"
+                    >
+                      <td className="md-iss-col md-iss-col--entry">{item.entry_no ?? "—"}</td>
+                      <td className="md-iss-col md-iss-col--code">{item.item_code || "—"}</td>
+                      <td className="md-iss-col md-iss-col--name">{item.item_name || "—"}</td>
+                      <td className="md-iss-col md-iss-col--issue-date">{item.issue_date || "—"}</td>
+                      <td className="md-iss-col md-iss-col--qty">{item.quantity_issued ?? "—"}</td>
+                      <td className="md-iss-col md-iss-col--project-code">{item.project_code || "—"}</td>
+                      <td className="md-iss-col md-iss-col--project-name">{item.project_name || "—"}</td>
+                      <td className="md-iss-col md-iss-col--issued-to">{item.researcher_name || "—"}</td>
+                      <td className="md-iss-col md-iss-col--remarks">{item.remarks || "—"}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr className="project-table-row project-table-row--empty">
+                    <td colSpan="9">
+                      <div className="project-empty">
+                        No items matching your filter criteria.
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-      {/* --- Pagination Controls (Bottom) --- */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        position="bottom"
-      />
+          <Pagination
+            showSummary
+            showItemsPerPage
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={(n) => {
+              setItemsPerPage(n);
+              setCurrentPage(1);
+            }}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            position="bottom"
+          />
+        </div>
+      </section>
     </div>
-    </ContentCard>
   );
 };
 

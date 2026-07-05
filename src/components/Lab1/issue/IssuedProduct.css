@@ -1,0 +1,266 @@
+/* Issued product page — modal and form styles */
+
+.modal-dialog.project-modal.project-modal--wide {
+  max-width: 42rem;
+}
+
+.modal-dialog.project-modal.project-modal--wide.modal-dialog-scrollable .modal-body {
+  max-height: min(70vh, 36rem);
+}
+
+.issued-product-modal {
+  --ipm-bg: #ffffff;
+  --ipm-fg: #1a3d2a;
+  --ipm-fg-strong: #09090b;
+  --ipm-muted: #64748b;
+  --ipm-muted-bg: #f8fafc;
+  --ipm-border: #e2e8f0;
+  --ipm-ring: var(--lims-accent-dark, #b5da21);
+  --ipm-brand: var(--lims-accent, #c5ea31);
+  --ipm-brand-dark: var(--lims-accent-dark, #b5da21);
+  --ipm-radius: 0.5rem;
+  --ipm-radius-lg: 0.75rem;
+  --ipm-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.issued-product-modal .modal-content,
+.issued-product-modal.project-modal-content {
+  border: 1px solid var(--ipm-border);
+  border-radius: var(--ipm-radius-lg);
+  box-shadow: 0 10px 38px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  background: var(--ipm-bg);
+  border-top: 3px solid var(--ipm-brand);
+}
+
+.issued-product-modal .modal-body {
+  padding: 0;
+}
+
+.issued-product-modal .project-modal-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1.25rem 1.25rem 0;
+  position: relative;
+}
+
+.issued-product-modal .project-modal-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ipm-fg);
+  letter-spacing: -0.015em;
+  padding-right: 2rem;
+}
+
+.issued-product-modal .project-modal-description {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ipm-muted);
+  line-height: 1.45;
+}
+
+.issued-product-modal .project-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: none;
+  border-radius: var(--ipm-radius);
+  background: transparent;
+  color: var(--ipm-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+.issued-product-modal .project-modal-close:hover {
+  opacity: 1;
+  background: var(--ipm-muted-bg);
+  color: var(--ipm-fg);
+}
+
+.issued-product-modal .project-modal-close:focus-visible {
+  outline: 2px solid var(--ipm-ring);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+.issued-product-modal .project-modal-body {
+  padding: 1.25rem !important;
+}
+
+.issued-product-modal .project-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.issued-product-modal .project-field {
+  margin-bottom: 1rem;
+}
+
+.issued-product-modal .project-field .form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ipm-fg);
+  margin-bottom: 0.375rem;
+}
+
+.issued-product-modal .project-field-error {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #dc2626;
+  line-height: 1.35;
+}
+
+.issued-product-modal .project-field-hint {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--ipm-muted);
+  line-height: 1.4;
+}
+
+.issued-product-modal .project-field-input,
+.issued-product-modal .form-control.project-field-input,
+.issued-product-modal .form-select.project-field-input {
+  height: 2.25rem;
+  padding: 0 0.75rem !important;
+  border: 1px solid var(--ipm-border) !important;
+  border-radius: var(--ipm-radius) !important;
+  font-size: 0.875rem !important;
+  background: var(--ipm-bg) !important;
+  color: var(--ipm-fg) !important;
+  box-shadow: var(--ipm-shadow);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.issued-product-modal .form-control.project-field-input--textarea {
+  height: auto;
+  min-height: 5rem;
+  padding: 0.5rem 0.75rem !important;
+  resize: vertical;
+}
+
+.issued-product-modal .form-control.project-field-input--disabled,
+.issued-product-modal .form-control.project-field-input:disabled {
+  background: var(--ipm-muted-bg) !important;
+  color: var(--ipm-muted) !important;
+  cursor: not-allowed;
+}
+
+.issued-product-modal .project-field-input:focus,
+.issued-product-modal .form-control.project-field-input:focus,
+.issued-product-modal .form-select.project-field-input:focus {
+  border-color: var(--ipm-brand-dark) !important;
+  box-shadow: 0 0 0 3px rgba(197, 234, 49, 0.2) !important;
+}
+
+.issued-product-modal .project-field-input--error,
+.issued-product-modal .form-control.project-field-input--error {
+  border-color: #dc2626 !important;
+}
+
+.issued-product-modal .issue-select-field {
+  margin-bottom: 1rem;
+}
+
+.issued-product-modal .issue-select-field .form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ipm-fg);
+  margin-bottom: 0.375rem;
+}
+
+.issued-product-modal .project-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--ipm-border);
+  background: var(--ipm-muted-bg);
+}
+
+.issued-product-modal .project-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.25rem;
+  padding: 0 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: var(--ipm-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+
+.issued-product-modal .project-btn:focus-visible {
+  outline: 2px solid var(--ipm-ring);
+  outline-offset: 2px;
+}
+
+.issued-product-modal .project-btn-primary {
+  color: var(--ipm-fg);
+  background: var(--ipm-brand);
+  border-color: var(--ipm-brand-dark);
+}
+
+.issued-product-modal .project-btn-primary:hover {
+  background: var(--ipm-brand-dark);
+  border-color: #a8cc1e;
+}
+
+.issued-product-modal .project-btn-outline {
+  color: var(--ipm-fg);
+  background: var(--ipm-bg);
+  border-color: var(--ipm-border);
+}
+
+.issued-product-modal .project-btn-outline:hover {
+  background: var(--ipm-muted-bg);
+}
+
+.issued-product-modal .project-btn-danger-solid {
+  color: #fafafa;
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.issued-product-modal .project-btn-danger-solid:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
+@media (max-width: 640px) {
+  .modal-dialog.project-modal.project-modal--wide {
+    max-width: calc(100% - 1rem);
+  }
+
+  .issued-product-modal .project-modal-footer {
+    flex-direction: column;
+  }
+
+  .issued-product-modal .project-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .issued-product-modal .project-btn,
+  .issued-product-modal .project-modal-close {
+    transition: none;
+  }
+}

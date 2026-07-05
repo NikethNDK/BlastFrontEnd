@@ -1,0 +1,273 @@
+/* Manager dashboard — shared table UI (scoped) */
+
+.manager-dash-panel {
+  --md-bg: #ffffff;
+  --md-fg: #1a3d2a;
+  --md-fg-strong: #09090b;
+  --md-muted: #64748b;
+  --md-border: #e2e8f0;
+  --md-brand: var(--lims-accent, #c5ea31);
+  --md-brand-dark: var(--lims-accent-dark, #b5da21);
+  --md-brand-soft: #f3fae8;
+  --md-radius: 0.5rem;
+  --md-radius-lg: 0.75rem;
+  --md-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+.manager-dash-panel .manager-dash-lab-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.manager-dash-panel .manager-dash-lab-filter label {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--md-fg-strong);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.manager-dash-panel .manager-dash-lab-select {
+  min-width: 10rem;
+  height: 2.25rem;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.8125rem;
+  color: var(--md-fg-strong);
+  background: var(--md-bg);
+  border: 1px solid var(--md-border);
+  border-radius: var(--md-radius);
+  cursor: pointer;
+}
+
+.manager-dash-panel .manager-dash-lab-select:focus {
+  outline: none;
+  border-color: var(--md-brand-dark);
+  box-shadow: 0 0 0 2px rgba(197, 234, 49, 0.2);
+}
+
+.manager-dash-panel .manager-dash-toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.manager-dash-panel .manager-dash-download-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4375rem;
+  height: 2.25rem;
+  padding: 0 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: var(--md-radius);
+  border: 1px solid var(--md-brand-dark);
+  background: var(--md-brand);
+  color: var(--md-fg);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.manager-dash-panel .manager-dash-download-btn:hover {
+  background: var(--md-brand-dark);
+  border-color: #a8cc1e;
+}
+
+.manager-dash-panel .project-panel {
+  background: var(--md-bg);
+  border: 1px solid var(--md-border);
+  border-radius: var(--md-radius-lg);
+  box-shadow: var(--md-shadow);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.manager-dash-panel .project-table-section {
+  padding-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.manager-dash-panel .project-table-section .lims-pagination {
+  padding: 0.75rem 1.25rem 0;
+}
+
+.manager-dash-panel .project-table-shell {
+  overflow-x: auto;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.manager-dash-panel .project-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  border: none;
+  min-width: max-content;
+  table-layout: auto;
+}
+
+.manager-dash-panel .project-table thead tr.project-thead-labels {
+  border-bottom: 1px solid #e8e8ec;
+}
+
+.manager-dash-panel .project-table thead tr.project-thead-filters {
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.manager-dash-panel .project-table thead th {
+  background: #f4f4f5 !important;
+  color: #52525b !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  border: none !important;
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
+}
+
+.manager-dash-panel .project-table thead th.project-th-label-cell {
+  padding: 0.4375rem 0.75rem !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.25;
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+.manager-dash-panel .project-table thead th.project-th-filter-cell {
+  padding: 0.3125rem 0.375rem 0.4375rem !important;
+  font-size: 0.6875rem !important;
+  font-weight: 400 !important;
+  vertical-align: top !important;
+  white-space: normal;
+  min-width: 5.5rem;
+}
+
+.manager-dash-panel .md-col-filter {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 1.5rem;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem;
+  line-height: 1.25;
+  color: var(--md-fg-strong);
+  background: var(--md-bg);
+  border: 1px solid var(--md-border);
+  border-radius: calc(var(--md-radius) - 2px);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.manager-dash-panel .md-col-filter::placeholder {
+  color: var(--md-muted);
+  opacity: 1;
+}
+
+.manager-dash-panel .md-col-filter:focus {
+  outline: none;
+  border-color: var(--md-brand-dark);
+  box-shadow: 0 0 0 2px rgba(197, 234, 49, 0.2);
+}
+
+.manager-dash-panel .project-table tbody tr:nth-child(even) {
+  background: transparent !important;
+}
+
+.manager-dash-panel .project-table tbody tr:not(.project-table-row--empty) {
+  border-bottom: 1px solid var(--md-border) !important;
+  transition: background-color 0.15s ease;
+}
+
+.manager-dash-panel .project-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.manager-dash-panel .project-table tbody tr:hover {
+  background: #fafafa !important;
+}
+
+.manager-dash-panel .project-table tbody td {
+  padding: 0.4375rem 0.625rem !important;
+  color: var(--md-fg-strong) !important;
+  vertical-align: middle;
+  border: none !important;
+  text-align: left !important;
+  font-size: 0.8125rem;
+}
+
+.manager-dash-panel .project-table-row--empty,
+.manager-dash-panel .project-table-row--empty:hover {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.manager-dash-panel .project-table-row--empty td {
+  padding: 0 !important;
+  border: none !important;
+}
+
+.manager-dash-panel .project-empty {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  color: var(--md-muted);
+  font-size: 0.875rem;
+}
+
+.manager-dash-panel .md-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.manager-dash-panel .md-status-badge--active {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.manager-dash-panel .md-status-badge--inactive {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.manager-dash-panel .md-status-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.manager-dash-panel .md-status-badge--active .md-status-dot {
+  background: #10b981;
+}
+
+.manager-dash-panel .md-status-badge--inactive .md-status-dot {
+  background: #ef4444;
+}

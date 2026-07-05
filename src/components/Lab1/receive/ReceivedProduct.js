@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Col, Row, Form, Button, Modal } from "react-bootstrap";
+import { Form, Modal } from "react-bootstrap";
+import { FaPlus, FaTimes } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import {
@@ -20,11 +21,24 @@ import {
   getLocationsApi,
   getLabsApi,
 } from "../../../services/AppinfoService";
-import "../../inventory/formBorder.css";
 import Select from "react-select";
 import TempReceiveTable from "./TempReceiveTable";
 import { BASE_URL } from "../../../services/AppinfoService";
-import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
+import { PageLayout, PageHeader } from "../../layout/content";
+import "./ReceivedProduct.css";
+
+const getSelectStyles = (hasError) => ({
+  control: (base, state) => ({
+    ...base,
+    minHeight: "2.25rem",
+    fontSize: "0.875rem",
+    borderColor: hasError ? "#ef4444" : state.isFocused ? "#b5da21" : "#e2e8f0",
+    boxShadow: state.isFocused ? "0 0 0 3px rgba(197, 234, 49, 0.2)" : "none",
+    "&:hover": {
+      borderColor: hasError ? "#ef4444" : "#b5da21",
+    },
+  }),
+});
 
 const ReceivedProduct = ({
   userDetails = { name: "", lab: "", designation: "" },
@@ -604,465 +618,443 @@ const ReceivedProduct = ({
         title="Received product"
         actions={
           <>
-            <Button
+            <button
+              type="button"
+              className="lims-header-btn"
               onClick={handleTransferData}
               disabled={tableItemCount === 0}
             >
               Submit
-            </Button>
-            <Button variant="primary" onClick={handleShowAdd}>
+            </button>
+            <button
+              type="button"
+              className="lims-header-btn"
+              onClick={handleShowAdd}
+            >
+              <FaPlus aria-hidden />
               Add
-            </Button>
+            </button>
           </>
         }
       />
-      <PageBody>
-      <ContentCard flush>
-          <TempReceiveTable 
-            onEdit={openEditModal} 
+
+      <div className="received-product-page">
+        <section className="project-panel" aria-label="Pending received items">
+          <TempReceiveTable
+            onEdit={openEditModal}
             onItemCountChange={setTableItemCount}
           />
-      </ContentCard>
-      </PageBody>
+        </section>
+      </div>
 
-      {/* --- Modal Component for Add Receive Form --- */}
-      <Modal show={showModal} onHide={handleClose} size="xl" scrollable className="modal-xl">
-        <Modal.Header closeButton>
-          <Modal.Title>{modalMode === "edit" ? "Edit Receive Item" : "Add Receive Item"}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Row style={{ paddingLeft: "30px", paddingRight: "30px" }}>
-            <Col sm={12}>
-              {/* NOTE: We call handleAdd on button click now, but attach ref to form */}
-              <Form key={formInstanceKey} ref={formRef} onSubmit={handleSubmit}>
-                <Row>
-                  <Col>
-                    <Form.Group controlId="masterType">
-                      <Form.Label>Master Type</Form.Label>
-                      <select
-                        value={masterType}
-                        className="form-control"
-                        style={{
-                          borderColor: errorMessages.masterType ? "red" : "black",
-                        }}
-                        onChange={(e) => {
-                            setMasterType(e.target.value);
-                            setErrorMessages(prev => ({...prev, masterType: ""}));
-                        }}
-                      >
-                        <option value="">Select Master Type</option>
-                        {masterTypes.map((type) => (
-                          <option key={type.id} value={type.name}>
-                            {type.name}
-                          </option>
-                        ))}
-                      </select>
-                      {errorMessages.masterType && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.masterType}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="itemCode">
-                      <Form.Label>Item Code</Form.Label>
-                      <Select
-                        options={itemsCodes}
-                        value={selectedItemCode}
-                        onChange={(option) => {
-                            handleItemCodeChange(option);
-                            setErrorMessages(prev => ({...prev, itemCode: "", itemName: ""}));
-                        }}
-                        placeholder="Select Item Code"
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.itemCode ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.itemCode && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.itemCode}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="itemName">
-                      <Form.Label>Item Name</Form.Label>
-                      <Select
-                        options={itemsNames}
-                        value={selectedItemName}
-                        onChange={(option) => {
-                            handleItemNameChange(option);
-                            setErrorMessages(prev => ({...prev, itemCode: "", itemName: ""}));
-                        }}
-                        placeholder="Select Item Name"
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.itemName ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.itemName && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.itemName}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="units">
-                      <Form.Label>Units</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={
-                          selectedItemDetails ? selectedItemDetails.units : ""
-                        }
-                        readOnly
-                        style={{ borderColor: "black" }}
-                      />
-                      {errorMessages.units && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.units}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <p></p>
-                <Row>
-                  <Col>
-                    <Form.Group controlId="manufacturer">
-                      <Form.Label>Manufacturer</Form.Label>
-                      <Select
-                        options={manufacturers}
-                        value={selectedManufacturer}
-                        onChange={(option) => {
-                            setSelectedManufacturer(option);
-                            setErrorMessages(prev => ({...prev, manufacturer: ""}));
-                        }}
-                        placeholder="Select Manufacturer"
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.manufacturer ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.manufacturer && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.manufacturer}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="supplier">
-                      <Form.Label>Supplier</Form.Label>
-                      <Select
-                        options={suppliers}
-                        value={selectedSuppliers}
-                        onChange={(option) => {
-                            setSelectedSuppliers(option);
-                            setErrorMessages(prev => ({...prev, supplier: ""}));
-                        }}
-                        placeholder="Select Supplier"
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.supplier ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.supplier && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.supplier}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="invoiceNumber">
-                      <Form.Label>Invoice No/Date</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="invoiceNumber"
-                        required
-                        placeholder=""
-                        className="custom-border"
-                        style={{ borderColor: errorMessages.invoiceNumber ? "red" : "black" }}
-                        onChange={() => setErrorMessages(prev => ({...prev, invoiceNumber: ""}))}
-                        defaultValue={formDefaults.invoiceNumber}
-                      />
-                      {errorMessages.invoiceNumber && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.invoiceNumber}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="poNumber">
-                      <Form.Label>Po Number/Date</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="poNumber"
-                        required
-                        placeholder=""
-                        className="custom-border"
-                        style={{ borderColor: errorMessages.poNumber ? "red" : "black" }}
-                        onChange={() => setErrorMessages(prev => ({...prev, poNumber: ""}))}
-                        defaultValue={formDefaults.poNumber}
-                      />
-                      {errorMessages.poNumber && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.poNumber}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <p></p>
-                <Row>
-                  <Col>
-                    <Form.Group controlId="bill">
-                      <Form.Label>Catalogue No</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="bill"
-                        required
-                        placeholder=""
-                        className="custom-border"
-                        style={{ borderColor: errorMessages.bill ? "red" : "black" }}
-                        onChange={() => setErrorMessages(prev => ({...prev, bill: ""}))}
-                        defaultValue={formDefaults.bill}
-                        readOnly={modalMode === "edit"}
-                      />
-                      {errorMessages.bill && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.bill}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="unitprice">
-                      <Form.Label>Price</Form.Label>
-                      <Form.Control
-                        type="number" // Changed to number for price
-                        name="unitprice"
-                        required
-                        placeholder=""
-                        className="custom-border"
-                        style={{ borderColor: errorMessages.unitprice ? "red" : "black" }}
-                        onChange={() => setErrorMessages(prev => ({...prev, unitprice: ""}))}
-                        defaultValue={formDefaults.unitprice}
-                      />
-                      {errorMessages.unitprice && (
-                        <span style={{ color: "red", float: "right" }}>
-                          {errorMessages.unitprice}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="quantityReceived">
-                      <Form.Label>Quantity Received</Form.Label>
-                      <Form.Control
-                        type="number" // Changed to number for quantity
-                        name="quantityReceived"
-                        required
-                        placeholder=""
-                        className="custom-border"
-                        style={{ borderColor: errorMessages.quantityReceived ? "red" : "black" }}
-                        onChange={() => setErrorMessages(prev => ({...prev, quantityReceived: ""}))}
-                        defaultValue={formDefaults.quantityReceived}
-                      />
-                      {errorMessages.quantityReceived && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.quantityReceived}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="batchNumber">
-                      <Form.Label>Batch Number</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="batchNumber"
-                        required
-                        placeholder=""
-                        className="custom-border"
-                        style={{ borderColor: errorMessages.batchNumber ? "red" : "black" }}
-                        onChange={() => setErrorMessages(prev => ({...prev, batchNumber: ""}))}
-                        defaultValue={formDefaults.batchNumber}
-                      />
-                      {errorMessages.batchNumber && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.batchNumber}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <p></p>
-                <Row>
-                  <Col>
-                    <Form.Group controlId="expiryDate">
-                      <Form.Label>Expiry date</Form.Label>
-                      <Form.Control
-                        type="date"
-                        name="expiryDate"
-                        required
-                        placeholder=""
-                        className="custom-border"
-                        style={{ borderColor: errorMessages.expiryDate ? "red" : "black" }}
-                        onChange={() => setErrorMessages(prev => ({...prev, expiryDate: ""}))}
-                        defaultValue={formDefaults.expiryDate}
-                      />
-                      {errorMessages.expiryDate && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.expiryDate}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col>
-                    <Form.Group controlId="location">
-                      <Form.Label>Location</Form.Label>
-                      <Select
-                        options={locations}
-                        value={selectedLocations}
-                        onChange={(option) => {
-                            setSelectedLocations(option);
-                            setErrorMessages(prev => ({...prev, location: ""}));
-                        }}
-                        placeholder="Select Location"
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.location ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.location && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.location}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
+      <Modal
+        show={showModal}
+        onHide={handleClose}
+        scrollable
+        centered
+        backdrop="static"
+        dialogClassName="project-modal project-modal--wide"
+        contentClassName="project-modal-content"
+        aria-labelledby="receive-item-modal-title"
+      >
+        <div className="project-modal-header">
+          <button
+            type="button"
+            className="project-modal-close"
+            onClick={handleClose}
+            aria-label="Close"
+          >
+            <FaTimes aria-hidden />
+          </button>
+          <h2 id="receive-item-modal-title" className="project-modal-title">
+            {modalMode === "edit" ? "Edit receive item" : "Add receive item"}
+          </h2>
+          <p className="project-modal-description">
+            {modalMode === "edit"
+              ? "Update the details for this pending receive record."
+              : "Enter item and receipt details to add to the receive list."}
+          </p>
+        </div>
+        <Modal.Body className="project-modal-body">
+          <Form
+            key={formInstanceKey}
+            ref={formRef}
+            onSubmit={handleSubmit}
+            className="project-modal-form"
+          >
+            <div className="received-product-form-grid">
+              <Form.Group controlId="masterType" className="project-field">
+                <Form.Label>Master Type</Form.Label>
+                <Form.Select
+                  value={masterType}
+                  className={`project-field-input${
+                    errorMessages.masterType ? " project-field-input--error" : ""
+                  }`}
+                  onChange={(e) => {
+                    setMasterType(e.target.value);
+                    setErrorMessages((prev) => ({ ...prev, masterType: "" }));
+                  }}
+                >
+                  <option value="">Select Master Type</option>
+                  {masterTypes.map((type) => (
+                    <option key={type.id} value={type.name}>
+                      {type.name}
+                    </option>
+                  ))}
+                </Form.Select>
+                {errorMessages.masterType && (
+                  <span className="project-field-error">{errorMessages.masterType}</span>
+                )}
+              </Form.Group>
 
-                  <Col>
-                    <Form.Group controlId="project">
-                      <Form.Label>Project Name</Form.Label>
-                      <Form.Control
-                        as="select"
-                        name="project"
-                        required
-                        style={{ border: "1px solid black" }}
-                        value={selectedProject}
-                        onChange={handleProjectChange}
-                      >
-                        <option value="">Select Project</option>
-                        {projects.map((proj) => (
-                          <option key={proj.value} value={proj.value}>
-                            {proj.label}
-                          </option>
-                        ))}
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
+              <Form.Group controlId="itemCode" className="project-field">
+                <Form.Label>Item Code</Form.Label>
+                <Select
+                  classNamePrefix="rp-select"
+                  options={itemsCodes}
+                  value={selectedItemCode}
+                  onChange={(option) => {
+                    handleItemCodeChange(option);
+                    setErrorMessages((prev) => ({ ...prev, itemCode: "", itemName: "" }));
+                  }}
+                  placeholder="Select Item Code"
+                  styles={getSelectStyles(!!errorMessages.itemCode)}
+                />
+                {errorMessages.itemCode && (
+                  <span className="project-field-error">{errorMessages.itemCode}</span>
+                )}
+              </Form.Group>
 
-                  <Col>
-                    <Form.Group controlId="projectCode">
-                      <Form.Label>Project Code</Form.Label>
-                      <Select
-                        value={selectedCodes}
-                        options={projects.map((proj) => ({
-                          value: proj.code,
-                          label: proj.code,
-                        }))}
-                        placeholder="Select Project Code"
-                        onChange={(option) => {
-                            handleProjectCodeChange(option);
-                            setErrorMessages(prev => ({...prev, projectCode: ""}));
-                        }}
-                        styles={{
-                          control: (provided) => ({
-                            ...provided,
-                            borderColor: errorMessages.projectCode ? "red" : "black",
-                          }),
-                        }}
-                      />
-                      {errorMessages.projectCode && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.projectCode}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <p></p>
-                <Row>
-                  <Col sm={6}>
-                    <Form.Group controlId="instructionSpecification">
-                      <Form.Label>Instruction and Specification</Form.Label>
-                      <Form.Control
-                        as="textarea" // Changed to textarea for multiline input
-                        name="instructionSpecification"
-                        required
-                        placeholder=""
-                        className="custom-border"
-                        style={{ borderColor: errorMessages.instructionSpecification ? "red" : "black" }}
-                        onChange={() => setErrorMessages(prev => ({...prev, instructionSpecification: ""}))}
-                        defaultValue={formDefaults.instructionSpecification}
-                      />
-                      {errorMessages.instructionSpecification && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.instructionSpecification}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                  <Col sm={6}>
-                    <Form.Group controlId="remarks">
-                      <Form.Label>Remarks</Form.Label>
-                      <Form.Control
-                        as="textarea" // Changed to textarea for multiline input
-                        name="remarks"
-                        required
-                        placeholder=""
-                        className="custom-border"
-                        style={{ borderColor: errorMessages.remarks ? "red" : "black" }}
-                        onChange={() => setErrorMessages(prev => ({...prev, remarks: ""}))}
-                        defaultValue={formDefaults.remarks}
-                      />
-                      {errorMessages.remarks && (
-                        <span style={{ color: "red", fontSize: "0.85rem" }}>
-                          {errorMessages.remarks}
-                        </span>
-                      )}
-                    </Form.Group>
-                  </Col>
-                </Row>
-              </Form>
-            </Col>
-          </Row>
+              <Form.Group controlId="itemName" className="project-field">
+                <Form.Label>Item Name</Form.Label>
+                <Select
+                  classNamePrefix="rp-select"
+                  options={itemsNames}
+                  value={selectedItemName}
+                  onChange={(option) => {
+                    handleItemNameChange(option);
+                    setErrorMessages((prev) => ({ ...prev, itemCode: "", itemName: "" }));
+                  }}
+                  placeholder="Select Item Name"
+                  styles={getSelectStyles(!!errorMessages.itemName)}
+                />
+                {errorMessages.itemName && (
+                  <span className="project-field-error">{errorMessages.itemName}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="units" className="project-field">
+                <Form.Label>Units</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={selectedItemDetails ? selectedItemDetails.units : ""}
+                  readOnly
+                  className="project-field-input project-field-input--readonly"
+                />
+                {errorMessages.units && (
+                  <span className="project-field-error">{errorMessages.units}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="manufacturer" className="project-field">
+                <Form.Label>Manufacturer</Form.Label>
+                <Select
+                  classNamePrefix="rp-select"
+                  options={manufacturers}
+                  value={selectedManufacturer}
+                  onChange={(option) => {
+                    setSelectedManufacturer(option);
+                    setErrorMessages((prev) => ({ ...prev, manufacturer: "" }));
+                  }}
+                  placeholder="Select Manufacturer"
+                  styles={getSelectStyles(!!errorMessages.manufacturer)}
+                />
+                {errorMessages.manufacturer && (
+                  <span className="project-field-error">{errorMessages.manufacturer}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="supplier" className="project-field">
+                <Form.Label>Supplier</Form.Label>
+                <Select
+                  classNamePrefix="rp-select"
+                  options={suppliers}
+                  value={selectedSuppliers}
+                  onChange={(option) => {
+                    setSelectedSuppliers(option);
+                    setErrorMessages((prev) => ({ ...prev, supplier: "" }));
+                  }}
+                  placeholder="Select Supplier"
+                  styles={getSelectStyles(!!errorMessages.supplier)}
+                />
+                {errorMessages.supplier && (
+                  <span className="project-field-error">{errorMessages.supplier}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="invoiceNumber" className="project-field">
+                <Form.Label>Invoice No/Date</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="invoiceNumber"
+                  required
+                  placeholder=""
+                  className={`project-field-input${
+                    errorMessages.invoiceNumber ? " project-field-input--error" : ""
+                  }`}
+                  onChange={() =>
+                    setErrorMessages((prev) => ({ ...prev, invoiceNumber: "" }))
+                  }
+                  defaultValue={formDefaults.invoiceNumber}
+                />
+                {errorMessages.invoiceNumber && (
+                  <span className="project-field-error">{errorMessages.invoiceNumber}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="poNumber" className="project-field">
+                <Form.Label>Po Number/Date</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="poNumber"
+                  required
+                  placeholder=""
+                  className={`project-field-input${
+                    errorMessages.poNumber ? " project-field-input--error" : ""
+                  }`}
+                  onChange={() =>
+                    setErrorMessages((prev) => ({ ...prev, poNumber: "" }))
+                  }
+                  defaultValue={formDefaults.poNumber}
+                />
+                {errorMessages.poNumber && (
+                  <span className="project-field-error">{errorMessages.poNumber}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="bill" className="project-field">
+                <Form.Label>Catalogue No</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="bill"
+                  required
+                  placeholder=""
+                  className={`project-field-input${
+                    errorMessages.bill ? " project-field-input--error" : ""
+                  }${modalMode === "edit" ? " project-field-input--readonly" : ""}`}
+                  onChange={() => setErrorMessages((prev) => ({ ...prev, bill: "" }))}
+                  defaultValue={formDefaults.bill}
+                  readOnly={modalMode === "edit"}
+                />
+                {errorMessages.bill && (
+                  <span className="project-field-error">{errorMessages.bill}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="unitprice" className="project-field">
+                <Form.Label>Price</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="unitprice"
+                  required
+                  placeholder=""
+                  className={`project-field-input${
+                    errorMessages.unitprice ? " project-field-input--error" : ""
+                  }`}
+                  onChange={() =>
+                    setErrorMessages((prev) => ({ ...prev, unitprice: "" }))
+                  }
+                  defaultValue={formDefaults.unitprice}
+                />
+                {errorMessages.unitprice && (
+                  <span className="project-field-error">{errorMessages.unitprice}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="quantityReceived" className="project-field">
+                <Form.Label>Quantity Received</Form.Label>
+                <Form.Control
+                  type="number"
+                  name="quantityReceived"
+                  required
+                  placeholder=""
+                  className={`project-field-input${
+                    errorMessages.quantityReceived ? " project-field-input--error" : ""
+                  }`}
+                  onChange={() =>
+                    setErrorMessages((prev) => ({ ...prev, quantityReceived: "" }))
+                  }
+                  defaultValue={formDefaults.quantityReceived}
+                />
+                {errorMessages.quantityReceived && (
+                  <span className="project-field-error">
+                    {errorMessages.quantityReceived}
+                  </span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="batchNumber" className="project-field">
+                <Form.Label>Batch Number</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="batchNumber"
+                  required
+                  placeholder=""
+                  className={`project-field-input${
+                    errorMessages.batchNumber ? " project-field-input--error" : ""
+                  }`}
+                  onChange={() =>
+                    setErrorMessages((prev) => ({ ...prev, batchNumber: "" }))
+                  }
+                  defaultValue={formDefaults.batchNumber}
+                />
+                {errorMessages.batchNumber && (
+                  <span className="project-field-error">{errorMessages.batchNumber}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="expiryDate" className="project-field">
+                <Form.Label>Expiry date</Form.Label>
+                <Form.Control
+                  type="date"
+                  name="expiryDate"
+                  required
+                  placeholder=""
+                  className={`project-field-input${
+                    errorMessages.expiryDate ? " project-field-input--error" : ""
+                  }`}
+                  onChange={() =>
+                    setErrorMessages((prev) => ({ ...prev, expiryDate: "" }))
+                  }
+                  defaultValue={formDefaults.expiryDate}
+                />
+                {errorMessages.expiryDate && (
+                  <span className="project-field-error">{errorMessages.expiryDate}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="location" className="project-field">
+                <Form.Label>Location</Form.Label>
+                <Select
+                  classNamePrefix="rp-select"
+                  options={locations}
+                  value={selectedLocations}
+                  onChange={(option) => {
+                    setSelectedLocations(option);
+                    setErrorMessages((prev) => ({ ...prev, location: "" }));
+                  }}
+                  placeholder="Select Location"
+                  styles={getSelectStyles(!!errorMessages.location)}
+                />
+                {errorMessages.location && (
+                  <span className="project-field-error">{errorMessages.location}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="project" className="project-field">
+                <Form.Label>Project Name</Form.Label>
+                <Form.Select
+                  name="project"
+                  required
+                  className="project-field-input"
+                  value={selectedProject}
+                  onChange={handleProjectChange}
+                >
+                  <option value="">Select Project</option>
+                  {projects.map((proj) => (
+                    <option key={proj.value} value={proj.value}>
+                      {proj.label}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+
+              <Form.Group controlId="projectCode" className="project-field">
+                <Form.Label>Project Code</Form.Label>
+                <Select
+                  classNamePrefix="rp-select"
+                  value={selectedCodes}
+                  options={projects.map((proj) => ({
+                    value: proj.code,
+                    label: proj.code,
+                  }))}
+                  placeholder="Select Project Code"
+                  onChange={(option) => {
+                    handleProjectCodeChange(option);
+                    setErrorMessages((prev) => ({ ...prev, projectCode: "" }));
+                  }}
+                  styles={getSelectStyles(!!errorMessages.projectCode)}
+                />
+                {errorMessages.projectCode && (
+                  <span className="project-field-error">{errorMessages.projectCode}</span>
+                )}
+              </Form.Group>
+
+              <Form.Group
+                controlId="instructionSpecification"
+                className="project-field project-field--span-2"
+              >
+                <Form.Label>Instruction and Specification</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  name="instructionSpecification"
+                  required
+                  placeholder=""
+                  className={`project-field-input project-field-input--textarea${
+                    errorMessages.instructionSpecification
+                      ? " project-field-input--error"
+                      : ""
+                  }`}
+                  onChange={() =>
+                    setErrorMessages((prev) => ({
+                      ...prev,
+                      instructionSpecification: "",
+                    }))
+                  }
+                  defaultValue={formDefaults.instructionSpecification}
+                />
+                {errorMessages.instructionSpecification && (
+                  <span className="project-field-error">
+                    {errorMessages.instructionSpecification}
+                  </span>
+                )}
+              </Form.Group>
+
+              <Form.Group controlId="remarks" className="project-field project-field--span-2">
+                <Form.Label>Remarks</Form.Label>
+                <Form.Control
+                  as="textarea"
+                  name="remarks"
+                  required
+                  placeholder=""
+                  className={`project-field-input project-field-input--textarea${
+                    errorMessages.remarks ? " project-field-input--error" : ""
+                  }`}
+                  onChange={() =>
+                    setErrorMessages((prev) => ({ ...prev, remarks: "" }))
+                  }
+                  defaultValue={formDefaults.remarks}
+                />
+                {errorMessages.remarks && (
+                  <span className="project-field-error">{errorMessages.remarks}</span>
+                )}
+              </Form.Group>
+
+              <div className="project-modal-form-actions">
+                <button
+                  type="button"
+                  className="project-btn project-btn-outline"
+                  onClick={handleClose}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="project-btn project-btn-primary">
+                  {modalMode === "edit" ? "Save" : "Save"}
+                </button>
+              </div>
+            </div>
+          </Form>
         </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Close
-          </Button>
-          <Button variant="primary" onClick={handleSubmit}>
-            {modalMode === "edit" ? "Save Changes" : "Add Item"}
-          </Button>
-        </Modal.Footer>
       </Modal>
     </PageLayout>
   );

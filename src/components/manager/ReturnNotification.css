@@ -1,0 +1,212 @@
+/* Return notification — matches EmployeeManage table UI */
+
+.return-notification-page {
+  --mn-bg: #ffffff;
+  --mn-fg: #1a3d2a;
+  --mn-fg-strong: #09090b;
+  --mn-muted: #64748b;
+  --mn-border: #e2e8f0;
+  --mn-radius-lg: 0.75rem;
+  --mn-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+.return-notification-page .project-panel {
+  background: var(--mn-bg);
+  border: 1px solid var(--mn-border);
+  border-radius: var(--mn-radius-lg);
+  box-shadow: var(--mn-shadow);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.return-notification-page .project-table-section {
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.return-notification-page .project-table-shell {
+  overflow-x: auto;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.return-notification-page .project-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  border: none;
+  min-width: max-content;
+  table-layout: auto;
+}
+
+.return-notification-page .project-table thead tr {
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.return-notification-page .project-table thead th {
+  height: 2rem;
+  padding: 0.4375rem 1rem;
+  background: #f4f4f5 !important;
+  color: #52525b !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  vertical-align: middle;
+  white-space: nowrap;
+  border: none !important;
+  position: static !important;
+}
+
+.return-notification-page .project-th-actions,
+.return-notification-page .project-table tbody td.project-td-actions {
+  text-align: center !important;
+}
+
+.return-notification-page .project-table tbody tr:not(.project-table-row--empty) {
+  border-bottom: 1px solid var(--mn-border) !important;
+  transition: background-color 0.15s ease;
+}
+
+.return-notification-page .project-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.return-notification-page .project-table tbody tr:hover {
+  background: #fafafa !important;
+}
+
+.return-notification-page .project-table tbody td {
+  padding: 0.4375rem 0.625rem !important;
+  color: var(--mn-fg-strong) !important;
+  vertical-align: middle;
+  border: none !important;
+  text-align: left !important;
+  font-size: 0.8125rem;
+}
+
+.return-notification-page .project-table-row--empty,
+.return-notification-page .project-table-row--empty:hover {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.return-notification-page .project-table-row--empty td {
+  padding: 0 !important;
+  border: none !important;
+}
+
+.return-notification-page .project-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--mn-muted);
+  font-size: 0.875rem;
+}
+
+.return-notification-page .project-empty p {
+  margin: 0;
+}
+
+/* Column sizing */
+
+.return-notification-page .project-table thead th.mn-rtn-col {
+  padding: 0.4375rem 0.625rem !important;
+  line-height: 1.25;
+}
+
+.return-notification-page .project-table thead th.mn-rtn-col--code { min-width: 5.5rem; }
+.return-notification-page .project-table thead th.mn-rtn-col--name { min-width: 6.5rem; }
+.return-notification-page .project-table thead th.mn-rtn-col--qty { min-width: 7.5rem; }
+.return-notification-page .project-table thead th.mn-rtn-col--project { min-width: 7rem; }
+.return-notification-page .project-table thead th.mn-rtn-col--location { min-width: 5.5rem; }
+.return-notification-page .project-table thead th.mn-rtn-col--receipt-date { min-width: 6.25rem; }
+.return-notification-page .project-table thead th.mn-rtn-col--return-date { min-width: 6.25rem; }
+.return-notification-page .project-table thead th.mn-rtn-col--remarks { min-width: 5.5rem; }
+.return-notification-page .project-table thead th.mn-rtn-col--actions { min-width: 9rem; }
+
+.return-notification-page .project-table tbody td.mn-rtn-col--name,
+.return-notification-page .project-table tbody td.mn-rtn-col--project,
+.return-notification-page .project-table tbody td.mn-rtn-col--remarks {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.return-notification-page .project-table tbody td.mn-rtn-col--code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.return-notification-page .project-table tbody td.mn-rtn-col--qty {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.return-notification-page .project-table tbody td.mn-rtn-col--actions {
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.return-notification-page .lims-notification-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.return-notification-page .lims-btn-accept,
+.return-notification-page .lims-btn-decline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.75rem;
+  padding: 0 0.625rem;
+  border: 1px solid transparent;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  box-shadow: none;
+}
+
+.return-notification-page .lims-btn-accept {
+  color: #065f46;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.return-notification-page .lims-btn-accept:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+}
+
+.return-notification-page .lims-btn-decline {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.return-notification-page .lims-btn-decline:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}

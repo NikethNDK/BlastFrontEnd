@@ -38,6 +38,24 @@ import AppSidebar from "../components/layout/AppSidebar";
 import { blastMenuConfig } from "../config/sidebar/blastMenu";
 import { PageLayout, PageHeader, PageBody, ContentCard } from "../components/layout/content";
 
+const TABLE_HEADINGS = [
+  { label: "Query ID", colClass: "blast-col--query-id" },
+  { label: "AIWC Reference ID", colClass: "blast-col--ref-id" },
+  { label: "Gene Name", colClass: "blast-col--gene" },
+  { label: "Identity (%)", colClass: "blast-col--identity" },
+  { label: "Query Coverage (%)", colClass: "blast-col--coverage" },
+  { label: "Length", colClass: "blast-col--length" },
+  { label: "Query Length", colClass: "blast-col--query-length" },
+  { label: "Subject Length", colClass: "blast-col--subject-length" },
+  { label: "Mismatches", colClass: "blast-col--mismatches" },
+  { label: "Gap Opens", colClass: "blast-col--gap-opens" },
+  { label: "E-Value", colClass: "blast-col--evalue" },
+  { label: "Class Name", colClass: "blast-col--class" },
+  { label: "Common Name", colClass: "blast-col--common" },
+  { label: "Scientific Name", colClass: "blast-col--scientific" },
+  { label: "Actions", colClass: "blast-col--actions" },
+];
+
 const Blast = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   const [file, setFile] = useState(null);
   const [results, setResults] = useState([]);
@@ -177,131 +195,123 @@ const Blast = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
         <PageHeader title="BLAST comparison" />
         <PageBody>
         <ContentCard className="blast-main-content">
-          {/* Upload Section */}
-          <div className="blast-upload-card">
+          <div className="blast-page">
+            {/* Upload Section */}
+            <div className="blast-upload-card">
               <div className="blast-header">
-                  <p className="blast-prompt">
-                      Upload your query sequence file (<span className="format-highlight">FASTA Format</span>):
-                  </p>
+                <p className="blast-prompt">
+                  Upload your query sequence file (<span className="format-highlight">FASTA Format</span>):
+                </p>
               </div>
               
               <form onSubmit={handleSubmit} className="blast-form-controls">
-                  <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      accept=".txt,.fasta,.csv"
-                      className="file-input-style"
-                  />
-                  
-                  <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      disabled={loading}
-                      className="run-blast-button"
-                  >
-                      {loading ? "Running Sequence Search..." : "Run BLAST Search"}
-                  </Button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept=".txt,.fasta,.csv"
+                  className="file-input-style"
+                />
+                
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  disabled={loading}
+                  className="run-blast-button"
+                >
+                  {loading ? "Running Sequence Search..." : "Run BLAST Search"}
+                </Button>
               </form>
               
               {error && <Typography color="error" className="error-message">{error}</Typography>}
-          </div>
-
-          {/* Results Header */}
-          <div className="blast-results-header">
-            <h4>Blast Results</h4>
-            <FiDownload
-              size={20}
-              className="download-icon"
-              onClick={handleDownloadSequences}
-              title="Download All Sequences"
-            />
-          </div>
-
-          {/* Loading State */}
-          {loading && (
-            <div className="loading-container">
-              <CircularProgress />
-              <p>Processing...</p>
             </div>
-          )}
 
-          {/* Results Table */}
-          {results.length > 0 && (
-    <div className={`results-table-container ${results.length > 10 ? 'scrollable' : ''}`}>
-        <table className="results-table blast-results-style">
-            <thead>
-                <tr>
-                    {/* Headers are static and don't require inline filters */}
-                    <th className="table-header">Query ID</th>
-                    <th className="table-header">AIWC Reference ID</th>
-                    <th className="table-header">Gene Name</th>
-                    <th className="table-header">Identity (%)</th>
-                    <th className="table-header">Query Coverage (%)</th>
-                    <th className="table-header">Length</th>
-                    <th className="table-header">Query Length</th>
-                    <th className="table-header">Subject Length</th>
-                    <th className="table-header">Mismatches</th>
-                    <th className="table-header">Gap Opens</th>
-                    <th className="table-header">E-Value</th>
-                    <th className="table-header">Class Name</th>
-                    <th className="table-header">Common Name</th>
-                    <th className="table-header">Scientific Name</th>
-                    <th className="table-header action-header">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {results.map((row, index) => (
-                    <tr key={index} className="data-row">
-                        {/* Assuming the results array is structured to match the headers */}
-                        {/* Note: You might need to adjust the Object.values(row) logic if 'row' is a plain array 
-                           and not an object that excludes the final 'Actions' column data. */}
-                        
-                        {/* Example structure assuming 'row' is an array [queryId, refId, identity, ...] */}
-                        <td className="table-cell">{row[0]}</td> 
-                        <td className="table-cell">{row[1]}</td> 
-                        <td className="table-cell">{row[13]}</td> 
-                        <td className="table-cell number-cell">{row[2]}</td>
-                        <td className="table-cell number-cell">{row[3]}</td>
-                        <td className="table-cell number-cell">{row[4]}</td>
-                        <td className="table-cell number-cell">{row[5]}</td>
-                        <td className="table-cell number-cell">{row[6]}</td>
-                        <td className="table-cell number-cell">{row[7]}</td>
-                        <td className="table-cell number-cell">{row[8]}</td>
-                        <td className="table-cell number-cell e-value-cell">{row[9]}</td>
-                        <td className="table-cell taxonomy-cell">{row[10]}</td>
-                        <td className="table-cell taxonomy-cell">{row[11]}</td>
-                        <td className="table-cell taxonomy-cell">{row[12]}</td>
-                        
-                        {/* Action Cell */}
-                        <td className="table-cell action-icons">
-                            <FiCopy
+            {/* Results Header */}
+            <div className="blast-results-header">
+              <h4>Blast Results</h4>
+              <FiDownload
+                size={20}
+                className="download-icon"
+                onClick={handleDownloadSequences}
+                title="Download All Sequences"
+              />
+            </div>
+
+            {/* Loading State */}
+            {loading && (
+              <div className="loading-container">
+                <CircularProgress />
+                <p>Processing...</p>
+              </div>
+            )}
+
+            {/* Results Table */}
+            {results.length > 0 && (
+              <section className="project-panel blast-results-panel" aria-label="BLAST results">
+                <div className="project-table-section">
+                  <div className={`project-table-shell results-table-container ${results.length > 10 ? 'scrollable' : ''}`}>
+                    <table className="project-table results-table blast-results-style">
+                      <thead>
+                        <tr className="project-thead-labels">
+                          {TABLE_HEADINGS.map(({ label, colClass }) => (
+                            <th
+                              key={colClass}
+                              scope="col"
+                              className={`project-th-label-cell blast-col ${colClass} table-header${colClass === "blast-col--actions" ? " action-header" : ""}`}
+                            >
+                              {label}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {results.map((row, index) => (
+                          <tr key={index} className="project-table-row data-row">
+                            <td className="blast-col blast-col--query-id table-cell">{row[0]}</td>
+                            <td className="blast-col blast-col--ref-id table-cell">{row[1]}</td>
+                            <td className="blast-col blast-col--gene table-cell">{row[13]}</td>
+                            <td className="blast-col blast-col--identity table-cell number-cell">{row[2]}</td>
+                            <td className="blast-col blast-col--coverage table-cell number-cell">{row[3]}</td>
+                            <td className="blast-col blast-col--length table-cell number-cell">{row[4]}</td>
+                            <td className="blast-col blast-col--query-length table-cell number-cell">{row[5]}</td>
+                            <td className="blast-col blast-col--subject-length table-cell number-cell">{row[6]}</td>
+                            <td className="blast-col blast-col--mismatches table-cell number-cell">{row[7]}</td>
+                            <td className="blast-col blast-col--gap-opens table-cell number-cell">{row[8]}</td>
+                            <td className="blast-col blast-col--evalue table-cell number-cell e-value-cell">{row[9]}</td>
+                            <td className="blast-col blast-col--class table-cell taxonomy-cell">{row[10]}</td>
+                            <td className="blast-col blast-col--common table-cell taxonomy-cell">{row[11]}</td>
+                            <td className="blast-col blast-col--scientific table-cell taxonomy-cell">{row[12]}</td>
+                            <td className="blast-col blast-col--actions table-cell action-icons">
+                              <FiCopy
                                 size={16}
                                 className="icon copy-icon"
                                 onClick={() => handleCopySequence(row[1])}
                                 title="Copy Sequence"
-                            />
-                            <FiDownload
+                              />
+                              <FiDownload
                                 size={16}
                                 className="icon download-icon"
                                 onClick={() => handleDownload(row[1])}
                                 title="Download Sequence"
-                            />
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    </div>
-)}
+                              />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </section>
+            )}
 
-          {/* No Results Message */}
-          {!loading && results.length === 0 && file === null && (
-            <div style={{ textAlign: 'center', marginTop: '40px', color: '#666' }}>
-              <p>Upload a FASTA file to see BLAST results here.</p>
-            </div>
-          )}
+            {/* No Results Message */}
+            {!loading && results.length === 0 && file === null && (
+              <div className="blast-empty-state">
+                <p>Upload a FASTA file to see BLAST results here.</p>
+              </div>
+            )}
+          </div>
         </ContentCard>
         </PageBody>
       </PageLayout>

@@ -6,7 +6,21 @@ import { confirmIssue } from '../../services/AppinfoService';
 import { setResearcherPendingConfirmations } from '../../store/slices/notificationSlice';
 import { getIssueItemsByStatus } from '../../services/AppinfoService';
 import toast from 'react-hot-toast';
-import { PageLayout, PageHeader, PageBody, ContentCard } from '../layout/content';
+import { PageLayout, PageHeader, PageBody } from '../layout/content';
+import './ConfirmIssue.css';
+
+const TABLE_HEADINGS = [
+  { label: 'Entry No', colClass: 'rs-cfm-col--entry' },
+  { label: 'Item Code', colClass: 'rs-cfm-col--code' },
+  { label: 'Item Name', colClass: 'rs-cfm-col--name' },
+  { label: 'Quantity', colClass: 'rs-cfm-col--qty' },
+  { label: 'Project Code', colClass: 'rs-cfm-col--project-code' },
+  { label: 'Project Name', colClass: 'rs-cfm-col--project-name' },
+  { label: 'Lab Assistant', colClass: 'rs-cfm-col--lab-assistant' },
+  { label: 'Request Date', colClass: 'rs-cfm-col--date' },
+  { label: 'Status', colClass: 'rs-cfm-col--status' },
+  { label: 'Action', colClass: 'rs-cfm-col--actions' },
+];
 
 const ConfirmIssue = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   const dispatch = useDispatch();
@@ -18,13 +32,11 @@ const ConfirmIssue = ({ userDetails = { name: "", lab: "", designation: "" } }) 
   const [loading, setLoading] = useState({});
 
   useEffect(() => {
-    // Fetch pending confirmations on mount
     fetchPendingConfirmations();
   }, []);
 
   const fetchPendingConfirmations = async () => {
     try {
-      // Get username from Redux or userDetails for filtering
       const username = reduxUser?.user_name || userDetails.name || null;
       const data = await getIssueItemsByStatus('RSR-CONFIRM', username);
       dispatch(setResearcherPendingConfirmations(data || []));
@@ -53,7 +65,6 @@ const ConfirmIssue = ({ userDetails = { name: "", lab: "", designation: "" } }) 
         toast.success('Item request declined');
       }
       
-      // Refresh the list
       await fetchPendingConfirmations();
     } catch (error) {
       console.error(`Error ${action}ing issue:`, error);
@@ -81,75 +92,82 @@ const ConfirmIssue = ({ userDetails = { name: "", lab: "", designation: "" } }) 
     <PageLayout>
       <PageHeader title="Pending confirmations" />
       <PageBody>
-      <ContentCard flush>
-        <div className="lims-notification-scroll">
-          <table className="lims-notification-table lims-table">
-            <thead>
-              <tr>
-                <th style={{ minWidth: '100px' }}>Entry No</th>
-                <th style={{ minWidth: '120px' }}>Item Code</th>
-                <th style={{ minWidth: '150px' }}>Item Name</th>
-                <th style={{ minWidth: '100px' }}>Quantity</th>
-                <th style={{ minWidth: '120px' }}>Project Code</th>
-                <th style={{ minWidth: '150px' }}>Project Name</th>
-                <th style={{ minWidth: '130px' }}>Lab Assistant</th>
-                <th style={{ minWidth: '120px' }}>Request Date</th>
-                <th style={{ minWidth: '120px' }}>Status</th>
-                <th style={{ minWidth: '200px' }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingConfirmations.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="lims-notification-empty">
-                    No items waiting for your confirmation.
-                  </td>
-                </tr>
-              ) : (
-                pendingConfirmations.map((item) => (
-                  <tr key={item.entry_no}>
-                    <td>{item.entry_no || '-'}</td>
-                    <td>{item.item_code || '-'}</td>
-                    <td>{item.item_name || '-'}</td>
-                    <td>{item.quantity_issued || '-'}</td>
-                    <td>{item.project_code || '-'}</td>
-                    <td>{item.project_name || '-'}</td>
-                    <td>{item.lab_assistant_name || '-'}</td>
-                    <td>{formatDate(item.issue_date)}</td>
-                    <td>
-                      <Badge bg="warning" text="dark">
-                        {item.status || 'RSR-CONFIRM'}
-                      </Badge>
-                    </td>
-                    <td>
-                      <div className="lims-notification-actions">
-                        <Button
-                          variant="success"
-                          size="sm"
-                          onClick={() => handleConfirm(item, 'accept')}
-                          disabled={loading[item.entry_no]}
+        <div className="confirm-issue-page">
+          <section className="project-panel" aria-label="Pending issue confirmations">
+            <div className="project-table-section">
+              <div className="project-table-shell">
+                <table className="project-table">
+                  <thead>
+                    <tr>
+                      {TABLE_HEADINGS.map(({ label, colClass }) => (
+                        <th
+                          key={colClass}
+                          scope="col"
+                          className={`rs-cfm-col ${colClass}${
+                            colClass === 'rs-cfm-col--actions' ? ' project-th-actions' : ''
+                          }`}
                         >
-                          <FaCheck />
-                          {loading[item.entry_no] ? 'Confirming...' : 'Confirm'}
-                        </Button>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleConfirm(item, 'decline')}
-                          disabled={loading[item.entry_no]}
-                        >
-                          <FaTimes />
-                          {loading[item.entry_no] ? 'Declining...' : 'Decline'}
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                          {label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingConfirmations.length === 0 ? (
+                      <tr className="project-table-row project-table-row--empty">
+                        <td colSpan={10}>
+                          <div className="project-empty">
+                            <p>No items waiting for your confirmation.</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      pendingConfirmations.map((item) => (
+                        <tr key={item.entry_no} className="project-table-row">
+                          <td className="rs-cfm-col rs-cfm-col--entry">{item.entry_no || '-'}</td>
+                          <td className="rs-cfm-col rs-cfm-col--code">{item.item_code || '-'}</td>
+                          <td className="rs-cfm-col rs-cfm-col--name">{item.item_name || '-'}</td>
+                          <td className="rs-cfm-col rs-cfm-col--qty">{item.quantity_issued || '-'}</td>
+                          <td className="rs-cfm-col rs-cfm-col--project-code">{item.project_code || '-'}</td>
+                          <td className="rs-cfm-col rs-cfm-col--project-name">{item.project_name || '-'}</td>
+                          <td className="rs-cfm-col rs-cfm-col--lab-assistant">{item.lab_assistant_name || '-'}</td>
+                          <td className="rs-cfm-col rs-cfm-col--date">{formatDate(item.issue_date)}</td>
+                          <td className="rs-cfm-col rs-cfm-col--status">
+                            <Badge bg="warning" text="dark">
+                              {item.status || 'RSR-CONFIRM'}
+                            </Badge>
+                          </td>
+                          <td className="rs-cfm-col rs-cfm-col--actions project-td-actions">
+                            <div className="lims-notification-actions">
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() => handleConfirm(item, 'accept')}
+                                disabled={loading[item.entry_no]}
+                              >
+                                <FaCheck />
+                                {loading[item.entry_no] ? 'Confirming...' : 'Confirm'}
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleConfirm(item, 'decline')}
+                                disabled={loading[item.entry_no]}
+                              >
+                                <FaTimes />
+                                {loading[item.entry_no] ? 'Declining...' : 'Decline'}
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
         </div>
-      </ContentCard>
       </PageBody>
     </PageLayout>
   );

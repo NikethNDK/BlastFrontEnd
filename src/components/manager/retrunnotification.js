@@ -6,26 +6,34 @@ import toast from "react-hot-toast";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { BASE_URL } from "../../services/AppinfoService";
 import { setManagerPendingReturns } from "../../store/slices/notificationSlice";
-import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
+import { PageLayout, PageHeader, PageBody } from "../layout/content";
+import "./ReturnNotification.css";
+
+const columns = [
+  { key: "item_code", label: "Item Code", colClass: "mn-rtn-col--code" },
+  { key: "item_name", label: "Item Name", colClass: "mn-rtn-col--name" },
+  { key: "quantity_returned", label: "Quantity Returned", colClass: "mn-rtn-col--qty" },
+  { key: "project_name", label: "Project Name", colClass: "mn-rtn-col--project" },
+  { key: "location", label: "Location", colClass: "mn-rtn-col--location" },
+  { key: "receipt_date", label: "Receipt Date", colClass: "mn-rtn-col--receipt-date" },
+  { key: "return_date", label: "Return Date", colClass: "mn-rtn-col--return-date" },
+  { key: "remarks", label: "Remarks", colClass: "mn-rtn-col--remarks" },
+];
 
 const ReturnDataTableNotification = ({
   managerId,
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
   const dispatch = useDispatch();
-  
-  // NOTE: Data is now provided by centralized polling via Redux
-  // The useNotificationPolling hook in ManagerNavigation fetches and dispatches data
+
   const data = useSelector((state) => state.notifications.manager.pendingReturns || []);
-  
-  // Get user from Redux store to send username in request
+
   const reduxUser = useSelector((state) => state.user.user);
 
   const [filters, setFilters] = useState({});
 
   const handleStatusUpdate = async (entryNo, status) => {
     try {
-      // Guard: Ensure username is available from Redux
       if (!reduxUser || !reduxUser.user_name) {
         toast.error("User information not available. Please refresh the page.");
         return;
@@ -33,17 +41,15 @@ const ReturnDataTableNotification = ({
 
       const response = await axios.put(
         `${BASE_URL}/item_return/approve/${entryNo}/`,
-        { 
+        {
           status,
-          username: reduxUser.user_name  // Send username from Redux
+          username: reduxUser.user_name,
         }
       );
 
       console.log(response.data);
       toast.success(`Item return ${status} successfully!`);
 
-      // Remove the item from Redux state after successful update
-      // The next polling cycle will refresh the data automatically
       const updatedData = data.filter((item) => item.entry_no !== entryNo);
       dispatch(setManagerPendingReturns(updatedData));
     } catch (error) {
@@ -101,77 +107,86 @@ const ReturnDataTableNotification = ({
     XLSX.writeFile(workbook, "IssueData.xlsx");
   };
 
-  const columns = [
-    { key: "item_code", label: "Item Code" },
-    { key: "item_name", label: "Item Name" },
-    { key: "quantity_returned", label: "Quantity Returned" },
-    { key: "project_name", label: "Project Name" },
-    { key: "location", label: "Location" },
-    { key: "receipt_date", label: "Receipt Date" },
-    { key: "return_date", label: "Return Date" },
-    { key: "remarks", label: "Remarks" },
-  ];
-
   return (
     <PageLayout>
       <PageHeader title="Return notification" />
       <PageBody>
-      <ContentCard flush>
-        <div className="lims-notification-scroll">
-          <table className="lims-notification-table lims-table">
-            <thead>
-              <tr>
-                {columns.map((column) => (
-                  <th key={column.key} style={{ minWidth: "120px" }}>
-                    {column.label}
-                  </th>
-                ))}
-                <th style={{ minWidth: "150px" }}>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.length === 0 ? (
-                <tr>
-                  <td colSpan={columns.length + 1} className="lims-notification-empty">
-                    No pending return requests. Data is automatically updated via centralized polling.
-                  </td>
-                </tr>
-              ) : (
-                data.map((inven) => (
-                  <tr key={inven.entry_no || inven.id}>
-                    <td>{inven.item_code}</td>
-                    <td>{inven.item_name}</td>
-                    <td>{inven.quantity_returned}</td>
-                    <td>{inven.project_name}</td>
-                    <td>{inven.location}</td>
-                    <td>{inven.receipt_date}</td>
-                    <td>{inven.return_date}</td>
-                    <td>{inven.remarks}</td>
-                    <td>
-                      <div className="lims-notification-actions">
-                        <button
-                          type="button"
-                          onClick={() => handleStatusUpdate(inven.entry_no, "Accepted")}
-                          className="lims-btn-accept"
+        <div className="return-notification-page">
+          <section className="project-panel" aria-label="Pending return requests">
+            <div className="project-table-section">
+              <div className="project-table-shell">
+                <table className="project-table">
+                  <thead>
+                    <tr>
+                      {columns.map((column) => (
+                        <th
+                          key={column.key}
+                          scope="col"
+                          className={`mn-rtn-col ${column.colClass}`}
                         >
-                          <FaCheck size={14} /> Accept
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleStatusUpdate(inven.entry_no, "Declined")}
-                          className="lims-btn-decline"
+                          {column.label}
+                        </th>
+                      ))}
+                      <th
+                        scope="col"
+                        className="mn-rtn-col mn-rtn-col--actions project-th-actions"
+                      >
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.length === 0 ? (
+                      <tr className="project-table-row project-table-row--empty">
+                        <td colSpan={columns.length + 1}>
+                          <div className="project-empty">
+                            <p>
+                              No pending return requests. Data is automatically updated via centralized polling.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      data.map((inven) => (
+                        <tr
+                          key={inven.entry_no || inven.id}
+                          className="project-table-row"
                         >
-                          <FaTimes size={14} /> Decline
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                          <td className="mn-rtn-col mn-rtn-col--code">{inven.item_code}</td>
+                          <td className="mn-rtn-col mn-rtn-col--name">{inven.item_name}</td>
+                          <td className="mn-rtn-col mn-rtn-col--qty">{inven.quantity_returned}</td>
+                          <td className="mn-rtn-col mn-rtn-col--project">{inven.project_name}</td>
+                          <td className="mn-rtn-col mn-rtn-col--location">{inven.location}</td>
+                          <td className="mn-rtn-col mn-rtn-col--receipt-date">{inven.receipt_date}</td>
+                          <td className="mn-rtn-col mn-rtn-col--return-date">{inven.return_date}</td>
+                          <td className="mn-rtn-col mn-rtn-col--remarks">{inven.remarks}</td>
+                          <td className="mn-rtn-col mn-rtn-col--actions project-td-actions">
+                            <div className="lims-notification-actions">
+                              <button
+                                type="button"
+                                onClick={() => handleStatusUpdate(inven.entry_no, "Accepted")}
+                                className="lims-btn-accept"
+                              >
+                                <FaCheck size={14} /> Accept
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleStatusUpdate(inven.entry_no, "Declined")}
+                                className="lims-btn-decline"
+                              >
+                                <FaTimes size={14} /> Decline
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
         </div>
-      </ContentCard>
       </PageBody>
     </PageLayout>
   );

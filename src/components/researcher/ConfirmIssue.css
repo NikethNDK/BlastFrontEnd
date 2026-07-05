@@ -1,0 +1,220 @@
+/* Confirm issue — matches EmployeeManage table UI */
+
+.confirm-issue-page {
+  --ci-bg: #ffffff;
+  --ci-fg-strong: #09090b;
+  --ci-muted: #64748b;
+  --ci-border: #e2e8f0;
+  --ci-radius-lg: 0.75rem;
+  --ci-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+}
+
+.confirm-issue-page .project-panel {
+  background: var(--ci-bg);
+  border: 1px solid var(--ci-border);
+  border-radius: var(--ci-radius-lg);
+  box-shadow: var(--ci-shadow);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.confirm-issue-page .project-table-section {
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.confirm-issue-page .project-table-shell {
+  overflow-x: auto;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.confirm-issue-page .project-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  border: none;
+  min-width: max-content;
+  table-layout: auto;
+}
+
+.confirm-issue-page .project-table thead tr {
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.confirm-issue-page .project-table thead th {
+  height: 2rem;
+  padding: 0.4375rem 1rem;
+  background: #f4f4f5 !important;
+  color: #52525b !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  vertical-align: middle;
+  white-space: nowrap;
+  border: none !important;
+  position: static !important;
+}
+
+.confirm-issue-page .project-th-actions,
+.confirm-issue-page .project-table tbody td.project-td-actions {
+  text-align: center !important;
+}
+
+.confirm-issue-page .project-table tbody tr:nth-child(even) {
+  background: transparent !important;
+}
+
+.confirm-issue-page .project-table tbody tr:not(.project-table-row--empty) {
+  border-bottom: 1px solid var(--ci-border) !important;
+  transition: background-color 0.15s ease;
+}
+
+.confirm-issue-page .project-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.confirm-issue-page .project-table tbody tr:hover {
+  background: #fafafa !important;
+}
+
+.confirm-issue-page .project-table tbody td {
+  padding: 0.4375rem 0.625rem !important;
+  color: var(--ci-fg-strong) !important;
+  vertical-align: middle;
+  border: none !important;
+  text-align: left !important;
+  font-size: 0.8125rem;
+}
+
+.confirm-issue-page .project-table-row--empty,
+.confirm-issue-page .project-table-row--empty:hover {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.confirm-issue-page .project-table-row--empty td {
+  padding: 0 !important;
+  border: none !important;
+}
+
+.confirm-issue-page .project-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--ci-muted);
+  font-size: 0.875rem;
+}
+
+.confirm-issue-page .project-empty p {
+  margin: 0;
+}
+
+/* Column sizing */
+
+.confirm-issue-page .project-table thead th.rs-cfm-col {
+  padding: 0.4375rem 0.625rem !important;
+  line-height: 1.25;
+}
+
+.confirm-issue-page .project-table thead th.rs-cfm-col--entry { min-width: 4.75rem; }
+.confirm-issue-page .project-table thead th.rs-cfm-col--code { min-width: 5.5rem; }
+.confirm-issue-page .project-table thead th.rs-cfm-col--name { min-width: 6.5rem; }
+.confirm-issue-page .project-table thead th.rs-cfm-col--qty { min-width: 4.5rem; }
+.confirm-issue-page .project-table thead th.rs-cfm-col--project-code { min-width: 6.5rem; }
+.confirm-issue-page .project-table thead th.rs-cfm-col--project-name { min-width: 7rem; }
+.confirm-issue-page .project-table thead th.rs-cfm-col--lab-assistant { min-width: 6.5rem; }
+.confirm-issue-page .project-table thead th.rs-cfm-col--date { min-width: 6.25rem; }
+.confirm-issue-page .project-table thead th.rs-cfm-col--status { min-width: 6.5rem; }
+.confirm-issue-page .project-table thead th.rs-cfm-col--actions { min-width: 11rem; }
+
+.confirm-issue-page .project-table tbody td.rs-cfm-col--name,
+.confirm-issue-page .project-table tbody td.rs-cfm-col--project-name {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.confirm-issue-page .project-table tbody td.rs-cfm-col--entry,
+.confirm-issue-page .project-table tbody td.rs-cfm-col--code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.confirm-issue-page .project-table tbody td.rs-cfm-col--qty {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.confirm-issue-page .project-table tbody td.rs-cfm-col--status,
+.confirm-issue-page .project-table tbody td.rs-cfm-col--actions {
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.confirm-issue-page .lims-notification-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.confirm-issue-page .lims-notification-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.75rem;
+  padding: 0 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  border-radius: 0.375rem;
+}
+
+.confirm-issue-page .lims-notification-actions .btn-success {
+  color: #065f46;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.confirm-issue-page .lims-notification-actions .btn-success:hover:not(:disabled) {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  color: #065f46;
+}
+
+.confirm-issue-page .lims-notification-actions .btn-danger {
+  color: #991b1b;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.confirm-issue-page .lims-notification-actions .btn-danger:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.confirm-issue-page .rs-cfm-col--status .badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+}

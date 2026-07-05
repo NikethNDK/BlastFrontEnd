@@ -193,6 +193,8 @@
   border-collapse: collapse;
   font-size: 0.875rem;
   border: none;
+  min-width: max-content;
+  table-layout: auto;
 }
 
 .employee-manage .project-table thead tr {
@@ -266,6 +268,43 @@
 .employee-manage .project-table-row--empty td {
   padding: 0 !important;
   border: none !important;
+}
+
+/* Column sizing */
+
+.employee-manage .project-table thead th.pt-col {
+  white-space: nowrap !important;
+  padding: 0.4375rem 0.625rem !important;
+  line-height: 1.25;
+}
+
+.employee-manage .project-table thead th.pt-col--emp-id { min-width: 6.5rem; }
+.employee-manage .project-table thead th.pt-col--emp-name { min-width: 7rem; }
+.employee-manage .project-table thead th.pt-col--project-code { min-width: 6.75rem; }
+.employee-manage .project-table thead th.pt-col--project { min-width: 6.75rem; }
+.employee-manage .project-table thead th.pt-col--lab { min-width: 5.5rem; }
+.employee-manage .project-table thead th.pt-col--designation { min-width: 6.5rem; }
+.employee-manage .project-table thead th.pt-col--status { min-width: 5.5rem; }
+.employee-manage .project-table thead th.pt-col--actions { min-width: 5.5rem; }
+
+.employee-manage .project-table tbody td.pt-col {
+  padding: 0.4375rem 0.625rem !important;
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.employee-manage .project-table tbody td.pt-col--emp-name,
+.employee-manage .project-table tbody td.pt-col--project {
+  max-width: 10rem;
+}
+
+.employee-manage .project-table tbody td.pt-col--actions,
+.employee-manage .project-table tbody td.pt-col--status {
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
 }
 
 .employee-manage .project-name {

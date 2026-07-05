@@ -1,12 +1,25 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { FaEdit, FaTrash } from "react-icons/fa";
-import { Modal, Button } from "react-bootstrap";
+import { FaEdit, FaTrash, FaTimes, FaBoxOpen } from "react-icons/fa";
+import { Modal } from "react-bootstrap";
 import toast from "react-hot-toast";
 import {
   getTempIssueApi,
   deleteTempIssueApi,
 } from "../../../services/AppinfoService";
-import "./TempIssueTable.css"; // Import the new CSS file
+import "./TempIssueTable.css";
+
+const getStatusBadgeClass = (status) => {
+  switch (status) {
+    case "LAB-OPEN":
+      return "issue-status-badge issue-status-badge--lab-open";
+    case "RSR-CONFIRM":
+      return "issue-status-badge issue-status-badge--rsr-confirm";
+    case "LAB-ACT":
+      return "issue-status-badge issue-status-badge--lab-act";
+    default:
+      return "issue-status-badge issue-status-badge--default";
+  }
+};
 
 const TempIssueTable = ({ onEdit, username = null, onItemCountChange }) => {
   const [issued, setIssued] = useState([]);
@@ -21,15 +34,13 @@ const TempIssueTable = ({ onEdit, username = null, onItemCountChange }) => {
       const data = await getTempIssueApi(username);
       setIssued(data);
       setError(null);
-      // Notify parent of item count change
-      if (onItemCountChange && typeof onItemCountChange === 'function') {
+      if (onItemCountChange && typeof onItemCountChange === "function") {
         onItemCountChange(data.length);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
+    } catch (err) {
+      console.error("Error fetching data:", err);
       setError("Failed to load data. Please try again.");
-      // Notify parent of item count change (0 on error)
-      if (onItemCountChange && typeof onItemCountChange === 'function') {
+      if (onItemCountChange && typeof onItemCountChange === "function") {
         onItemCountChange(0);
       }
     } finally {
@@ -39,15 +50,11 @@ const TempIssueTable = ({ onEdit, username = null, onItemCountChange }) => {
 
   useEffect(() => {
     fetchData();
-    
-    // Expose refresh function globally
     window.refreshTempIssueTable = fetchData;
-    
-    // Cleanup on unmount
     return () => {
       delete window.refreshTempIssueTable;
     };
-  }, [fetchData]); // Re-fetch when username changes
+  }, [fetchData]);
 
   const handleEdit = (issue) => {
     if (onEdit) {
@@ -63,6 +70,11 @@ const TempIssueTable = ({ onEdit, username = null, onItemCountChange }) => {
     setShowDeleteModal(true);
   };
 
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
+    setItemToDelete(null);
+  };
+
   const confirmDelete = async () => {
     setShowDeleteModal(false);
     if (!itemToDelete) return;
@@ -71,133 +83,190 @@ const TempIssueTable = ({ onEdit, username = null, onItemCountChange }) => {
       await deleteTempIssueApi(itemToDelete);
       const updatedIssued = issued.filter((item) => item.entry_no !== itemToDelete);
       setIssued(updatedIssued);
-      // Notify parent of item count change after deletion
-      if (onItemCountChange && typeof onItemCountChange === 'function') {
+      if (onItemCountChange && typeof onItemCountChange === "function") {
         onItemCountChange(updatedIssued.length);
       }
       toast.success("Record deleted successfully");
-    } catch (error) {
-      console.error("Error deleting item:", error);
+    } catch (err) {
+      console.error("Error deleting item:", err);
       toast.error("Failed to delete record. Please try again.");
     } finally {
       setItemToDelete(null);
     }
   };
 
+  const deleteTarget = issued.find((item) => item.entry_no === itemToDelete);
 
   if (loading) {
-    return <div className="temp-issue-loading">Loading data...</div>;
+    return (
+      <div className="issue-table-state issue-table-state--loading" role="status">
+        Loading data…
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="temp-issue-error">{error}</div>;
+    return (
+      <div className="issue-table-state issue-table-state--error" role="alert">
+        {error}
+      </div>
+    );
   }
 
   return (
-    <div className="temp-issue-container">
-      <div className="temp-issue-table-wrapper">
-        <table className="temp-issue-table">
-          <thead>
-            <tr>
-              <th className="table-header">Issued ID</th>
-              <th className="table-header">Item Code</th>
-              <th className="table-header">Item Name</th>
-              <th className="table-header">Quantity Issued</th>
-              <th className="table-header">Project Code</th>
-              <th className="table-header">Project Name</th>
-              <th className="table-header">Issued To</th>
-              <th className="table-header">Status</th>
-              <th className="table-header">Instruction and Specification</th>
-              <th className="table-header">Remarks</th>
-              <th className="table-header">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {issued.length > 0 ? (
-              issued.map((item) => (
-                <tr key={item.entry_no}>
-                  <td className="table-cell">{item.entry_no || "-"}</td>
-                  <td className="table-cell">{item.item_code || "-"}</td>
-                  <td className="table-cell">{item.item_name || "-"}</td>
-                  <td className="table-cell">{item.quantity_issued ?? "—"}</td>
-                  <td className="table-cell">{item.project_code || "-"}</td>
-                  <td className="table-cell">{item.project_name || "-"}</td>
-                  <td className="table-cell">{item.issued_to || "-"}</td>
-                  <td className="table-cell">
-                    <span
-                      style={{
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        fontSize: "0.85rem",
-                        fontWeight: "500",
-                        backgroundColor:
-                          item.status === "LAB-OPEN"
-                            ? "#fff3cd"
-                            : item.status === "RSR-CONFIRM"
-                            ? "#d1ecf1"
-                            : item.status === "LAB-ACT"
-                            ? "#d4edda"
-                            : "#f8d7da",
-                        color:
-                          item.status === "LAB-OPEN"
-                            ? "#856404"
-                            : item.status === "RSR-CONFIRM"
-                            ? "#0c5460"
-                            : item.status === "LAB-ACT"
-                            ? "#155724"
-                            : "#721c24",
-                      }}
-                    >
-                      {item.status || "-"}
-                    </span>
-                  </td>
-                  <td className="table-cell">{item.instruction_specification || "-"}</td>
-                  <td className="table-cell">{item.remarks || "-"}</td>
-                  <td className="table-cell">
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                      <button
-                        className="temp-issue-action-btn"
-                        onClick={() => handleEdit(item)}
-                        title="Edit"
-                      >
-                        <FaEdit color="#2563eb" size={16} />
-                      </button>
-                      <button
-                        className="temp-issue-action-btn"
-                        onClick={() => handleDelete(item.entry_no)}
-                        title="Delete"
-                      >
-                        <FaTrash color="#ef4444" size={16} />
-                      </button>
+    <>
+      <div className="project-table-section">
+        <div className="project-table-shell">
+          <table className="project-table">
+            <thead>
+              <tr>
+                <th scope="col" className="pt-col pt-col--entry">Issued ID</th>
+                <th scope="col" className="pt-col pt-col--code">Item Code</th>
+                <th scope="col" className="pt-col pt-col--name">Item Name</th>
+                <th scope="col" className="pt-col pt-col--qty">Quantity Issued</th>
+                <th scope="col" className="pt-col pt-col--project-code">Project Code</th>
+                <th scope="col" className="pt-col pt-col--project">Project Name</th>
+                <th scope="col" className="pt-col pt-col--issued-to">Issued To</th>
+                <th scope="col" className="pt-col pt-col--status">Status</th>
+                <th scope="col" className="pt-col pt-col--instruction">Instruction and Specification</th>
+                <th scope="col" className="pt-col pt-col--remarks">Remarks</th>
+                <th scope="col" className="pt-col pt-col--actions project-th-actions">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {issued.length > 0 ? (
+                issued.map((item) => (
+                  <tr key={item.entry_no} className="project-table-row">
+                    <td className="pt-col pt-col--entry" data-label="Issued ID">
+                      <span className="issue-entry-id">{item.entry_no || "—"}</span>
+                    </td>
+                    <td className="pt-col pt-col--code" data-label="Item Code">{item.item_code || "—"}</td>
+                    <td className="pt-col pt-col--name" data-label="Item Name">
+                      <span className="issue-item-name">{item.item_name || "—"}</span>
+                    </td>
+                    <td className="pt-col pt-col--qty" data-label="Quantity Issued">{item.quantity_issued ?? "—"}</td>
+                    <td className="pt-col pt-col--project-code" data-label="Project Code">{item.project_code || "—"}</td>
+                    <td className="pt-col pt-col--project" data-label="Project Name">{item.project_name || "—"}</td>
+                    <td className="pt-col pt-col--issued-to" data-label="Issued To">{item.issued_to || "—"}</td>
+                    <td className="pt-col pt-col--status" data-label="Status">
+                      <span className={getStatusBadgeClass(item.status)}>
+                        {item.status || "—"}
+                      </span>
+                    </td>
+                    <td className="pt-col pt-col--instruction issue-cell-wrap" data-label="Instruction and Specification">
+                      {item.instruction_specification || "—"}
+                    </td>
+                    <td className="pt-col pt-col--remarks issue-cell-wrap" data-label="Remarks">
+                      {item.remarks || "—"}
+                    </td>
+                    <td className="pt-col pt-col--actions project-td-actions" data-label="Actions">
+                      <div className="project-row-actions">
+                        <button
+                          type="button"
+                          className="project-icon-btn project-icon-btn--edit"
+                          onClick={() => handleEdit(item)}
+                          title="Edit"
+                          aria-label={`Edit issue ${item.entry_no}`}
+                        >
+                          <FaEdit aria-hidden />
+                        </button>
+                        <button
+                          type="button"
+                          className="project-icon-btn project-icon-btn--danger"
+                          onClick={() => handleDelete(item.entry_no)}
+                          title="Delete"
+                          aria-label={`Delete issue ${item.entry_no}`}
+                        >
+                          <FaTrash aria-hidden />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr className="project-table-row project-table-row--empty">
+                  <td colSpan="11">
+                    <div className="project-empty">
+                      <div className="project-empty-icon-wrap">
+                        <FaBoxOpen aria-hidden />
+                      </div>
+                      <h3>No issue items yet</h3>
+                      <p>Add an item using the Add button above to get started.</p>
                     </div>
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="11" className="temp-issue-no-data">
-                  No records found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Deletion</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>Are you sure you want to delete this record? This action cannot be undone.</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
+
+      <Modal
+        show={showDeleteModal}
+        onHide={handleCloseDeleteModal}
+        size="sm"
+        centered
+        backdrop="static"
+        dialogClassName="project-modal project-modal--confirm"
+        contentClassName="project-modal-content"
+      >
+        <div className="project-modal-header">
+          <button
+            type="button"
+            className="project-modal-close"
+            onClick={handleCloseDeleteModal}
+            aria-label="Close"
+          >
+            <FaTimes aria-hidden />
+          </button>
+          <h2 className="project-modal-title">Delete issue item?</h2>
+          <p className="project-modal-description">
+            This action cannot be undone. The staged issue record will be removed.
+          </p>
+        </div>
+        <Modal.Body className="project-modal-body">
+          {deleteTarget ? (
+            <div className="project-modal-highlight">
+              <div className="project-modal-highlight-row">
+                <span className="project-modal-highlight-label">ID</span>
+                <span>{deleteTarget.entry_no}</span>
+              </div>
+              <div className="project-modal-highlight-row">
+                <span className="project-modal-highlight-label">Item</span>
+                <span>
+                  {deleteTarget.item_code || "—"}
+                  {deleteTarget.item_name ? ` — ${deleteTarget.item_name}` : ""}
+                </span>
+              </div>
+              {deleteTarget.issued_to ? (
+                <div className="project-modal-highlight-row">
+                  <span className="project-modal-highlight-label">Issued to</span>
+                  <span>{deleteTarget.issued_to}</span>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </Modal.Body>
+        <Modal.Footer className="project-modal-footer">
+          <button
+            type="button"
+            className="project-btn project-btn-outline"
+            onClick={handleCloseDeleteModal}
+          >
             Cancel
-          </Button>
-          <Button variant="danger" onClick={confirmDelete}>
+          </button>
+          <button
+            type="button"
+            className="project-btn project-btn-danger-solid"
+            onClick={confirmDelete}
+          >
             Delete
-          </Button>
+          </button>
         </Modal.Footer>
       </Modal>
-    </div>
+    </>
   );
 };
 

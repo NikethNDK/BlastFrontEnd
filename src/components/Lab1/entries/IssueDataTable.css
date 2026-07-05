@@ -1,0 +1,409 @@
+/* Issue data table — admin-style layout (scoped) */
+
+.issue-data-page {
+  --id-bg: #ffffff;
+  --id-fg: #1a3d2a;
+  --id-fg-strong: #09090b;
+  --id-muted: #64748b;
+  --id-muted-bg: #f8fafc;
+  --id-border: #e2e8f0;
+  --id-ring: var(--lims-accent-dark, #b5da21);
+  --id-brand: var(--lims-accent, #c5ea31);
+  --id-brand-dark: var(--lims-accent-dark, #b5da21);
+  --id-brand-soft: #f3fae8;
+  --id-blue-soft: #eff6ff;
+  --id-blue: #2563eb;
+  --id-radius: 0.5rem;
+  --id-radius-lg: 0.75rem;
+  --id-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+/* ── Stat cards ──────────────────────────────────────────── */
+
+.issue-data-page .project-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.issue-data-page .project-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1rem 1.125rem;
+  background: var(--id-bg);
+  border: 1px solid var(--id-border);
+  border-radius: var(--id-radius-lg);
+  box-shadow: var(--id-shadow);
+  min-width: 0;
+}
+
+.issue-data-page .project-stat-icon {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--id-radius);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9375rem;
+  border: 1px solid transparent;
+}
+
+.issue-data-page .project-stat-icon--total {
+  background: var(--id-blue-soft);
+  color: var(--id-blue);
+  border-color: #dbeafe;
+}
+
+.issue-data-page .project-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.issue-data-page .project-stat-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--id-fg-strong);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.issue-data-page .project-stat-label {
+  font-size: 0.75rem;
+  color: var(--id-muted);
+  line-height: 1.3;
+}
+
+/* ── Panel ─────────────────────────────────────────────── */
+
+.issue-data-page .project-panel {
+  background: var(--id-bg);
+  border: 1px solid var(--id-border);
+  border-radius: var(--id-radius-lg);
+  box-shadow: var(--id-shadow);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ── Table section ───────────────────────────────────────── */
+
+.issue-data-page .project-table-section {
+  padding-bottom: 1rem;
+}
+
+.issue-data-page .project-table-section .lims-pagination {
+  padding: 0.75rem 1.25rem 0;
+}
+
+.issue-data-page .project-table-shell {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.issue-data-page .project-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  border: none;
+  min-width: max-content;
+  table-layout: auto;
+}
+
+.issue-data-page .project-table thead tr.project-thead-labels {
+  border-bottom: 1px solid #e8e8ec;
+}
+
+.issue-data-page .project-table thead tr.project-thead-filters {
+  border-bottom: 1px solid #e4e4e7;
+}
+
+.issue-data-page .project-table thead th {
+  background: #f4f4f5 !important;
+  color: #52525b !important;
+  font-weight: 600 !important;
+  text-align: left !important;
+  border: none !important;
+  position: static !important;
+  top: auto !important;
+  z-index: auto !important;
+}
+
+.issue-data-page .project-table thead th.project-th-label-cell {
+  padding: 0.4375rem 0.625rem !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.25;
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+.issue-data-page .project-table thead th.project-th-filter-cell {
+  padding: 0.3125rem 0.375rem 0.4375rem !important;
+  font-size: 0.6875rem !important;
+  font-weight: 400 !important;
+  vertical-align: top !important;
+  white-space: normal;
+  min-width: 5.5rem;
+}
+
+.issue-data-page .project-col-filter {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 1.5rem;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 400;
+  line-height: 1.25;
+  color: var(--id-fg-strong);
+  background: var(--id-bg);
+  border: 1px solid var(--id-border);
+  border-radius: calc(var(--id-radius) - 2px);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.issue-data-page .project-col-filter::placeholder {
+  color: var(--id-muted);
+  opacity: 1;
+}
+
+.issue-data-page .project-col-filter:focus {
+  outline: none;
+  border-color: var(--id-brand-dark);
+  box-shadow: 0 0 0 2px rgba(197, 234, 49, 0.2);
+}
+
+.issue-data-page .project-date-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+  width: 100%;
+}
+
+.issue-data-page .project-date-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.1875rem;
+  min-width: 0;
+}
+
+.issue-data-page .project-date-filter-label {
+  flex-shrink: 0;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  color: var(--id-muted);
+  width: 1.5rem;
+}
+
+.issue-data-page .project-date-filter {
+  box-sizing: border-box;
+  flex: 1;
+  min-width: 0;
+  height: 1.375rem;
+  padding: 0 0.1875rem;
+  font-size: 0.625rem;
+  font-weight: 400;
+  color: var(--id-fg-strong);
+  background: var(--id-bg);
+  border: 1px solid var(--id-border);
+  border-radius: calc(var(--id-radius) - 2px);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.issue-data-page .project-date-filter:focus {
+  outline: none;
+  border-color: var(--id-brand-dark);
+  box-shadow: 0 0 0 2px rgba(197, 234, 49, 0.2);
+}
+
+/* ── Table body ──────────────────────────────────────────── */
+
+.issue-data-page .project-table tbody tr:not(.project-table-row--empty) {
+  border-bottom: 1px solid var(--id-border) !important;
+  transition: background-color 0.15s ease;
+}
+
+.issue-data-page .project-table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.issue-data-page .project-table tbody tr:nth-child(even) {
+  background: transparent !important;
+}
+
+.issue-data-page .project-table tbody tr:hover {
+  background: #fafafa !important;
+}
+
+.issue-data-page .project-table tbody td {
+  padding: 0.4375rem 1rem !important;
+  color: var(--id-fg-strong) !important;
+  vertical-align: middle;
+  border: none !important;
+  text-align: left !important;
+}
+
+.issue-data-page .project-table-row--empty,
+.issue-data-page .project-table-row--empty:hover {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+.issue-data-page .project-table-row--empty td {
+  padding: 0 !important;
+  border: none !important;
+}
+
+/* Column sizing — issued data table (per-column) */
+
+.issue-data-page .project-table thead th.idt-col,
+.issue-data-page .project-table tbody td.idt-col {
+  padding: 0.4375rem 0.625rem !important;
+  line-height: 1.25;
+}
+
+.issue-data-page .project-table thead th.idt-col {
+  white-space: nowrap !important;
+}
+
+.issue-data-page .project-table thead th.project-th-filter-cell.idt-col {
+  padding: 0.3125rem 0.375rem 0.4375rem !important;
+  font-size: 0.6875rem !important;
+  font-weight: 400 !important;
+  vertical-align: top !important;
+  white-space: normal;
+}
+
+.issue-data-page .project-table thead th.idt-col--entry { min-width: 4.75rem; width: 4.75rem; }
+.issue-data-page .project-table thead th.idt-col--name { min-width: 6rem; }
+.issue-data-page .project-table thead th.idt-col--code { min-width: 5rem; }
+.issue-data-page .project-table thead th.idt-col--qty { min-width: 7.5rem; }
+.issue-data-page .project-table thead th.idt-col--issued-to { min-width: 6.25rem; }
+.issue-data-page .project-table thead th.idt-col--date { min-width: 6.5rem; }
+.issue-data-page .project-table thead th.idt-col--master-type { min-width: 6.75rem; }
+.issue-data-page .project-table thead th.idt-col--project { min-width: 7rem; }
+.issue-data-page .project-table thead th.idt-col--project-code { min-width: 6.75rem; }
+.issue-data-page .project-table thead th.idt-col--remarks { min-width: 5.5rem; }
+
+.issue-data-page .project-table tbody td.idt-col--entry,
+.issue-data-page .project-table tbody td.idt-col--code,
+.issue-data-page .project-table tbody td.idt-col--qty,
+.issue-data-page .project-table tbody td.idt-col--date,
+.issue-data-page .project-table tbody td.idt-col--project-code {
+  max-width: none;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.issue-data-page .project-table tbody td.idt-col--name {
+  max-width: 8.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issue-data-page .project-table tbody td.idt-col--issued-to,
+.issue-data-page .project-table tbody td.idt-col--master-type {
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issue-data-page .project-table tbody td.idt-col--project {
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issue-data-page .project-table tbody td.idt-col--remarks {
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.issue-data-page .issue-entry-no {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #3f3f46;
+}
+
+.issue-data-page .issue-item-name {
+  font-weight: 500;
+  color: var(--id-fg);
+}
+
+.issue-data-page .issue-cell-muted {
+  font-size: 0.8125rem;
+  color: var(--id-muted);
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+
+.issue-data-page .project-empty {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--id-muted);
+}
+
+.issue-data-page .project-empty-icon-wrap {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 0.75rem;
+  border-radius: var(--id-radius-lg);
+  background: var(--id-brand-soft);
+  color: var(--id-fg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  border: 1px solid #dcecc0;
+}
+
+.issue-data-page .project-empty h3 {
+  margin: 0 0 0.375rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--id-fg);
+}
+
+.issue-data-page .project-empty p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .issue-data-page .project-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .issue-data-page .project-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .issue-data-page .project-table tbody tr,
+  .issue-data-page .project-col-filter,
+  .issue-data-page .project-date-filter {
+    transition: none;
+  }
+}

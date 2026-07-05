@@ -4,7 +4,7 @@ import {
   getStockLevelApi,
 } from "../../../services/AppinfoService";
 import MasterListTable from "./inventory";
-import { PageLayout, PageHeader, PageToolbar, PageBody, ContentCard } from "../../layout/content";
+import { PageLayout, PageHeader, PageToolbar, PageBody } from "../../layout/content";
 
 const HomeLab = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
   const [selectedMasterType, setSelectedMasterType] = useState("");
@@ -63,9 +63,7 @@ const HomeLab = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
         onChange={handleMasterTypeSelection}
       />
       <PageBody>
-        <ContentCard flush>
-          <MasterListTable masterType={selectedMasterType} />
-        </ContentCard>
+        <MasterListTable masterType={selectedMasterType} />
       </PageBody>
     </PageLayout>
   );

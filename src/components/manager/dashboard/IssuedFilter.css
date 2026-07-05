@@ -1,0 +1,24 @@
+.md-iss-page .project-table thead th.md-iss-col--entry { min-width: 4.75rem; }
+.md-iss-page .project-table thead th.md-iss-col--code { min-width: 5rem; }
+.md-iss-page .project-table thead th.md-iss-col--name { min-width: 6rem; }
+.md-iss-page .project-table thead th.md-iss-col--issue-date { min-width: 6.25rem; }
+.md-iss-page .project-table thead th.md-iss-col--qty { min-width: 7rem; }
+.md-iss-page .project-table thead th.md-iss-col--project-code { min-width: 6.5rem; }
+.md-iss-page .project-table thead th.md-iss-col--project-name { min-width: 7rem; }
+.md-iss-page .project-table thead th.md-iss-col--issued-to { min-width: 6.5rem; }
+.md-iss-page .project-table thead th.md-iss-col--remarks { min-width: 5.5rem; }
+
+.md-iss-page .project-table tbody td.md-iss-col--name,
+.md-iss-page .project-table tbody td.md-iss-col--project-name,
+.md-iss-page .project-table tbody td.md-iss-col--issued-to,
+.md-iss-page .project-table tbody td.md-iss-col--remarks {
+  max-width: 9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.md-iss-page .project-table tbody td.md-iss-col--qty {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}

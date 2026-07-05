@@ -8,7 +8,8 @@ import Inven from "../Lab1/homeLab/forDashboard";
 import ReturnDataTable from "../manager/returnData";
 import { FaBell } from "react-icons/fa";
 import "./Dashboard.css";
-import { PageLayout, PageHeader, PageToolbar, PageBody, ContentCard } from "../layout/content";
+import "./dashboard/ManagerDashboard.shared.css";
+import { PageLayout, PageHeader, PageToolbar, PageBody } from "../layout/content";
 
 const Dashboard = ({ userDetails = { name: "", lab: "", designation: "" } }) => {
   const [receivedCount, setReceivedCount] = useState(0);
@@ -93,18 +94,16 @@ const Dashboard = ({ userDetails = { name: "", lab: "", designation: "" } }) => 
         onChange={handleButtonClick}
       />
       <PageBody>
-        <ContentCard flush>
-          <div className="lims-data-fill">
-            {selectedButton === "ProjectFilter" && <ProjectFilter />}
-            {selectedButton === "Inven" && <Inven userDetails={userDetails} />}
-            {selectedButton === "EmployeeFilter" && <EmployeeFilter />}
-            {selectedButton === "ReceivedFilter" && (
-              <ReceivedFilter setReceivedCount={handleReceivedCount} />
-            )}
-            {selectedButton === "IssuedFilter" && <IssuedFilter />}
-            {selectedButton === "ReturnFilter" && <ReturnDataTable />}
-          </div>
-        </ContentCard>
+        <div className="manager-dashboard-body">
+          {selectedButton === "ProjectFilter" && <ProjectFilter />}
+          {selectedButton === "Inven" && <Inven userDetails={userDetails} />}
+          {selectedButton === "EmployeeFilter" && <EmployeeFilter />}
+          {selectedButton === "ReceivedFilter" && (
+            <ReceivedFilter setReceivedCount={handleReceivedCount} />
+          )}
+          {selectedButton === "IssuedFilter" && <IssuedFilter />}
+          {selectedButton === "ReturnFilter" && <ReturnDataTable />}
+        </div>
       </PageBody>
     </PageLayout>
   );

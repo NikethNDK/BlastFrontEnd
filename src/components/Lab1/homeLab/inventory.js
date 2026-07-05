@@ -1,17 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   fetchMasterListByType,
   createEquipmentDetails,
   getEquipmentDetailsByEntryNo,
 } from "../../../services/AppinfoService";
 import * as XLSX from "xlsx";
-import { FaBell, FaTimes } from "react-icons/fa";
+import { FaBell, FaBoxes } from "react-icons/fa";
 import { AiOutlineDownload } from "react-icons/ai";
+import { Modal, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import Pagination from "../../common/Pagination";
 import "./inventory.css";
+
+const DEFAULT_ITEMS_PER_PAGE = 10;
+
+const TABLE_HEADINGS = [
+  { label: "Master Type", key: "master_type", colClass: "inv-col--master-type" },
+  { label: "Item Code", key: "item_code", colClass: "inv-col--code" },
+  { label: "Item Name", key: "item_name", colClass: "inv-col--name" },
+  { label: "Stock", key: "quantity_received", colClass: "inv-col--stock" },
+  { label: "Unit", key: "unit_measure", colClass: "inv-col--unit" },
+  { label: "Location", key: "location", colClass: "inv-col--location" },
+  { label: "Project Code", key: "project_code", colClass: "inv-col--project-code" },
+  { label: "Minimum Stock", key: "min_req_stock", colClass: "inv-col--min-stock" },
+  { label: "Expiry Date", key: "expiry_date", colClass: "inv-col--expiry" },
+];
 
 const MasterListTable = ({
   masterType,
@@ -44,24 +59,8 @@ const MasterListTable = ({
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-
-  // Filter States
-  const [dateFilter, setDateFilter] = useState("");
-  const [entryNoFilter, setEntryNoFilter] = useState("");
-  const [billNoFilter, setBillNoFilter] = useState("");
-  const [unitFilter, setUnitFilter] = useState("");
-  const [masterTypeFilter, setMasterTypeFilter] = useState("");
-  const [projectCodeFilter, setProjectCodeFilter] = useState("");
-  const [projectNameFilter, setProjectNameFilter] = useState("");
-  const [itemCodeFilter, setItemCodeFilter] = useState("");
-  const [itemNameFilter, setItemNameFilter] = useState("");
-  const [quantityReceivedFilter, setQuantityReceivedFilter] = useState("");
-  const [remarksFilter, setRemarksFilter] = useState("");
-  const [IssueDateFilter, setIssueDateFilter] = useState("");
-  const [supplierFilter, setSupplierFilter] = useState("");
-  const [QuantityIssuedFilter, setQuantityIssuedFilter] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
+  const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
+  const [filters, setFilters] = useState({});
 
   // Modal/Equipment States
   const [calibrationDates, setCalibrationDates] = useState([]);
@@ -74,10 +73,16 @@ const MasterListTable = ({
 
   // --- Pagination Calculations ---
   const totalItems = filteredData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filteredData.slice(startIndex, endIndex);
+
+  const hasActiveFilters = Object.values(filters).some(Boolean);
+
+  const handleFilterChange = useCallback((e, key) => {
+    setFilters((prev) => ({ ...prev, [key]: e.target.value }));
+  }, []);
 
   // --- Handlers ---
 
@@ -294,123 +299,80 @@ const MasterListTable = ({
 
   // 3. Filtering Logic
   useEffect(() => {
-    const filteredMasters = data.filter(
-      (master) =>
-        (entryNoFilter === "" ||
-          (master.entry_no &&
-            String(master.entry_no)
-              .toLowerCase()
-              .includes(entryNoFilter.toLowerCase()))) &&
-        (masterTypeFilter === "" ||
-          (master.master_type &&
-            master.master_type
-              .toLowerCase()
-              .includes(masterTypeFilter.toLowerCase()))) &&
-        (unitFilter === "" ||
-          (master.unit_measure &&
-            master.unit_measure
-              .toLowerCase()
-              .includes(unitFilter.toLowerCase()))) &&
-        (billNoFilter === "" ||
-          (master.bill_no &&
-            master.bill_no
-              .toLowerCase()
-              .includes(billNoFilter.toLowerCase()))) &&
-        (projectCodeFilter === "" ||
-          (master.project_code &&
-            master.project_code
-              .toLowerCase()
-              .includes(projectCodeFilter.toLowerCase()))) &&
-        (itemCodeFilter === "" ||
-          (master.item_code &&
-            master.item_code
-              .toLowerCase()
-              .includes(itemCodeFilter.toLowerCase()))) &&
-        (itemNameFilter === "" ||
-          (master.item_name &&
-            master.item_name
-              .toLowerCase()
-              .includes(itemNameFilter.toLowerCase()))) &&
-        (supplierFilter === "" ||
-          (master.supplier &&
-            master.supplier
-              .toLowerCase()
-              .includes(supplierFilter.toLowerCase()))) &&
-        (quantityReceivedFilter === "" ||
-          (master.quantity_received &&
-            master.quantity_received
-              .toString()
-              .includes(quantityReceivedFilter))) &&
-        (dateFilter === "" ||
-          (master.expiry_date &&
-            master.expiry_date
-              .toLowerCase()
-              .includes(dateFilter.toLowerCase()))) &&
-        (QuantityIssuedFilter === "" ||
-          (master.quantity_issued &&
-            master.quantity_issued
-              .toString()
-              .includes(QuantityIssuedFilter))) &&
-        (locationFilter === "" ||
-          (master.location &&
-            master.location
-              .toLowerCase()
-              .includes(locationFilter.toLowerCase())))
+    const filteredMasters = data.filter((master) =>
+      TABLE_HEADINGS.every(({ key }) => {
+        const value = filters[key];
+        if (!value) return true;
+        const field = master[key];
+        if (field == null || field === "") return false;
+        return String(field).toLowerCase().includes(value.toLowerCase());
+      })
     );
 
     setFilteredData(filteredMasters);
-    setCurrentPage(1); // Reset to first page when filtering
-  }, [
-    data,
-    entryNoFilter,
-    billNoFilter,
-    projectCodeFilter,
-    itemCodeFilter,
-    itemNameFilter,
-    supplierFilter,
-    quantityReceivedFilter,
-    dateFilter,
-    QuantityIssuedFilter,
-    locationFilter,
-    masterTypeFilter,
-    unitFilter,
-  ]);
+    setCurrentPage(1);
+  }, [data, filters]);
 
-  if (loading) return <p className="loading-state">Loading inventory data...</p>;
-  if (error)
+  const closeEquipmentModal = () => {
+    setShowModal(false);
+    setSelectedItem(null);
+    setLatestCalibrationDate("");
+    setLastServiceDate("");
+    setCalibrationDates([]);
+  };
+
+  if (loading) {
     return (
-      <p className="error-state">
-        Error loading data: {error}. Please try again.
-      </p>
+      <div className="inventory-page">
+        <div className="project-loading">Loading inventory data…</div>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="inventory-page">
+        <div className="project-empty">
+          <p>Error loading data: {error}. Please try again.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const showSelectColumn = masterType === "Equipment";
 
   return (
-    <div className="master-list-container lims-data-fill">
-      {/* --- Action Bar (Notifications and Download) --- */}
-      <div className="action-bar">
-        <div className="notification-wrapper">
+    <div className="inventory-page">
+      <div className="inventory-page-toolbar">
+        <div className="inventory-notification-wrap">
           <button
+            type="button"
             onClick={toggleDropdown}
-            className="notification-toggle-btn"
-            title="Expiry Notifications"
+            className={`lims-header-btn inventory-toolbar-btn inventory-toolbar-btn--notify${
+              notifications.length > 0 ? " inventory-toolbar-btn--notify-active" : ""
+            }`}
+            title="Expiry notifications"
+            aria-expanded={showDropdown}
           >
-            <FaBell
-              size={24}
-              color={notifications.length > 0 ? "var(--color-danger)" : "var(--color-text-secondary)"}
-            />
+            <FaBell aria-hidden />
+            Expiring soon
             {notifications.length > 0 && (
-              <span className="notification-badge">{notifications.length}</span>
+              <span className="inventory-notification-badge">
+                {notifications.length}
+              </span>
             )}
           </button>
 
           {showDropdown && notifications.length > 0 && (
-            <div className="notification-dropdown">
-              <h4 className="dropdown-title">Expiring Soon</h4>
-              <ul className="dropdown-list">
+            <div className="inventory-notification-dropdown" role="menu">
+              <h4 className="inventory-notification-dropdown-title">
+                Expiring within 30 days
+              </h4>
+              <ul className="inventory-notification-list">
                 {notifications.map((item, index) => (
-                  <li key={index} className="dropdown-item">
-                    <strong>Item:</strong> {item.item_name} <br />
-                    <strong>Expiry Date:</strong> {item.expiry_date}
+                  <li key={index} className="inventory-notification-item">
+                    <strong>{item.item_name}</strong>
+                    <span>{item.expiry_date}</span>
                   </li>
                 ))}
               </ul>
@@ -419,182 +381,226 @@ const MasterListTable = ({
         </div>
 
         <button
-          className="download-btn"
+          type="button"
+          className="lims-header-btn inventory-toolbar-btn inventory-toolbar-btn--download"
           onClick={handleDownload}
+          title="Download Excel"
         >
-          <AiOutlineDownload size={20} />
-          <span>Download CSV</span>
+          <AiOutlineDownload aria-hidden />
+          Download
         </button>
       </div>
-      
-      {/* --- Equipment Action Buttons --- */}
-      {/* {masterType === "Equipment" && (
-        <div className="equipment-actions">
-          <button
-            className={`action-btn ${isUpdateMode ? 'active-update' : ''}`}
-            onClick={handleUpdateClick}
-          >
-            {isUpdateMode ? 'Select Equipment...' : 'Update Calibration'}
-          </button>
-          <button
-            className="action-btn view-btn"
-            onClick={handleViewClick}
-          >
-            View Details
-          </button>
-        </div>
-      )} */}
 
-      <Pagination
-        position="top"
-        showPageNumbers={false}
-        showItemsPerPage
-        showSummary
-        totalItems={totalItems}
-        startIndex={startIndex}
-        endIndex={endIndex}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={(n) => {
-          setItemsPerPage(n);
-          setCurrentPage(1);
-        }}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
+      <section className="project-panel" aria-label="Inventory list">
+        <div className="project-table-section">
+          <div className="project-table-shell">
+            <table className="project-table">
+              <thead>
+                <tr className="project-thead-labels">
+                  {showSelectColumn && (
+                    <th
+                      scope="col"
+                      className="project-th-label-cell inv-col inv-col--select"
+                    >
+                      Select
+                    </th>
+                  )}
+                  {TABLE_HEADINGS.map(({ label, key, colClass }) => (
+                    <th
+                      key={key}
+                      scope="col"
+                      className={`project-th-label-cell inv-col ${colClass}`}
+                    >
+                      {label}
+                    </th>
+                  ))}
+                </tr>
+                <tr className="project-thead-filters">
+                  {showSelectColumn && (
+                    <th
+                      scope="col"
+                      className="project-th-filter-cell inv-col inv-col--select"
+                      aria-hidden
+                    />
+                  )}
+                  {TABLE_HEADINGS.map(({ label, key, colClass }) => (
+                    <th
+                      key={key}
+                      scope="col"
+                      className={`project-th-filter-cell inv-col ${colClass}`}
+                    >
+                      <input
+                        type="text"
+                        placeholder="Filter"
+                        className="inv-col-filter"
+                        value={filters[key] || ""}
+                        onChange={(e) => handleFilterChange(e, key)}
+                        aria-label={`Filter by ${label}`}
+                      />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {currentItems.length > 0 ? (
+                  currentItems.map((item, index) => {
+                    const isLowStock =
+                      item.min_req_stock != null &&
+                      item.quantity_received < item.min_req_stock;
 
-      {/* --- Main Data Table --- */}
-      <div className="table-wrapper lims-table-wrap">
-        <table className="inventory-table lims-table">
-          <thead>
-            <tr>
-              {masterType === "Equipment" && (
-                <th className="table-header select-header">Select</th>
-              )}
-              {/* Header Cells with Filters */}
-              {[
-                { label: "Master Type", filter: masterTypeFilter, setFilter: setMasterTypeFilter },
-                { label: "Item Code", filter: itemCodeFilter, setFilter: setItemCodeFilter },
-                { label: "Item Name", filter: itemNameFilter, setFilter: setItemNameFilter },
-                { label: "Stock", filter: quantityReceivedFilter, setFilter: setQuantityReceivedFilter },
-                { label: "Unit", filter: unitFilter, setFilter: setUnitFilter },
-                { label: "Location", filter: locationFilter, setFilter: setLocationFilter },
-                { label: "Project Code", filter: projectCodeFilter, setFilter: setProjectCodeFilter },
-                { label: "Minimum Stock", filter: projectNameFilter, setFilter: setProjectNameFilter },
-                { label: "Expiry Date", filter: dateFilter, setFilter: setDateFilter },
-              ].map(({ label, filter, setFilter }) => (
-                <th key={label} className="table-header">
-                  {label}
-                  <input
-                    type="text"
-                    placeholder={`Filter by ${label}`}
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="filter-input"
-                  />
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.length > 0 ? (
-              currentItems.map((item, index) => {
-                const isLowStock = item.quantity_received < item.min_req_stock;
-
-                return (
-                  <tr
-                    key={`${item.entry_no}-${index}`}
-                    className={isLowStock ? "low-stock-row" : "data-row"}
-                  >
-                    {masterType === "Equipment" && (
-                      <td className="table-cell select-cell">
-                        <input
-                          type="radio"
-                          name="selectItem"
-                          checked={selectedItem?.entry_no === item.entry_no}
-                          onChange={() => handleRadioChange(item)}
-                        />
-                      </td>
-                    )}
-                    <td className="table-cell">{item.master_type || "-"}</td>
-                    <td className="table-cell">{item.item_code || "-"}</td>
-                    <td className="table-cell item-name-cell">{item.item_name || "-"}</td>
-                    <td className="table-cell">{Math.max(0, item.quantity_received) || "0"}</td>
-                    <td className="table-cell">{item.unit_measure || "-"}</td>
-                    <td className="table-cell">{item.location || "-"}</td>
-                    <td className="table-cell">{item.project_code || "-"}</td>
-                    <td className="table-cell">{item.min_req_stock || "-"}</td>
-                    <td className="table-cell">{item.expiry_date || "-"}</td>
+                    return (
+                      <tr
+                        key={`${item.entry_no}-${index}`}
+                        className={`project-table-row${
+                          isLowStock ? " inv-table-row--low-stock" : ""
+                        }`}
+                      >
+                        {showSelectColumn && (
+                          <td className="inv-col inv-col--select" data-label="Select">
+                            <input
+                              type="radio"
+                              name="selectItem"
+                              checked={selectedItem?.entry_no === item.entry_no}
+                              onChange={() => handleRadioChange(item)}
+                              aria-label={`Select ${item.item_name || "item"}`}
+                            />
+                          </td>
+                        )}
+                        <td className="inv-col inv-col--master-type" data-label="Master Type">
+                          {item.master_type || "—"}
+                        </td>
+                        <td className="inv-col inv-col--code" data-label="Item Code">
+                          {item.item_code || "—"}
+                        </td>
+                        <td className="inv-col inv-col--name" data-label="Item Name">
+                          {item.item_name || "—"}
+                        </td>
+                        <td className="inv-col inv-col--stock" data-label="Stock">
+                          <span className="inv-stock-qty">
+                            {Math.max(0, item.quantity_received) || "0"}
+                          </span>
+                        </td>
+                        <td className="inv-col inv-col--unit" data-label="Unit">
+                          {item.unit_measure || "—"}
+                        </td>
+                        <td className="inv-col inv-col--location" data-label="Location">
+                          {item.location || "—"}
+                        </td>
+                        <td className="inv-col inv-col--project-code" data-label="Project Code">
+                          {item.project_code || "—"}
+                        </td>
+                        <td className="inv-col inv-col--min-stock" data-label="Minimum Stock">
+                          {item.min_req_stock ?? "—"}
+                        </td>
+                        <td className="inv-col inv-col--expiry" data-label="Expiry Date">
+                          <time className="inv-expiry-date" dateTime={item.expiry_date}>
+                            {item.expiry_date || "—"}
+                          </time>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr className="project-table-row project-table-row--empty">
+                    <td colSpan={showSelectColumn ? 10 : 9}>
+                      <div className="project-empty">
+                        <div className="project-empty-icon-wrap">
+                          <FaBoxes aria-hidden />
+                        </div>
+                        <h3>No records found</h3>
+                        <p>
+                          {hasActiveFilters
+                            ? "Try adjusting your column filters."
+                            : "No inventory data is available for this category."}
+                        </p>
+                      </div>
+                    </td>
                   </tr>
-                );
-              })
-            ) : (
-              <tr>
-                <td colSpan={masterType === "Equipment" ? 10 : 9} className="no-data-cell">
-                  No inventory data matching your filter criteria.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        totalItems={totalItems}
-      />
+          <Pagination
+            showSummary
+            showItemsPerPage
+            totalItems={totalItems}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            itemsPerPage={itemsPerPage}
+            onItemsPerPageChange={(n) => {
+              setItemsPerPage(n);
+              setCurrentPage(1);
+            }}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            position="bottom"
+          />
+        </div>
+      </section>
 
-      {/* --- Equipment Update Modal --- */}
-      {showModal && selectedItem && (
-        <div className="modal-overlay">
-          <div className="modal-contents">
-            <button
-              className="modal-close-btn"
-              onClick={() => {
-                setShowModal(false);
-                setSelectedItem(null);
-                setLatestCalibrationDate("");
-                setLastServiceDate("");
-                setCalibrationDates([]);
-              }}
-            >
-              &times;
-            </button>
-            <h6 className="modal-title">
-              Update Calibration Details for **{selectedItem.item_name}**
-            </h6>
-            {loadingEquipmentData ? (
-              <div style={{ padding: "20px", textAlign: "center" }}>
-                Loading equipment data...
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit}>
-                <label className="modal-label">Latest Calibration Date:</label>
-                <input
+      <Modal
+        show={showModal && !!selectedItem}
+        onHide={closeEquipmentModal}
+        size="sm"
+        scrollable
+        centered
+        backdrop="static"
+        dialogClassName="project-modal project-modal--form inv-equipment-modal"
+        contentClassName="project-modal-content"
+        aria-labelledby="inv-equipment-modal-title"
+      >
+        <div className="project-modal-header">
+          <button
+            type="button"
+            className="project-modal-close"
+            onClick={closeEquipmentModal}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <h2 id="inv-equipment-modal-title" className="project-modal-title">
+            Update calibration
+          </h2>
+          <p className="project-modal-description">
+            {selectedItem?.item_name
+              ? `Calibration details for ${selectedItem.item_name}`
+              : "Update equipment calibration details."}
+          </p>
+        </div>
+        <Modal.Body className="project-modal-body">
+          {loadingEquipmentData ? (
+            <div className="project-loading">Loading equipment data…</div>
+          ) : (
+            <Form onSubmit={handleSubmit} className="project-modal-form">
+              <Form.Group controlId="latestCalibrationDate" className="project-field">
+                <Form.Label>Latest calibration date</Form.Label>
+                <Form.Control
                   type="date"
                   value={latestCalibrationDate}
                   onChange={(e) => setLatestCalibrationDate(e.target.value)}
-                  className="modal-input"
+                  className="project-field-input"
                 />
+              </Form.Group>
 
-                <label className="modal-label">Last Service Date:</label>
-                <input
+              <Form.Group controlId="lastServiceDate" className="project-field">
+                <Form.Label>Last service date</Form.Label>
+                <Form.Control
                   type="date"
                   value={lastServiceDate}
                   onChange={(e) => setLastServiceDate(e.target.value)}
-                  className="modal-input"
+                  className="project-field-input"
                 />
+              </Form.Group>
 
-                <button type="submit" className="modal-submit-btn">
-                  Update Details
-                </button>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
+              <button type="submit" className="project-modal-submit">
+                Update details
+              </button>
+            </Form>
+          )}
+        </Modal.Body>
+      </Modal>
     </div>
   );
 };
