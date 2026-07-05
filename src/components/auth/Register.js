@@ -6,13 +6,216 @@ import {
   getAllUsersApi,
   updateLoginApi,
 } from "../../services/AppinfoService";
-import { FaEye, FaEyeSlash, FaUserPlus, FaUser, FaLock, FaBriefcase, FaFlask, FaSearch, FaEdit } from "react-icons/fa";
-import { Table, Modal, Button, Form, InputGroup, Badge } from "react-bootstrap";
+import {
+  FaEye,
+  FaEyeSlash,
+  FaUserPlus,
+  FaUser,
+  FaSearch,
+  FaEdit,
+  FaTimes,
+  FaSort,
+  FaSortUp,
+  FaSortDown,
+} from "react-icons/fa";
+import { Modal, Form } from "react-bootstrap";
 import Select from "react-select";
 import toast from "react-hot-toast";
 import Pagination from "../common/Pagination";
 import "./Register.css";
-import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
+import { PageLayout, PageHeader } from "../layout/content";
+
+const getRoleBadgeClass = (role) => {
+  if (role === "Manager") return "project-badge--role-manager";
+  if (role === "Researcher") return "project-badge--success";
+  return "project-badge--secondary";
+};
+
+const REGISTER_SELECT_STYLES = {
+  control: (base, state) => ({
+    ...base,
+    minHeight: "2.25rem",
+    backgroundColor: "#fff",
+    borderColor: state.isFocused ? "#b5da21" : "#e2e8f0",
+    boxShadow: state.isFocused
+      ? "0 0 0 3px rgba(197, 234, 49, 0.2)"
+      : "0 1px 2px rgba(0, 0, 0, 0.05)",
+    fontSize: "0.875rem",
+    "&:hover": {
+      borderColor: "#b5da21",
+    },
+  }),
+  menu: (base) => ({
+    ...base,
+    backgroundColor: "#fff",
+    fontSize: "0.875rem",
+    zIndex: 10000,
+  }),
+  menuPortal: (base) => ({
+    ...base,
+    zIndex: 10000,
+  }),
+  option: (base, { isFocused, isSelected }) => ({
+    ...base,
+    backgroundColor: isSelected ? "#c5ea31" : isFocused ? "#f3fae8" : "#fff",
+    color: "#1a3d2a",
+  }),
+  multiValue: (base) => ({
+    ...base,
+    backgroundColor: "#f3fae8",
+    borderRadius: "4px",
+  }),
+  multiValueLabel: (base) => ({
+    ...base,
+    color: "#1a3d2a",
+    fontSize: "0.8125rem",
+  }),
+  multiValueRemove: (base) => ({
+    ...base,
+    color: "#1a3d2a",
+    "&:hover": {
+      backgroundColor: "#c5ea31",
+      color: "#1a3d2a",
+    },
+  }),
+};
+
+const UserFormFields = ({
+  username,
+  setUsername,
+  name,
+  setName,
+  password,
+  setPassword,
+  showPassword,
+  setShowPassword,
+  role,
+  setRole,
+  designation,
+  setDesignation,
+  selectedLabs,
+  setSelectedLabs,
+  labs,
+  designations,
+  isLoading,
+  includePassword = false,
+  idPrefix = "user",
+}) => {
+  const handleLabsChange = (selectedOptions) => {
+    if (role === "Lab Assistant") {
+      setSelectedLabs(selectedOptions ? [selectedOptions] : []);
+    } else {
+      setSelectedLabs(selectedOptions || []);
+    }
+  };
+
+  return (
+    <>
+      <Form.Group controlId={`${idPrefix}-username`} className="project-field">
+        <Form.Label>Username</Form.Label>
+        <Form.Control
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Enter username"
+          required
+          autoComplete="off"
+          className="project-field-input"
+        />
+      </Form.Group>
+
+      <Form.Group controlId={`${idPrefix}-name`} className="project-field">
+        <Form.Label>Name</Form.Label>
+        <Form.Control
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Enter name"
+          autoComplete="off"
+          className="project-field-input"
+        />
+      </Form.Group>
+
+      {includePassword ? (
+        <Form.Group controlId={`${idPrefix}-password`} className="project-field">
+          <Form.Label>Password</Form.Label>
+          <div className="project-field-input-wrap">
+            <Form.Control
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter password"
+              autoComplete="new-password"
+              className="project-field-input"
+            />
+            <button
+              type="button"
+              className="project-field-password-toggle"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <FaEye aria-hidden /> : <FaEyeSlash aria-hidden />}
+            </button>
+          </div>
+        </Form.Group>
+      ) : null}
+
+      <Form.Group controlId={`${idPrefix}-role`} className="project-field">
+        <Form.Label>Role</Form.Label>
+        <Form.Select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className="project-field-input"
+          required
+        >
+          <option value="">Select role</option>
+          <option value="Manager">Manager</option>
+          <option value="Lab Assistant">Lab Assistant</option>
+          <option value="Researcher">Researcher</option>
+        </Form.Select>
+      </Form.Group>
+
+      <Form.Group controlId={`${idPrefix}-designation`} className="project-field">
+        <Form.Label>Designation</Form.Label>
+        <Form.Select
+          value={designation}
+          onChange={(e) => setDesignation(e.target.value)}
+          className="project-field-input"
+          required
+        >
+          <option value="">Select designation</option>
+          {isLoading ? (
+            <option disabled>Loading…</option>
+          ) : (
+            designations.map((des) => (
+              <option key={des.id} value={des.id}>
+                {des.title}
+              </option>
+            ))
+          )}
+        </Form.Select>
+      </Form.Group>
+
+      <Form.Group controlId={`${idPrefix}-labs`} className="project-field">
+        <Form.Label>Labs</Form.Label>
+        <Select
+          options={labs}
+          isMulti={role !== "Lab Assistant"}
+          styles={REGISTER_SELECT_STYLES}
+          value={selectedLabs}
+          onChange={handleLabsChange}
+          className="register-modal-select"
+          classNamePrefix="register-select"
+          placeholder={
+            role === "Lab Assistant" ? "Select lab…" : "Select labs…"
+          }
+          menuPortalTarget={document.body}
+          menuPosition="fixed"
+        />
+      </Form.Group>
+    </>
+  );
+};
 
 // Register Modal Component
 const RegisterModal = ({ 
@@ -31,51 +234,8 @@ const RegisterModal = ({
   const [selectedLabs, setSelectedLabs] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
 
-  const customSelectStyles = {
-    control: (base) => ({
-      ...base,
-      backgroundColor: "#fff",
-      borderColor: "#dee2e6",
-      padding: "0.125rem",
-      fontSize: "0.875rem",
-      "&:hover": {
-        borderColor: "#007bff",
-      },
-    }),
-    menu: (base) => ({
-      ...base,
-      backgroundColor: "#fff",
-      fontSize: "0.875rem",
-      zIndex: 9999,
-    }),
-    menuPortal: (base) => ({
-      ...base,
-      zIndex: 9999,
-    }),
-    option: (base, { isFocused, isSelected }) => ({
-      ...base,
-      backgroundColor: isSelected ? "#007bff" : isFocused ? "#f8f9fa" : "#fff",
-      color: isSelected ? "#fff" : "#495057",
-    }),
-    multiValue: (base) => ({
-      ...base,
-      backgroundColor: "#e7f3ff",
-    }),
-    multiValueLabel: (base) => ({
-      ...base,
-      color: "#007bff",
-    }),
-    multiValueRemove: (base) => ({
-      ...base,
-      color: "#007bff",
-      "&:hover": {
-        backgroundColor: "#007bff",
-        color: "#fff",
-      },
-    }),
-  };
-
-  const handleRegister = async () => {
+  const handleRegister = async (e) => {
+    if (e) e.preventDefault();
     if (
       !username ||
       !password ||
@@ -144,161 +304,71 @@ const RegisterModal = ({
   };
 
   return (
-    <>
-      <style>
-        {`
-          .custom-modal-width .modal-dialog {
-            max-width: 550px;
-            width: 100%;
-          }
-          .custom-modal-width .modal-content {
-            max-width: 550px;
-            width: 100%;
-          }
-          body > div[id*="react-select"] {
-            z-index: 10000 !important;
-          }
-        `}
-      </style>
-      <Modal show={show} onHide={handleClose} centered dialogClassName="custom-modal-width">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <FaUserPlus style={{ marginRight: "8px" }} />
-            Register New User
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body style={{ padding: "20px" }}>
-          <div className="register-form">
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaUser className="label-icon" />
-                Username
-              </label>
-              <input
-                type="text"
-                value={username}
-                className="form-input-register"
-                placeholder="Enter username"
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaUser className="label-icon" />
-                Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                className="form-input-register"
-                placeholder="Enter name"
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaLock className="label-icon" />
-                Password
-              </label>
-              <div className="password-input-wrapper">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  className="form-input-register"
-                  placeholder="Enter password"
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="password-toggle-btn"
-                >
-                  {showPassword ? <FaEye /> : <FaEyeSlash />}
-                </button>
-              </div>
-            </div>
-
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaBriefcase className="label-icon" />
-                Role
-              </label>
-              <select
-                className="form-select-register"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
-                <option value="">Select Role</option>
-                <option value="Manager">Manager</option>
-                <option value="Lab Assistant">Lab Assistant</option>
-                <option value="Researcher">Researcher</option>
-              </select>
-            </div>
-
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaBriefcase className="label-icon" />
-                Designation
-              </label>
-              <select
-                className="form-select-register"
-                value={designation}
-                onChange={(e) => setDesignation(e.target.value)}
-              >
-                <option value="">Select Designation</option>
-                {isLoading ? (
-                  <option>Loading...</option>
-                ) : (
-                  designations.map((des) => (
-                    <option key={des.id} value={des.id}>
-                      {des.title}
-                    </option>
-                  ))
-                )}
-              </select>
-            </div>
-
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaFlask className="label-icon" />
-                Labs
-              </label>
-              <Select
-                options={labs}
-                isMulti={role !== "Lab Assistant"}  // Single select for Lab Assistant
-                styles={customSelectStyles}
-                value={selectedLabs}
-                onChange={(selectedOptions) => {
-                  if (role === "Lab Assistant") {
-                    // For Lab Assistant, only allow single selection
-                    setSelectedLabs(selectedOptions ? [selectedOptions] : []);
-                  } else {
-                    setSelectedLabs(selectedOptions || []);
-                  }
-                }}
-                className="basic-multi-select"
-                classNamePrefix="select"
-                placeholder={role === "Lab Assistant" ? "Select lab..." : "Select labs..."}
-                menuPortalTarget={document.body}
-                menuPosition="fixed"
-              />
-            </div>
+    <Modal
+      show={show}
+      onHide={handleClose}
+      size="sm"
+      scrollable
+      centered
+      backdrop="static"
+      dialogClassName="project-modal project-modal--form"
+      contentClassName="project-modal-content"
+      aria-labelledby="register-user-modal-title"
+    >
+      <div className="project-modal-header">
+        <button
+          type="button"
+          className="project-modal-close"
+          onClick={handleClose}
+          aria-label="Close"
+        >
+          <FaTimes aria-hidden />
+        </button>
+        <h2 id="register-user-modal-title" className="project-modal-title">
+          Add user
+        </h2>
+        <p className="project-modal-description">
+          Create a new user account with role, designation, and lab access.
+        </p>
+      </div>
+      <Modal.Body className="project-modal-body">
+        <Form onSubmit={handleRegister} className="project-modal-form">
+          <UserFormFields
+            idPrefix="register"
+            username={username}
+            setUsername={setUsername}
+            name={name}
+            setName={setName}
+            password={password}
+            setPassword={setPassword}
+            showPassword={showPassword}
+            setShowPassword={setShowPassword}
+            role={role}
+            setRole={setRole}
+            designation={designation}
+            setDesignation={setDesignation}
+            selectedLabs={selectedLabs}
+            setSelectedLabs={setSelectedLabs}
+            labs={labs}
+            designations={designations}
+            isLoading={isLoading}
+            includePassword
+          />
+          <div className="project-modal-form-actions">
+            <button
+              type="button"
+              className="project-btn project-btn-outline"
+              onClick={handleClose}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="project-btn project-btn-primary">
+              Create user
+            </button>
           </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleRegister}>
-            <FaUserPlus style={{ marginRight: "8px" }} />
-            Register
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
+        </Form>
+      </Modal.Body>
+    </Modal>
   );
 };
 
@@ -318,50 +388,6 @@ const EditUserModal = ({
   const [designation, setDesignation] = useState("");
   const [selectedLabs, setSelectedLabs] = useState([]);
   const [originalUsername, setOriginalUsername] = useState("");
-
-  const customSelectStyles = {
-    control: (base) => ({
-      ...base,
-      backgroundColor: "#fff",
-      borderColor: "#dee2e6",
-      padding: "0.125rem",
-      fontSize: "0.875rem",
-      "&:hover": {
-        borderColor: "#007bff",
-      },
-    }),
-    menu: (base) => ({
-      ...base,
-      backgroundColor: "#fff",
-      fontSize: "0.875rem",
-      zIndex: 9999,
-    }),
-    menuPortal: (base) => ({
-      ...base,
-      zIndex: 9999,
-    }),
-    option: (base, { isFocused, isSelected }) => ({
-      ...base,
-      backgroundColor: isSelected ? "#007bff" : isFocused ? "#f8f9fa" : "#fff",
-      color: isSelected ? "#fff" : "#495057",
-    }),
-    multiValue: (base) => ({
-      ...base,
-      backgroundColor: "#e7f3ff",
-    }),
-    multiValueLabel: (base) => ({
-      ...base,
-      color: "#007bff",
-    }),
-    multiValueRemove: (base) => ({
-      ...base,
-      color: "#007bff",
-      "&:hover": {
-        backgroundColor: "#007bff",
-        color: "#fff",
-      },
-    }),
-  };
 
   // Populate form when user prop changes
   useEffect(() => {
@@ -388,7 +414,8 @@ const EditUserModal = ({
     }
   }, [user, show, labs, designations]);
 
-  const handleUpdate = async () => {
+  const handleUpdate = async (e) => {
+    if (e) e.preventDefault();
     if (
       !username ||
       !role ||
@@ -448,138 +475,66 @@ const EditUserModal = ({
   };
 
   return (
-    <>
-      <style>
-        {`
-          .custom-modal-width .modal-dialog {
-            max-width: 550px;
-            width: 100%;
-          }
-          .custom-modal-width .modal-content {
-            max-width: 550px;
-            width: 100%;
-          }
-          body > div[id*="react-select"] {
-            z-index: 10000 !important;
-          }
-        `}
-      </style>
-      <Modal show={show} onHide={handleClose} centered dialogClassName="custom-modal-width">
-        <Modal.Header closeButton>
-          <Modal.Title>
-            <FaEdit style={{ marginRight: "8px" }} />
-            Edit User
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body style={{ padding: "20px" }}>
-          <div className="register-form">
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaUser className="label-icon" />
-                Username
-              </label>
-              <input
-                type="text"
-                value={username}
-                className="form-input-register"
-                placeholder="Enter username"
-                onChange={(e) => setUsername(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaUser className="label-icon" />
-                Name
-              </label>
-              <input
-                type="text"
-                value={name}
-                className="form-input-register"
-                placeholder="Enter name"
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaBriefcase className="label-icon" />
-                Role
-              </label>
-              <select
-                className="form-select-register"
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-              >
-                <option value="">Select Role</option>
-                <option value="Manager">Manager</option>
-                <option value="Lab Assistant">Lab Assistant</option>
-                <option value="Researcher">Researcher</option>
-              </select>
-            </div>
-
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaBriefcase className="label-icon" />
-                Designation
-              </label>
-              <select
-                className="form-select-register"
-                value={designation}
-                onChange={(e) => setDesignation(e.target.value)}
-              >
-                <option value="">Select Designation</option>
-                {isLoading ? (
-                  <option>Loading...</option>
-                ) : (
-                  designations.map((des) => (
-                    <option key={des.id} value={des.id}>
-                      {des.title}
-                    </option>
-                  ))
-                )}
-              </select>
-            </div>
-
-            <div className="form-group-register" style={{ marginBottom: "15px" }}>
-              <label className="form-label-register">
-                <FaFlask className="label-icon" />
-                Labs
-              </label>
-              <Select
-                options={labs}
-                isMulti={role !== "Lab Assistant"}  // Single select for Lab Assistant
-                styles={customSelectStyles}
-                value={selectedLabs}
-                onChange={(selectedOptions) => {
-                  if (role === "Lab Assistant") {
-                    // For Lab Assistant, only allow single selection
-                    setSelectedLabs(selectedOptions ? [selectedOptions] : []);
-                  } else {
-                    setSelectedLabs(selectedOptions || []);
-                  }
-                }}
-                className="basic-multi-select"
-                classNamePrefix="select"
-                placeholder={role === "Lab Assistant" ? "Select lab..." : "Select labs..."}
-                menuPortalTarget={document.body}
-                menuPosition="fixed"
-              />
-            </div>
+    <Modal
+      show={show}
+      onHide={handleClose}
+      size="sm"
+      scrollable
+      centered
+      backdrop="static"
+      dialogClassName="project-modal project-modal--form"
+      contentClassName="project-modal-content"
+      aria-labelledby="edit-user-modal-title"
+    >
+      <div className="project-modal-header">
+        <button
+          type="button"
+          className="project-modal-close"
+          onClick={handleClose}
+          aria-label="Close"
+        >
+          <FaTimes aria-hidden />
+        </button>
+        <h2 id="edit-user-modal-title" className="project-modal-title">
+          Edit user
+        </h2>
+        <p className="project-modal-description">
+          Update account details, role, designation, and lab assignments.
+        </p>
+      </div>
+      <Modal.Body className="project-modal-body">
+        <Form onSubmit={handleUpdate} className="project-modal-form">
+          <UserFormFields
+            idPrefix="edit"
+            username={username}
+            setUsername={setUsername}
+            name={name}
+            setName={setName}
+            role={role}
+            setRole={setRole}
+            designation={designation}
+            setDesignation={setDesignation}
+            selectedLabs={selectedLabs}
+            setSelectedLabs={setSelectedLabs}
+            labs={labs}
+            designations={designations}
+            isLoading={isLoading}
+          />
+          <div className="project-modal-form-actions">
+            <button
+              type="button"
+              className="project-btn project-btn-outline"
+              onClick={handleClose}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="project-btn project-btn-primary">
+              Save changes
+            </button>
           </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleUpdate}>
-            <FaEdit style={{ marginRight: "8px" }} />
-            Update
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    </>
+        </Form>
+      </Modal.Body>
+    </Modal>
   );
 };
 
@@ -731,94 +686,240 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
     setCurrentPage(1);
   }, [searchTerm]);
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSortConfig({ key: null, direction: "asc" });
+    setCurrentPage(1);
+  };
+
+  const renderSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return <FaSort className="project-sort-icon project-sort-icon--idle" aria-hidden />;
+    }
+    return sortConfig.direction === "asc" ? (
+      <FaSortUp className="project-sort-icon" aria-hidden />
+    ) : (
+      <FaSortDown className="project-sort-icon" aria-hidden />
+    );
+  };
+
   return (
     <PageLayout>
       <PageHeader
         title="User management"
         actions={
-          <Button
-            variant="primary"
+          <button
+            type="button"
+            className="lims-header-btn"
             onClick={() => setShowModal(true)}
-            style={{
-              padding: "10px 20px",
-              fontWeight: 500,
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
           >
-            <FaUserPlus />
-            Add User
-          </Button>
+            <FaUserPlus aria-hidden />
+            Add user
+          </button>
         }
       />
 
-      {/* Search and Stats Bar */}
-        <div style={{ 
-          display: "flex", 
-          gap: "16px", 
-          marginBottom: "20px",
-          alignItems: "center"
-        }}>
-          <div style={{ flex: 1 }}>
-            <InputGroup>
-              <InputGroup.Text style={{ 
-                backgroundColor: "#fff",
-                border: "1px solid #dee2e6"
-              }}>
-                <FaSearch style={{ color: "#6c757d" }} />
-              </InputGroup.Text>
-              <Form.Control
-                type="text"
-                placeholder="Search by username, name, role, designation, or lab..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ 
-                  border: "1px solid #dee2e6",
-                  fontSize: "0.9rem"
-                }}
-              />
-            </InputGroup>
-          </div>
-          <div style={{ 
-            display: "flex", 
-            gap: "12px",
-            alignItems: "center",
-            fontSize: "0.875rem",
-            color: "#6c757d",
-            whiteSpace: "nowrap"
-          }}>
-            <span style={{ fontWeight: 500 }}>
-              Total Users: <strong style={{ color: "#007bff" }}>{filteredUsers.length}</strong>
-            </span>
-          </div>
-        </div>
-
-        {/* Main Table Card */}
-        <PageBody>
-        <ContentCard flush>
-          {loadingUsers ? (
-            <div style={{ 
-              padding: "60px 20px", 
-              textAlign: "center",
-              backgroundColor: "#fff"
-            }}>
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
+      <div className="register-users">
+        <section className="project-panel" aria-label="User list">
+          <div className="project-toolbar">
+            <div className="project-toolbar-filter">
+              <label htmlFor="register-search" className="project-search-label">
+                Search
+              </label>
+              <div className="project-search">
+                <FaSearch className="project-search-icon" aria-hidden />
+                <input
+                  id="register-search"
+                  type="search"
+                  placeholder="Filter by username, name, role, designation, or lab…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setSearchTerm("");
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  className="project-search-input"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {searchTerm ? (
+                  <button
+                    type="button"
+                    className="project-search-clear"
+                    onClick={() => setSearchTerm("")}
+                    aria-label="Clear search"
+                  >
+                    <FaTimes aria-hidden />
+                  </button>
+                ) : null}
               </div>
-              <p style={{ 
-                marginTop: "16px", 
-                color: "#6c757d",
-                fontSize: "0.9rem"
-              }}>
-                Loading users...
-              </p>
+              {!loadingUsers ? (
+                <span className="project-toolbar-count" aria-live="polite">
+                  <strong>{filteredUsers.length}</strong> user
+                  {filteredUsers.length !== 1 ? "s" : ""}
+                  {searchTerm ? " matching search" : ""}
+                </span>
+              ) : null}
+            </div>
+            <div className="project-toolbar-actions">
+              <button
+                type="button"
+                className="project-btn project-btn-ghost"
+                onClick={() => handleSort("name")}
+              >
+                {renderSortIcon("name")}
+                Sort by name
+              </button>
+              <button
+                type="button"
+                className="project-btn project-btn-ghost"
+                onClick={handleClearFilters}
+              >
+                Clear filters
+              </button>
+            </div>
+          </div>
+
+          {loadingUsers ? (
+            <div className="project-loading" role="status" aria-live="polite">
+              <div className="project-spinner" />
+              <span>Loading users…</span>
             </div>
           ) : (
-            <>
+            <div className="project-table-section">
+              <div className="project-table-shell">
+                <table className="project-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">
+                        <button
+                          type="button"
+                          className="project-th-sort"
+                          onClick={() => handleSort("username")}
+                        >
+                          Username
+                          {renderSortIcon("username")}
+                        </button>
+                      </th>
+                      <th scope="col">
+                        <button
+                          type="button"
+                          className="project-th-sort"
+                          onClick={() => handleSort("name")}
+                        >
+                          Name
+                          {renderSortIcon("name")}
+                        </button>
+                      </th>
+                      <th scope="col">Role</th>
+                      <th scope="col">Designation</th>
+                      <th scope="col">Labs</th>
+                      <th scope="col" className="project-th-actions">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedUsers.length === 0 ? (
+                      <tr className="project-table-row project-table-row--empty">
+                        <td colSpan="6">
+                          <div className="project-empty">
+                            <div className="project-empty-icon-wrap">
+                              {searchTerm ? (
+                                <FaSearch aria-hidden />
+                              ) : (
+                                <FaUser aria-hidden />
+                              )}
+                            </div>
+                            <h3>
+                              {searchTerm
+                                ? "No users found"
+                                : "No users available"}
+                            </h3>
+                            <p>
+                              {searchTerm
+                                ? "Try adjusting your search or clear filters."
+                                : 'Click "Add user" to create your first user.'}
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedUsers.map((user) => (
+                        <tr key={user.username} className="project-table-row">
+                          <td data-label="Username">
+                            <span className="project-name register-username">
+                              {user.username || "—"}
+                            </span>
+                          </td>
+                          <td data-label="Name">
+                            <span
+                              className={
+                                user.name ? "project-name" : "register-na"
+                              }
+                            >
+                              {user.name || "N/A"}
+                            </span>
+                          </td>
+                          <td data-label="Role">
+                            <span
+                              className={`project-badge ${getRoleBadgeClass(
+                                user.role
+                              )}`}
+                            >
+                              {user.role || "N/A"}
+                            </span>
+                          </td>
+                          <td data-label="Designation">
+                            <span className="register-designation">
+                              {user.designation || "—"}
+                            </span>
+                          </td>
+                          <td data-label="Labs">
+                            {user.lab && user.lab.length > 0 ? (
+                              <div className="register-lab-tags">
+                                {user.lab.map((lab) => (
+                                  <span
+                                    key={`${user.username}-${lab}`}
+                                    className="project-badge project-badge--secondary"
+                                  >
+                                    {lab}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="register-na">No labs assigned</span>
+                            )}
+                          </td>
+                          <td
+                            data-label="Actions"
+                            className="project-td-actions"
+                          >
+                            <div className="project-row-actions">
+                              <button
+                                type="button"
+                                className="project-icon-btn project-icon-btn--edit"
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setShowEditModal(true);
+                                }}
+                                title="Edit user"
+                                aria-label={`Edit ${user.username}`}
+                              >
+                                <FaEdit aria-hidden />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
               <Pagination
-                position="top"
-                showPageNumbers={false}
                 showItemsPerPage
                 showSummary
                 totalItems={filteredUsers.length}
@@ -832,353 +933,14 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
                 currentPage={currentPage}
                 totalPages={totalPages}
                 onPageChange={handlePageChange}
+                position="bottom"
               />
-
-              <div 
-                className="register-table-wrapper" 
-                style={{ 
-                  margin: "0 1.5rem",
-                  overflow: "visible"
-                }}
-              >
-                <Table 
-                  hover 
-                  className="register-users-table"
-                  style={{ 
-                    marginBottom: 0,
-                    fontSize: "0.875rem",
-                    width: "100%",
-                    tableLayout: "auto"
-                  }}
-                >
-                  <thead>
-                    <tr style={{ 
-                      backgroundColor: "#f8f9fa",
-                      borderBottom: "2px solid #dee2e6"
-                    }}>
-                      <th 
-                        style={{ 
-                          padding: "14px 12px", 
-                          fontWeight: 600,
-                          fontSize: "0.8rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.5px",
-                          color: "#495057",
-                          border: "none",
-                          cursor: "pointer",
-                          userSelect: "none",
-                          width: "15%"
-                        }}
-                        onClick={() => handleSort('username')}
-                      >
-                        Username
-                        {sortConfig.key === 'username' && (
-                          <span style={{ marginLeft: "5px" }}>
-                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </th>
-                      <th 
-                        style={{ 
-                          padding: "14px 12px", 
-                          fontWeight: 600,
-                          fontSize: "0.8rem",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.5px",
-                          color: "#495057",
-                          border: "none",
-                          cursor: "pointer",
-                          userSelect: "none",
-                          width: "15%"
-                        }}
-                        onClick={() => handleSort('name')}
-                      >
-                        Name
-                        {sortConfig.key === 'name' && (
-                          <span style={{ marginLeft: "5px" }}>
-                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
-                          </span>
-                        )}
-                      </th>
-                      <th style={{ 
-                        padding: "14px 12px", 
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#495057",
-                        border: "none",
-                        width: "12%"
-                      }}>
-                        Role
-                      </th>
-                      <th style={{ 
-                        padding: "14px 12px", 
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#495057",
-                        border: "none",
-                        width: "18%"
-                      }}>
-                        Designation
-                      </th>
-                      <th style={{ 
-                        padding: "14px 12px", 
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#495057",
-                        border: "none",
-                        width: "20%"
-                      }}>
-                        Labs
-                      </th>
-                      <th style={{ 
-                        padding: "14px 12px", 
-                        fontWeight: 600,
-                        fontSize: "0.8rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                        color: "#495057",
-                        border: "none",
-                        width: "100px",
-                        minWidth: "100px"
-                      }}>
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paginatedUsers.length === 0 ? (
-                      <tr>
-                        <td 
-                          colSpan="6" 
-                          style={{ 
-                            textAlign: "center", 
-                            padding: "60px 20px",
-                            color: "#6c757d",
-                            backgroundColor: "#fff",
-                            border: "none"
-                          }}
-                        >
-                          {searchTerm ? (
-                            <div>
-                              <FaSearch style={{ 
-                                fontSize: "2.5rem", 
-                                marginBottom: "16px", 
-                                opacity: 0.3,
-                                color: "#6c757d"
-                              }} />
-                              <p style={{ 
-                                margin: 0, 
-                                fontSize: "1rem",
-                                fontWeight: 500
-                              }}>
-                                No users found matching your search
-                              </p>
-                              <p style={{ 
-                                margin: "8px 0 0 0", 
-                                fontSize: "0.875rem",
-                                color: "#adb5bd"
-                              }}>
-                                Try adjusting your search criteria
-                              </p>
-                            </div>
-                          ) : (
-                            <div>
-                              <FaUser style={{ 
-                                fontSize: "2.5rem", 
-                                marginBottom: "16px", 
-                                opacity: 0.3,
-                                color: "#6c757d"
-                              }} />
-                              <p style={{ 
-                                margin: 0, 
-                                fontSize: "1rem",
-                                fontWeight: 500
-                              }}>
-                                No users available
-                              </p>
-                              <p style={{ 
-                                margin: "8px 0 0 0", 
-                                fontSize: "0.875rem",
-                                color: "#adb5bd"
-                              }}>
-                                Click "Add User" to create your first user
-                              </p>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ) : (
-                      paginatedUsers.map((user, index) => (
-                        <tr 
-                          key={index}
-                          style={{ 
-                            borderBottom: index === paginatedUsers.length - 1 ? "none" : "1px solid #f0f0f0",
-                            transition: "background-color 0.15s ease"
-                          }}
-                        >
-                          <td style={{ 
-                            padding: "14px 12px",
-                            verticalAlign: "middle",
-                            fontWeight: 500,
-                            color: "#212529",
-                            border: "none"
-                          }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <div style={{
-                                width: "32px",
-                                height: "32px",
-                                borderRadius: "50%",
-                                backgroundColor: "#e7f3ff",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                color: "#007bff",
-                                fontSize: "0.75rem",
-                                fontWeight: 600,
-                                flexShrink: 0
-                              }}>
-                                {user.username?.charAt(0).toUpperCase() || "U"}
-                              </div>
-                              <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                {user.username || "N/A"}
-                              </span>
-                            </div>
-                          </td>
-                          <td style={{ 
-                            padding: "14px 12px",
-                            verticalAlign: "middle",
-                            fontWeight: 500,
-                            color: "#212529",
-                            border: "none"
-                          }}>
-                            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>
-                              {user.name || (
-                                <span style={{ 
-                                  color: "#adb5bd", 
-                                  fontStyle: "italic",
-                                  fontSize: "0.85rem"
-                                }}>
-                                  N/A
-                                </span>
-                              )}
-                            </span>
-                          </td>
-                          <td style={{ 
-                            padding: "14px 12px",
-                            verticalAlign: "middle",
-                            border: "none"
-                          }}>
-                            <Badge 
-                              bg="primary" 
-                              style={{ 
-                                padding: "6px 10px",
-                                fontWeight: 500,
-                                fontSize: "0.7rem",
-                                borderRadius: "6px",
-                                whiteSpace: "nowrap"
-                              }}
-                            >
-                              {user.role || "N/A"}
-                            </Badge>
-                          </td>
-                          <td style={{ 
-                            padding: "14px 12px",
-                            verticalAlign: "middle",
-                            color: "#495057",
-                            border: "none"
-                          }}>
-                            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>
-                              {user.designation || "N/A"}
-                            </span>
-                          </td>
-                          <td style={{ 
-                            padding: "14px 12px",
-                            verticalAlign: "middle",
-                            border: "none"
-                          }}>
-                            {user.lab && user.lab.length > 0 ? (
-                              <div style={{ 
-                                display: "flex", 
-                                flexWrap: "wrap", 
-                                gap: "6px" 
-                              }}>
-                                {user.lab.map((lab, labIndex) => (
-                                  <span
-                                    key={labIndex}
-                                    style={{
-                                      padding: "4px 10px",
-                                      borderRadius: "6px",
-                                      backgroundColor: "#f0f0f0",
-                                      fontSize: "0.75rem",
-                                      color: "#495057",
-                                      fontWeight: 500,
-                                      border: "1px solid #e0e0e0"
-                                    }}
-                                  >
-                                    {lab}
-                                  </span>
-                                ))}
-                              </div>
-                            ) : (
-                              <span style={{ 
-                                color: "#adb5bd", 
-                                fontStyle: "italic",
-                                fontSize: "0.85rem"
-                              }}>
-                                No labs assigned
-                              </span>
-                            )}
-                          </td>
-                          <td style={{ 
-                            padding: "14px 12px",
-                            verticalAlign: "middle",
-                            border: "none"
-                          }}>
-                            <Button
-                              variant="outline-primary"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setShowEditModal(true);
-                              }}
-                              style={{
-                                padding: "4px 8px",
-                                fontSize: "0.7rem",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "4px",
-                                whiteSpace: "nowrap"
-                              }}
-                            >
-                              <FaEdit />
-                              Edit
-                            </Button>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </Table>
-              </div>
-
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-                totalItems={filteredUsers.length}
-              />
-            </>
+            </div>
           )}
-        </ContentCard>
-        </PageBody>
+        </section>
+      </div>
 
-        {/* Registration Modal */}
+      {/* Registration Modal */}
         <RegisterModal
           show={showModal}
           onHide={() => setShowModal(false)}

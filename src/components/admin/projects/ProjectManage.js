@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { FaEdit, FaPlus, FaEye, FaSearch, FaDownload, FaFilter, FaSort, FaTrash, FaCheckCircle, FaTimesCircle, FaExclamationTriangle } from "react-icons/fa";
-import { Modal, Button } from "react-bootstrap";
+import {
+  FaEdit,
+  FaPlus,
+  FaSearch,
+  FaDownload,
+  FaSort,
+  FaSortUp,
+  FaSortDown,
+  FaTrash,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaFolderOpen,
+  FaFileExcel,
+  FaTimes,
+} from "react-icons/fa";
+import { Modal } from "react-bootstrap";
 import AddProjectModal from "./AddProjectModal";
 import UpdateProjectModal from "./UpdateProjectModal";
 import {
@@ -24,7 +38,7 @@ const ProjectManage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
   const [confirmModalShow, setConfirmModalShow] = useState(false);
   const [projectToInactivate, setProjectToInactivate] = useState(null);
 
@@ -34,15 +48,15 @@ const ProjectManage = () => {
     const fetchProjects = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         const data = await getProjectApi();
         if (mounted) {
           setProjects(data);
           setCurrentPage(1);
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } catch (fetchError) {
+        console.error("Error fetching data:", fetchError);
         if (mounted) {
           setError("Failed to load projects. Please try again.");
         }
@@ -65,10 +79,10 @@ const ProjectManage = () => {
     setAddModalShow(true);
   };
 
-  const handleUpdate = (e, stu) => {
+  const handleUpdate = (e, project) => {
     e.preventDefault();
     setEditModalShow(true);
-    setEditProjects(stu);
+    setEditProjects(project);
   };
 
   const handleInactiveClick = (project) => {
@@ -78,11 +92,11 @@ const ProjectManage = () => {
 
   const handleConfirmInactive = async () => {
     if (!projectToInactivate) return;
-    
+
     try {
       await inactiveProjectApi(projectToInactivate.project_code);
-      toast.success("Project Inactivated");
-      
+      toast.success("Project inactivated");
+
       setProjects((prevProjects) =>
         prevProjects.map((proj) =>
           proj.project_code === projectToInactivate.project_code
@@ -92,9 +106,9 @@ const ProjectManage = () => {
       );
       setConfirmModalShow(false);
       setProjectToInactivate(null);
-    } catch (error) {
-      console.error("Failed to inactivate project:", error);
-      toast.error("Failed to Inactivate Project");
+    } catch (inactiveError) {
+      console.error("Failed to inactivate project:", inactiveError);
+      toast.error("Failed to inactivate project");
     }
   };
 
@@ -109,9 +123,9 @@ const ProjectManage = () => {
   };
 
   const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
     }
     setSortConfig({ key, direction });
   };
@@ -120,27 +134,35 @@ const ProjectManage = () => {
     setCurrentPage(page);
   };
 
-  // Filter and sort data
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setSortConfig({ key: null, direction: "asc" });
+    setCurrentPage(1);
+  };
+
   const filteredAndSortedProjects = React.useMemo(() => {
     let filtered = projects;
 
     if (searchTerm) {
-      filtered = projects.filter(project =>
-        project.project_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.project_name.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = projects.filter(
+        (project) =>
+          project.project_code
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          project.project_name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (sortConfig.key) {
-      filtered.sort((a, b) => {
+      filtered = [...filtered].sort((a, b) => {
         const aValue = a[sortConfig.key];
         const bValue = b[sortConfig.key];
-        
+
         if (aValue < bValue) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
+          return sortConfig.direction === "asc" ? -1 : 1;
         }
         if (aValue > bValue) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
+          return sortConfig.direction === "asc" ? 1 : -1;
         }
         return 0;
       });
@@ -149,7 +171,6 @@ const ProjectManage = () => {
     return filtered;
   }, [projects, searchTerm, sortConfig]);
 
-  // Paginate data
   const totalPages = Math.ceil(filteredAndSortedProjects.length / pageSize);
   const paginatedProjects = React.useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -158,14 +179,33 @@ const ProjectManage = () => {
   const paginationStartIndex = (currentPage - 1) * pageSize;
   const paginationEndIndex = paginationStartIndex + pageSize;
 
+  const activeCount = projects.filter((p) => p.deleted === 0).length;
+  const inactiveCount = projects.filter((p) => p.deleted === 1).length;
+
   let AddModelClose = () => setAddModalShow(false);
   let EditModelClose = () => setEditModalShow(false);
 
-  const exportToExcel = (data = projects) => {
+  const exportToExcel = (data = filteredAndSortedProjects) => {
+    if (!data.length) {
+      toast.error("No projects to export");
+      return;
+    }
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Projects");
     XLSX.writeFile(workbook, "project_data.xlsx");
+    toast.success("Export started");
+  };
+
+  const renderSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return <FaSort className="project-sort-icon project-sort-icon--idle" aria-hidden />;
+    }
+    return sortConfig.direction === "asc" ? (
+      <FaSortUp className="project-sort-icon" aria-hidden />
+    ) : (
+      <FaSortDown className="project-sort-icon" aria-hidden />
+    );
   };
 
   return (
@@ -173,245 +213,287 @@ const ProjectManage = () => {
       <PageHeader
         title="Project management"
         actions={
-          <button className="project-btn project-btn-primary project-btn-lg" onClick={handleAdd}>
-            <FaPlus />
-            Add New Project
+          <button
+            type="button"
+            className="lims-header-btn project-btn project-btn-primary"
+            onClick={handleAdd}
+          >
+            <FaPlus aria-hidden />
+            Add project
           </button>
         }
       />
 
-      <div className="project-manage-wrapper">
-        {/* Stats Cards */}
-        <div className="project-stats-container">
-          <div className="project-stat-card">
-            <div className="project-stat-icon primary">
-              <FaEye />
+      <div className="project-manage">
+        <div className="project-stats" role="list">
+          <div className="project-stat-card" role="listitem">
+            <div className="project-stat-icon project-stat-icon--total">
+              <FaFolderOpen aria-hidden />
             </div>
-            <div className="project-stat-value">{projects.length}</div>
-            <p className="project-stat-label">Total Projects</p>
+            <div className="project-stat-content">
+              <span className="project-stat-value">{projects.length}</span>
+              <span className="project-stat-label">Total projects</span>
+            </div>
           </div>
-          
-          <div className="project-stat-card">
-            <div className="project-stat-icon success">
-              <FaCheckCircle />
+
+          <div className="project-stat-card" role="listitem">
+            <div className="project-stat-icon project-stat-icon--active">
+              <FaCheckCircle aria-hidden />
             </div>
-            <div className="project-stat-value">
-              {projects.filter(p => p.deleted === 0).length}
+            <div className="project-stat-content">
+              <span className="project-stat-value">{activeCount}</span>
+              <span className="project-stat-label">Active</span>
             </div>
-            <p className="project-stat-label">Active Projects</p>
           </div>
-          
-          <div className="project-stat-card">
-            <div className="project-stat-icon warning">
-              <FaTimesCircle />
+
+          <div className="project-stat-card" role="listitem">
+            <div className="project-stat-icon project-stat-icon--inactive">
+              <FaTimesCircle aria-hidden />
             </div>
-            <div className="project-stat-value">
-              {projects.filter(p => p.deleted === 1).length}
+            <div className="project-stat-content">
+              <span className="project-stat-value">{inactiveCount}</span>
+              <span className="project-stat-label">Inactive</span>
             </div>
-            <p className="project-stat-label">Inactive Projects</p>
           </div>
-          
-          <div className="project-stat-card">
-            <div className="project-stat-icon info">
-              <FaDownload />
+
+          <button
+            type="button"
+            className="project-stat-card project-stat-card--action"
+            onClick={() => exportToExcel()}
+            aria-label="Export projects to Excel"
+          >
+            <div className="project-stat-icon project-stat-icon--export">
+              <FaFileExcel aria-hidden />
             </div>
-            <p className="project-stat-label">Download Data</p>
-          </div>
+            <div className="project-stat-content">
+              <span className="project-stat-value project-stat-value--action">
+                Export
+              </span>
+              <span className="project-stat-label">Download Excel</span>
+            </div>
+            <FaDownload className="project-stat-action-hint" aria-hidden />
+          </button>
         </div>
 
-        {/* Main Content Card */}
-        <div className="project-content-card">
-          <div className="project-content-header">
-            <h4>
-              <FaFilter />
-              Project List
-            </h4>
-            <button 
-              className="project-btn project-btn-outline-light"
-              onClick={() => exportToExcel(projects)}
-            >
-              <FaDownload />
-              Export to Excel
-            </button>
-          </div>
-
-          <div className="project-content-body">
-            {/* Search and Filter Bar */}
-            <div className="project-search-bar">
-              <div className="project-search-wrapper">
-                <FaSearch className="project-search-icon" />
+        <section className="project-panel" aria-label="Project list">
+          <div className="project-toolbar">
+            <div className="project-toolbar-filter">
+              <label htmlFor="project-search" className="project-search-label">
+                Search
+              </label>
+              <div className="project-search">
+                <FaSearch className="project-search-icon" aria-hidden />
                 <input
-                  type="text"
-                  placeholder="Search projects by code or name..."
+                  id="project-search"
+                  type="search"
+                  placeholder="Filter by project code or name…"
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="project-search-input"
-                />
-              </div>
-              <div className="project-filter-buttons">
-                <button
-                  className="project-btn project-btn-outline-primary project-btn-sm"
-                  onClick={() => handleSort('project_name')}
-                >
-                  <FaSort />
-                  Sort
-                </button>
-                <button
-                  className="project-btn project-btn-outline-secondary project-btn-sm"
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSortConfig({ key: null, direction: 'asc' });
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      handleSearch("");
+                      e.currentTarget.blur();
+                    }
                   }}
-                >
-                  <FaFilter />
-                  Clear
-                </button>
+                  className="project-search-input"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {searchTerm ? (
+                  <button
+                    type="button"
+                    className="project-search-clear"
+                    onClick={() => handleSearch("")}
+                    aria-label="Clear search"
+                  >
+                    <FaTimes aria-hidden />
+                  </button>
+                ) : null}
               </div>
+              {!loading && !error ? (
+                <span className="project-toolbar-count" aria-live="polite">
+                  <strong>{filteredAndSortedProjects.length}</strong> project
+                  {filteredAndSortedProjects.length !== 1 ? "s" : ""}
+                  {searchTerm ? " matching search" : ""}
+                </span>
+              ) : null}
             </div>
+            <div className="project-toolbar-actions">
+              <button
+                type="button"
+                className="project-btn project-btn-ghost"
+                onClick={() => handleSort("project_name")}
+              >
+                {renderSortIcon("project_name")}
+                Sort by name
+              </button>
+              <button
+                type="button"
+                className="project-btn project-btn-ghost"
+                onClick={handleClearFilters}
+              >
+                Clear filters
+              </button>
+            </div>
+          </div>
 
-            {/* Loading State */}
-            {loading && (
-              <div className="project-loading">
-                <div className="project-spinner"></div>
-              </div>
-            )}
+          {loading && (
+            <div className="project-loading" role="status" aria-live="polite">
+              <div className="project-spinner" />
+              <span>Loading projects…</span>
+            </div>
+          )}
 
-            {/* Error State */}
-            {error && (
-              <div className="project-alert project-alert-danger">
-                <FaTimesCircle />
-                {error}
-              </div>
-            )}
+          {error && (
+            <div className="project-alert project-alert-danger" role="alert">
+              <FaTimesCircle aria-hidden />
+              {error}
+            </div>
+          )}
 
-            {/* Projects Table */}
-            {!loading && !error && (
-              <>
-                <div className="project-table-wrapper">
-                  <table className="project-table">
-                    <thead>
-                      <tr>
-                        <th style={{ width: '20%' }}>
-                          <div 
-                            className="project-table-header-sortable"
-                            onClick={() => handleSort('project_code')}
-                          >
-                            Project Code
-                            <FaSort className="project-table-sort-icon" />
+          {!loading && !error && (
+            <div className="project-table-section">
+              <div className="project-table-shell">
+                <table className="project-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">
+                        <button
+                          type="button"
+                          className="project-th-sort"
+                          onClick={() => handleSort("project_code")}
+                        >
+                          Project code
+                          {renderSortIcon("project_code")}
+                        </button>
+                      </th>
+                      <th scope="col">
+                        <button
+                          type="button"
+                          className="project-th-sort"
+                          onClick={() => handleSort("project_name")}
+                        >
+                          Project name
+                          {renderSortIcon("project_name")}
+                        </button>
+                      </th>
+                      <th scope="col">Status</th>
+                      <th scope="col">Created</th>
+                      <th scope="col" className="project-th-actions">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedProjects.length === 0 ? (
+                      <tr className="project-table-row project-table-row--empty">
+                        <td colSpan="5">
+                          <div className="project-empty">
+                            <div className="project-empty-icon-wrap">
+                              <FaFolderOpen aria-hidden />
+                            </div>
+                            <h3>No projects found</h3>
+                            <p>
+                              {searchTerm
+                                ? "Try adjusting your search or clear filters."
+                                : 'Click "Add project" to create your first project.'}
+                            </p>
                           </div>
-                        </th>
-                        <th style={{ width: '40%' }}>
-                          <div 
-                            className="project-table-header-sortable"
-                            onClick={() => handleSort('project_name')}
-                          >
-                            Project Name
-                            <FaSort className="project-table-sort-icon" />
-                          </div>
-                        </th>
-                        <th style={{ width: '15%' }}>Status</th>
-                        <th style={{ width: '15%' }}>Created</th>
-                        <th style={{ width: '10%', textAlign: 'center' }}>Actions</th>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {paginatedProjects.length === 0 ? (
-                        <tr>
-                          <td colSpan="5">
-                            <div className="project-empty-state">
-                              <FaEye className="project-empty-icon" />
-                              <h5>No projects found</h5>
-                              <p>Click "Add New Project" to create your first project</p>
+                    ) : (
+                      paginatedProjects.map((project) => (
+                        <tr key={project.project_code} className="project-table-row">
+                          <td data-label="Code">
+                            <span className="project-code">
+                              {project.project_code}
+                            </span>
+                          </td>
+                          <td data-label="Name">
+                            <span className="project-name">
+                              {project.project_name}
+                            </span>
+                          </td>
+                          <td data-label="Status">
+                            <span
+                              className={`project-badge ${
+                                project.deleted === 0
+                                  ? "project-badge--success"
+                                  : "project-badge--secondary"
+                              }`}
+                            >
+                              {project.deleted === 0 ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td data-label="Created">
+                            <time
+                              className="project-date"
+                              dateTime={project.created_at || undefined}
+                            >
+                              {project.created_at
+                                ? new Date(
+                                    project.created_at
+                                  ).toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  })
+                                : "—"}
+                            </time>
+                          </td>
+                          <td data-label="Actions" className="project-td-actions">
+                            <div className="project-row-actions">
+                              <button
+                                type="button"
+                                className="project-icon-btn project-icon-btn--edit"
+                                onClick={(e) => handleUpdate(e, project)}
+                                title="Edit project"
+                                aria-label={`Edit ${project.project_name}`}
+                              >
+                                <FaEdit aria-hidden />
+                              </button>
+                              {project.deleted === 0 && (
+                                <button
+                                  type="button"
+                                  className="project-icon-btn project-icon-btn--danger"
+                                  onClick={() => handleInactiveClick(project)}
+                                  title="Inactivate project"
+                                  aria-label={`Inactivate ${project.project_name}`}
+                                >
+                                  <FaTrash aria-hidden />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
-                      ) : (
-                        paginatedProjects.map((project) => (
-                          <tr key={project.project_code}>
-                            <td>
-                              <div style={{ fontWeight: '600', color: '#007bff' }}>
-                                {project.project_code}
-                              </div>
-                            </td>
-                            <td>
-                              <div style={{ fontWeight: '500' }}>
-                                {project.project_name}
-                              </div>
-                            </td>
-                            <td>
-                              <span 
-                                className={`project-badge ${
-                                  project.deleted === 0 
-                                    ? 'project-badge-success' 
-                                    : 'project-badge-secondary'
-                                }`}
-                              >
-                                {project.deleted === 0 ? 'Active' : 'Inactive'}
-                              </span>
-                            </td>
-                            <td>
-                              <small style={{ color: '#6c757d' }}>
-                                {project.created_at 
-                                  ? new Date(project.created_at).toLocaleDateString('en-US', {
-                                      year: 'numeric',
-                                      month: 'short',
-                                      day: 'numeric'
-                                    })
-                                  : 'N/A'}
-                              </small>
-                            </td>
-                            <td>
-                              <div className="project-action-buttons">
-                                <button
-                                  className="project-btn project-btn-outline-primary project-btn-sm"
-                                  onClick={(e) => handleUpdate(e, project)}
-                                  title="Edit Project"
-                                >
-                                  <FaEdit />
-                                </button>
-                                {project.deleted === 0 && (
-                                  <button
-                                    className="project-btn project-btn-outline-danger project-btn-sm"
-                                    onClick={() => handleInactiveClick(project)}
-                                    title="Inactivate Project"
-                                  >
-                                    <FaTrash />
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                    totalItems={filteredAndSortedProjects.length}
-                    startIndex={paginationStartIndex}
-                    endIndex={paginationEndIndex}
-                    position="bottom"
-                  />
-                )}
-              </>
-            )}
-          </div>
-        </div>
+              {totalPages > 1 && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                  totalItems={filteredAndSortedProjects.length}
+                  startIndex={paginationStartIndex}
+                  endIndex={paginationEndIndex}
+                  position="bottom"
+                />
+              )}
+            </div>
+          )}
+        </section>
 
-        {/* Modals */}
         <AddProjectModal
           show={addModalShow}
           setUpdated={setIsUpdated}
           onHide={AddModelClose}
           projects={projects || []}
         />
-        
+
         <UpdateProjectModal
           show={editModalShow}
           setUpdated={setIsUpdated}
@@ -420,49 +502,60 @@ const ProjectManage = () => {
           projects={projects || []}
         />
 
-        {/* Confirmation Modal */}
         <Modal
           show={confirmModalShow}
           onHide={handleCloseConfirmModal}
+          size="sm"
           centered
           backdrop="static"
+          dialogClassName="project-modal project-modal--confirm"
+          contentClassName="project-modal-content"
         >
-          <Modal.Header closeButton style={{ borderBottom: '1px solid #dee2e6' }}>
-            <Modal.Title style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <FaExclamationTriangle style={{ color: '#dc3545' }} />
-              Confirm Inactivation
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body style={{ padding: '1.5rem' }}>
-            <p style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>
-              Are you sure you want to inactivate this project?
+          <div className="project-modal-header">
+            <button
+              type="button"
+              className="project-modal-close"
+              onClick={handleCloseConfirmModal}
+              aria-label="Close"
+            >
+              <FaTimes aria-hidden />
+            </button>
+            <h2 className="project-modal-title">Inactivate project?</h2>
+            <p className="project-modal-description">
+              This will mark the project as inactive. You can reactivate it later.
             </p>
+          </div>
+          <Modal.Body className="project-modal-body">
             {projectToInactivate && (
-              <div style={{ 
-                backgroundColor: '#f8f9fa', 
-                padding: '0.75rem', 
-                borderRadius: '0.25rem',
-                marginTop: '1rem'
-              }}>
-                <p style={{ margin: 0, fontWeight: '600', color: '#495057' }}>
-                  Project Code: <span style={{ color: '#007bff' }}>{projectToInactivate.project_code}</span>
-                </p>
-                <p style={{ margin: '0.25rem 0 0 0', color: '#6c757d' }}>
-                  Project Name: {projectToInactivate.project_name}
-                </p>
+              <div className="project-modal-highlight">
+                <div className="project-modal-highlight-row">
+                  <span className="project-modal-highlight-label">Code</span>
+                  <span className="project-code-chip--compact">
+                    {projectToInactivate.project_code}
+                  </span>
+                </div>
+                <div className="project-modal-highlight-row">
+                  <span className="project-modal-highlight-label">Name</span>
+                  <span>{projectToInactivate.project_name}</span>
+                </div>
               </div>
             )}
-            <p style={{ marginTop: '1rem', marginBottom: 0, fontSize: '0.875rem', color: '#6c757d' }}>
-              This action will mark the project as inactive. You can reactivate it later if needed.
-            </p>
           </Modal.Body>
-          <Modal.Footer style={{ borderTop: '1px solid #dee2e6' }}>
-            <Button variant="secondary" onClick={handleCloseConfirmModal}>
+          <Modal.Footer className="project-modal-footer">
+            <button
+              type="button"
+              className="project-btn project-btn-outline"
+              onClick={handleCloseConfirmModal}
+            >
               Cancel
-            </Button>
-            <Button variant="danger" onClick={handleConfirmInactive}>
-              Inactivate Project
-            </Button>
+            </button>
+            <button
+              type="button"
+              className="project-btn project-btn-danger-solid"
+              onClick={handleConfirmInactive}
+            >
+              Inactivate
+            </button>
           </Modal.Footer>
         </Modal>
       </div>

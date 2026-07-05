@@ -1,322 +1,398 @@
-import React, { useState, useEffect } from "react";
-import { updateLoginApi, getLoginApi } from "../../services/AppinfoService";
-import { FaEye, FaEyeSlash, FaKey, FaUser, FaLock } from "react-icons/fa";
+import React, { useState, useEffect, useMemo } from "react";
+import { updateLoginApi, getAllUsersApi } from "../../services/AppinfoService";
+import {
+  FaEye,
+  FaEyeSlash,
+  FaKey,
+  FaSearch,
+  FaTimes,
+  FaUsers,
+} from "react-icons/fa";
+import { Modal, Form } from "react-bootstrap";
 import toast from "react-hot-toast";
-import { PageLayout, PageHeader, PageBody, ContentCard } from "../layout/content";
+import Pagination from "../common/Pagination";
+import "./PasswordReset.css";
+import { PageLayout, PageHeader } from "../layout/content";
 
-function PasswordReset({ userDetails = { name: "", lab: "", designation: "" } }) {
-  const [username, setUsername] = useState("");
+const getRoleBadgeClass = (role) => {
+  if (role === "Manager") return "project-badge--role-manager";
+  if (role === "Researcher") return "project-badge--success";
+  return "project-badge--secondary";
+};
+
+function PasswordReset() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [password, setPassword] = useState("");
-  const [userOptions, setUserOptions] = useState([]);
-  const [resetStatus, setResetStatus] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchUserOptions();
+    let mounted = true;
+
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const data = await getAllUsersApi();
+        if (mounted) {
+          setUsers(data);
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast.error("Failed to load users");
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchUsers();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const fetchUserOptions = async () => {
-    try {
-      const users = await getLoginApi();
-      setUserOptions(users.map((user) => user.user_name));
-    } catch (error) {
-      console.error("Error fetching user options:", error);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return users;
     }
+
+    const query = searchTerm.trim().toLowerCase();
+
+    return users.filter((user) => {
+      const usernameMatch = user.username?.toLowerCase().includes(query);
+      const nameMatch = user.name?.toLowerCase().includes(query);
+      const roleMatch = user.role?.toLowerCase().includes(query);
+      const designationMatch = user.designation?.toLowerCase().includes(query);
+      const labsMatch = user.lab?.some((lab) =>
+        lab.toLowerCase().includes(query)
+      );
+
+      return (
+        usernameMatch || nameMatch || roleMatch || designationMatch || labsMatch
+      );
+    });
+  }, [users, searchTerm]);
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  const handleOpenReset = (user) => {
+    setSelectedUser(user);
+    setPassword("");
+    setShowPassword(false);
+    setShowResetModal(true);
+  };
+
+  const handleCloseResetModal = () => {
+    setShowResetModal(false);
+    setSelectedUser(null);
+    setPassword("");
+    setShowPassword(false);
   };
 
   const handleResetPassword = async () => {
-    if (!username && !password) {
-      toast.error("Please select a username and enter a new password.");
-      return;
-    }
+    if (!selectedUser) return;
 
-    if (!username) {
-      toast.error("Please select a username.");
-      return;
-    }
-
-    if (!password) {
+    if (!password.trim()) {
       toast.error("Please enter a new password.");
       return;
     }
 
+    setSubmitting(true);
     try {
-      const userExists = userOptions.includes(username);
-
-      if (userExists) {
-        await updateLoginApi(username, { user_name: username, password });
-        setResetStatus("Password reset successfully!");
-        setUsername("");
-        setPassword("");
-        toast.success("Password reset successfully!");
-      } else {
-        setResetStatus("Username not found. Password reset failed.");
-        toast.error("Username not found. Please check and try again.");
-      }
+      await updateLoginApi(selectedUser.username, {
+        user_name: selectedUser.username,
+        password,
+      });
+      toast.success("Password reset successfully!");
+      handleCloseResetModal();
     } catch (error) {
       console.error("Error resetting password:", error);
-      setResetStatus("An error occurred while resetting the password.");
       toast.error("An error occurred. Please try again later.");
+    } finally {
+      setSubmitting(false);
     }
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  const styles = {
-    container: {
-      backgroundColor: "#f2f5e6",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "1rem 1rem",
-    },
-    wrapper: {
-      width: "100%",
-      maxWidth: "600px",
-    },
-    card: {
-      backgroundColor: "white",
-      border: "1px solid #dee2e6",
-      borderRadius: "0.5rem",
-      boxShadow: "0 0.5rem 1rem rgba(0, 0, 0, 0.15)",
-      overflow: "hidden",
-    },
-    header: {
-      backgroundColor: "#f8f9fa",
-      borderBottom: "1px solid #dee2e6",
-      padding: "1rem",
-      textAlign: "center",
-    },
-    iconWrapper: {
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: "64px",
-      height: "64px",
-      backgroundColor: "#c5ea31",
-      borderRadius: "50%",
-      marginBottom: "1rem",
-    },
-    icon: {
-      fontSize: "2rem",
-      color: "white",
-    },
-    title: {
-      color: "#495057",
-      fontSize: "1.75rem",
-      fontWeight: "600",
-      marginBottom: "0.5rem",
-      margin: "0 0 0.5rem 0",
-    },
-    subtitle: {
-      color: "#6c757d",
-      margin: "0",
-      fontSize: "0.95rem",
-    },
-    form: {
-      padding: "2rem",
-    },
-    formGroup: {
-      marginBottom: "1.5rem",
-    },
-    label: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem",
-      color: "#495057",
-      fontWeight: "600",
-      fontSize: "0.875rem",
-      marginBottom: "0.5rem",
-    },
-    labelIcon: {
-      color: "#c5ea31",
-      fontSize: "0.875rem",
-    },
-    input: {
-      width: "100%",
-      padding: "0.625rem 0.75rem",
-      fontSize: "0.875rem",
-      lineHeight: "1.5",
-      color: "#495057",
-      backgroundColor: "#fff",
-      border: "1px solid #dee2e6",
-      borderRadius: "0.25rem",
-      transition: "border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out",
-      boxSizing: "border-box",
-    },
-    select: {
-      width: "100%",
-      padding: "0.625rem 0.75rem",
-      fontSize: "0.875rem",
-      lineHeight: "1.5",
-      color: "#495057",
-      backgroundColor: "#fff",
-      border: "1px solid #dee2e6",
-      borderRadius: "0.25rem",
-      transition: "border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out",
-      cursor: "pointer",
-      appearance: "none",
-      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e")`,
-      backgroundRepeat: "no-repeat",
-      backgroundPosition: "right 0.75rem center",
-      backgroundSize: "16px 12px",
-      paddingRight: "2.5rem",
-      boxSizing: "border-box",
-    },
-    passwordWrapper: {
-      position: "relative",
-      display: "flex",
-      alignItems: "center",
-    },
-    passwordInput: {
-      width: "100%",
-      padding: "0.625rem 0.75rem",
-      paddingRight: "2.5rem",
-      fontSize: "0.875rem",
-      lineHeight: "1.5",
-      color: "#495057",
-      backgroundColor: "#fff",
-      border: "1px solid #dee2e6",
-      borderRadius: "0.25rem",
-      transition: "border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out",
-      boxSizing: "border-box",
-    },
-    toggleBtn: {
-      position: "absolute",
-      right: "0.75rem",
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      color: "#6c757d",
-      padding: "0.25rem",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      transition: "color 0.15s ease-in-out",
-    },
-    button: {
-      width: "100%",
-      padding: "0.75rem 1rem",
-      fontSize: "1rem",
-      fontWeight: "600",
-      color: "#000",
-      backgroundColor: "#c5ea31",
-      border: "1px solid #c5ea31",
-      borderRadius: "0.25rem",
-      cursor: "pointer",
-      transition: "all 0.15s ease-in-out",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: "0.5rem",
-      marginTop: "1rem",
-    },
   };
 
   return (
     <PageLayout>
       <PageHeader title="Password reset" />
-      <PageBody>
-      <div className="lims-auth-form-center">
-        <ContentCard className="lims-auth-form-panel lims-auth-form-panel--wide">
-          <div style={styles.form}>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>
-                <FaUser style={styles.labelIcon} />
-                Username
-              </label>
-              <select
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                style={styles.select}
-                onFocus={(e) => {
-                  e.target.style.outline = "0";
-                  e.target.style.borderColor = "#80bdff";
-                  e.target.style.boxShadow = "0 0 0 0.2rem rgba(0, 123, 255, 0.25)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "#dee2e6";
-                  e.target.style.boxShadow = "none";
-                }}
-              >
-                <option value="">Select Username</option>
-                {userOptions.map((user, index) => (
-                  <option key={index} value={user}>
-                    {user}
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            <div style={styles.formGroup}>
-              <label style={styles.label}>
-                <FaLock style={styles.labelIcon} />
-                New Password
+      <div className="password-reset">
+        <section className="project-panel" aria-label="User list">
+          <div className="project-toolbar">
+            <div className="project-toolbar-filter">
+              <label htmlFor="password-reset-search" className="project-search-label">
+                Search
               </label>
-              <div style={styles.passwordWrapper}>
+              <div className="project-search">
+                <FaSearch className="project-search-icon" aria-hidden />
                 <input
+                  id="password-reset-search"
+                  type="search"
+                  placeholder="Filter by username, name, role, designation, or lab…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setSearchTerm("");
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  className="project-search-input"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {searchTerm ? (
+                  <button
+                    type="button"
+                    className="project-search-clear"
+                    onClick={() => setSearchTerm("")}
+                    aria-label="Clear search"
+                  >
+                    <FaTimes aria-hidden />
+                  </button>
+                ) : null}
+              </div>
+              {!loading ? (
+                <span className="project-toolbar-count" aria-live="polite">
+                  <strong>{filteredUsers.length}</strong> user
+                  {filteredUsers.length !== 1 ? "s" : ""}
+                  {searchTerm ? " matching search" : ""}
+                </span>
+              ) : null}
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="project-loading" role="status" aria-live="polite">
+              <div className="project-spinner" />
+              <span>Loading users…</span>
+            </div>
+          ) : (
+            <div className="project-table-section">
+              <div className="project-table-shell">
+                <table className="project-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Username</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Role</th>
+                      <th scope="col">Designation</th>
+                      <th scope="col" className="project-th-actions">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedUsers.length === 0 ? (
+                      <tr className="project-table-row project-table-row--empty">
+                        <td colSpan="5">
+                          <div className="project-empty">
+                            <div className="project-empty-icon-wrap">
+                              {searchTerm ? (
+                                <FaSearch aria-hidden />
+                              ) : (
+                                <FaUsers aria-hidden />
+                              )}
+                            </div>
+                            <h3>
+                              {searchTerm ? "No users found" : "No users available"}
+                            </h3>
+                            <p>
+                              {searchTerm
+                                ? "Try adjusting your search."
+                                : "No users are registered in the system yet."}
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      paginatedUsers.map((user) => (
+                        <tr key={user.username} className="project-table-row">
+                          <td data-label="Username">
+                            <span className="password-reset-username">
+                              {user.username || "—"}
+                            </span>
+                          </td>
+                          <td data-label="Name">
+                            <span
+                              className={
+                                user.name ? "project-name" : "password-reset-na"
+                              }
+                            >
+                              {user.name || "N/A"}
+                            </span>
+                          </td>
+                          <td data-label="Role">
+                            <span
+                              className={`project-badge ${getRoleBadgeClass(
+                                user.role
+                              )}`}
+                            >
+                              {user.role || "N/A"}
+                            </span>
+                          </td>
+                          <td data-label="Designation">
+                            {user.designation ? (
+                              <span>{user.designation}</span>
+                            ) : (
+                              <span className="password-reset-na">—</span>
+                            )}
+                          </td>
+                          <td
+                            data-label="Actions"
+                            className="project-td-actions"
+                          >
+                            <div className="project-row-actions">
+                              <button
+                                type="button"
+                                className="project-icon-btn project-icon-btn--reset"
+                                onClick={() => handleOpenReset(user)}
+                                title="Reset password"
+                                aria-label={`Reset password for ${user.username}`}
+                              >
+                                <FaKey aria-hidden />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <Pagination
+                showItemsPerPage
+                showSummary
+                totalItems={filteredUsers.length}
+                startIndex={startIndex}
+                endIndex={endIndex}
+                itemsPerPage={itemsPerPage}
+                onItemsPerPageChange={(n) => {
+                  setItemsPerPage(n);
+                  setCurrentPage(1);
+                }}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+                position="bottom"
+              />
+            </div>
+          )}
+        </section>
+      </div>
+
+      <Modal
+        show={showResetModal}
+        onHide={handleCloseResetModal}
+        size="sm"
+        scrollable
+        centered
+        backdrop="static"
+        dialogClassName="project-modal"
+        contentClassName="project-modal-content"
+        aria-labelledby="reset-password-modal-title"
+      >
+        <div className="project-modal-header">
+          <button
+            type="button"
+            className="project-modal-close"
+            onClick={handleCloseResetModal}
+            aria-label="Close"
+          >
+            <FaTimes aria-hidden />
+          </button>
+          <h2 id="reset-password-modal-title" className="project-modal-title">
+            Reset password
+          </h2>
+          <p className="project-modal-description">
+            Set a new password for this user account.
+          </p>
+        </div>
+        <Modal.Body className="project-modal-body">
+          <Form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleResetPassword();
+            }}
+            className="project-modal-form"
+          >
+            {selectedUser ? (
+              <div className="project-modal-highlight">
+                <div className="project-modal-highlight-row">
+                  <span className="project-modal-highlight-label">User</span>
+                  <span className="password-reset-username">
+                    {selectedUser.username}
+                  </span>
+                </div>
+                {selectedUser.name ? (
+                  <div className="project-modal-highlight-row">
+                    <span className="project-modal-highlight-label">Name</span>
+                    <span>{selectedUser.name}</span>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+            <Form.Group controlId="new-password" className="project-field">
+              <Form.Label>New password</Form.Label>
+              <div className="project-field-input-wrap">
+                <Form.Control
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  style={styles.passwordInput}
-                  placeholder="Enter new password"
                   onChange={(e) => setPassword(e.target.value)}
-                  onFocus={(e) => {
-                    e.target.style.outline = "0";
-                    e.target.style.borderColor = "#80bdff";
-                    e.target.style.boxShadow = "0 0 0 0.2rem rgba(0, 123, 255, 0.25)";
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = "#dee2e6";
-                    e.target.style.boxShadow = "none";
-                  }}
+                  placeholder="Enter new password"
+                  autoComplete="new-password"
+                  className="project-field-input"
                 />
                 <button
                   type="button"
-                  onClick={togglePasswordVisibility}
-                  style={styles.toggleBtn}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "#007bff")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "#6c757d")}
+                  className="project-field-password-toggle"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <FaEye /> : <FaEyeSlash />}
+                  {showPassword ? (
+                    <FaEye aria-hidden />
+                  ) : (
+                    <FaEyeSlash aria-hidden />
+                  )}
                 </button>
               </div>
+            </Form.Group>
+            <div className="project-modal-form-actions">
+              <button
+                type="button"
+                className="project-btn project-btn-outline"
+                onClick={handleCloseResetModal}
+                disabled={submitting}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="project-btn project-btn-primary"
+                disabled={submitting}
+              >
+                {submitting ? "Resetting…" : "Reset password"}
+              </button>
             </div>
-
-            <button
-              onClick={handleResetPassword}
-              style={styles.button}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "#0056b3";
-                e.currentTarget.style.borderColor = "#004085";
-                e.currentTarget.style.transform = "translateY(-1px)";
-                e.currentTarget.style.boxShadow = "0 0.25rem 0.5rem rgba(0, 123, 255, 0.25)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "#007bff";
-                e.currentTarget.style.borderColor = "#007bff";
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-              onMouseDown={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.outline = "0";
-                e.currentTarget.style.boxShadow = "0 0 0 0.2rem rgba(0, 123, 255, 0.5)";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <FaKey />
-              Reset Password
-            </button>
-          </div>
-        </ContentCard>
-      </div>
-      </PageBody>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </PageLayout>
   );
 }

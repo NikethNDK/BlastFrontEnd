@@ -1,5 +1,6 @@
 import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./styles/layout/admin-workspace.css";
 import AppShell from "./components/layout/AppShell";
 import AppSidebar from "./components/layout/AppSidebar";
 import { adminMenuConfig } from "./config/sidebar/adminMenu";
@@ -18,7 +19,7 @@ import { Toaster } from "react-hot-toast";
 function AdminApp({ userDetails = { name: '', lab: '', designation: '' } }) {
   return (
     <BrowserRouter>
-      <AppShell sidebar={<AppSidebar config={adminMenuConfig} />}>
+      <AppShell sidebar={<AppSidebar config={adminMenuConfig} />} workspace="admin">
         <Routes>
           <Route path="/" element={<ProjectManage userDetails={userDetails} />} />
           <Route exact path="/home" element={<AdminHome userDetails={userDetails} />} />

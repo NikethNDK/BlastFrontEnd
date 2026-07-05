@@ -1,0 +1,43 @@
+/* Compact admin modals (project-modal pattern) */
+
+.modal-dialog.project-modal {
+  width: calc(100% - 2rem);
+  max-width: 22rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.modal-dialog.project-modal.modal-dialog-centered {
+  min-height: auto;
+}
+
+.modal-dialog.project-modal.project-modal--form,
+.modal-dialog.project-modal.project-modal--user {
+  max-width: 26rem;
+}
+
+.modal-dialog.project-modal.project-modal--confirm {
+  max-width: 22rem;
+}
+
+.modal-dialog.project-modal.modal-dialog-scrollable {
+  max-height: calc(100% - 2rem);
+}
+
+/* Reset global modal-content leaks (e.g. inventory formBorder.css) */
+.modal-dialog.project-modal > .modal-content,
+.modal-dialog.project-modal > .project-modal-content {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  transform: none !important;
+  max-width: none !important;
+  width: 100% !important;
+  padding: 0 !important;
+  z-index: auto !important;
+}
+
+.modal-dialog.project-modal.modal-dialog-scrollable .modal-body {
+  overflow-y: auto;
+  max-height: min(65vh, 28rem);
+}

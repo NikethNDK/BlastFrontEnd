@@ -6,6 +6,7 @@ import "./styles/layout/sidebar.css";
 import "./styles/components/content.css";
 import "./styles/components/tables.css";
 import "./styles/components/ui.css";
+import "./styles/components/project-modal.css";
 import "./index.css";
 import { Provider } from "react-redux";
 import store from "./store";

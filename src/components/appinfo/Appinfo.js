@@ -29,7 +29,7 @@ const Appinfo = ({ userDetails= { name: '', lab: '', designation: '' } }) => {
         title="Appinfo"
         actions={
           <NavLink exact to="/lab_assistant/appinfo_manage" activeClassName="activeClicked">
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" className="lims-header-btn">
               Manage
             </Button>
           </NavLink>

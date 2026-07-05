@@ -3,11 +3,12 @@ import slide02 from '../../assets/slide02.jpeg'
 import slide03 from '../../assets/slide03.jpeg'
 
 import Carousel from 'react-bootstrap/Carousel';
-import { PageLayout, PageBody, ContentCard } from '../layout/content';
+import { PageLayout, PageHeader, PageBody, ContentCard } from '../layout/content';
 
 const AdminHome = () => {
   return (
     <PageLayout fullWidth>
+      <PageHeader title="Home" />
       <PageBody>
       <ContentCard flush className="lims-carousel-card">
         <Carousel variant="dark">

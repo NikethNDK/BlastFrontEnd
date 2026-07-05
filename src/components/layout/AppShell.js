@@ -7,7 +7,7 @@ import '../../styles/layout/app-shell.css';
  * Shared application shell: collapsible header + sidebar + main content.
  * Pass `sidebar` for authenticated layouts; omit for auth-only pages (login).
  */
-const AppShell = ({ children, sidebar, auth = false }) => {
+const AppShell = ({ children, sidebar, auth = false, workspace }) => {
   const shellRef = useRef(null);
   const headerRef = useRef(null);
   const mainRef = useRef(null);
@@ -26,6 +26,7 @@ const AppShell = ({ children, sidebar, auth = false }) => {
     'lab-app',
     auth ? 'lims-app--auth' : '',
     isWorkspace ? 'lims-app--workspace' : '',
+    workspace ? `lims-app--${workspace}` : '',
     isWorkspace && !headerVisible ? 'lims-app--header-hidden' : '',
   ]
     .filter(Boolean)

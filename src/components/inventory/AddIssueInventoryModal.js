@@ -77,7 +77,9 @@ const AddIssueInventoryModal = (props) => {
                 {...props}
                 size="md"
                 aria-labelledby="contained-modal-title-vcenter"
-                centered >
+                centered
+                dialogClassName="inventory-form-border"
+            >
 
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title-vcenter">

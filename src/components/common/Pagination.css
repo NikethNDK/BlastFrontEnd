@@ -3,13 +3,14 @@
 .lims-pagination {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.75rem 1rem;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 0.75rem 1.25rem;
   padding: 0.75rem 1.25rem;
   border-top: 1px solid var(--lims-border, #e2e8f0);
   background: #fafbfc;
   flex-shrink: 0;
+  overflow-x: auto;
 }
 
 .lims-pagination--top {
@@ -20,8 +21,9 @@
 .lims-pagination-meta {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.75rem 1.25rem;
+  flex-shrink: 0;
 }
 
 .lims-pagination-count {
@@ -60,8 +62,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex: 1;
-  justify-content: center;
+  margin-left: auto;
+  flex: 0 0 auto;
 }
 
 .lims-pagination-pages {
@@ -136,17 +138,19 @@
   font-weight: 500;
   color: #64748b;
   white-space: nowrap;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
 }
 
 @media (max-width: 640px) {
   .lims-pagination {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
+    flex-wrap: wrap;
   }
 
   .lims-pagination-nav {
-    flex-wrap: wrap;
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
   }
 
   .lims-pagination-btn--nav span {

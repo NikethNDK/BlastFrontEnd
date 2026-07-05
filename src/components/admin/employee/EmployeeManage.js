@@ -1,7 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { FaUserPlus, FaUsers, FaCheckCircle, FaTimesCircle, FaEye, FaExclamationTriangle } from "react-icons/fa";
+import React, { useEffect, useState, useMemo } from "react";
+import {
+  FaUserPlus,
+  FaUsers,
+  FaSearch,
+  FaTimes,
+  FaUserSlash,
+} from "react-icons/fa";
 import Pagination from "../../common/Pagination";
-import { Modal, Button } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 import AddEmployeeModal from "./AddEmployeeModal";
 import UpdateEmployeeModal from "./UpdateEmployeeModal";
 import {
@@ -9,8 +15,15 @@ import {
   inactiveEmployeeApi,
 } from "../../../services/AppinfoService";
 import toast from "react-hot-toast";
-import "../../../components/Lab1/homeLab/inventory.css";
+import "./EmployeeManage.css";
 import { PageLayout, PageHeader } from "../../layout/content";
+
+const formatListField = (value) => {
+  if (Array.isArray(value)) {
+    return value.filter(Boolean).join(", ");
+  }
+  return value || "";
+};
 
 const EmployeeManage = () => {
   const [employees, setEmployees] = useState([]);
@@ -21,6 +34,7 @@ const EmployeeManage = () => {
   const [inactiveEmployees, setInactiveEmployees] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
   const [confirmModalShow, setConfirmModalShow] = useState(false);
   const [employeeToInactivate, setEmployeeToInactivate] = useState(null);
 
@@ -59,31 +73,23 @@ const EmployeeManage = () => {
     };
   }, [isUpdated]);
 
-  // Reset to first page when employees data changes significantly
   useEffect(() => {
     setCurrentPage(1);
-  }, [isUpdated]);
-
-  const handleUpdate = (e, emp) => {
-    e.preventDefault();
-    setEditModalShow(true);
-    setEditEmployees(emp);
-  };
+  }, [isUpdated, searchTerm]);
 
   const handleAdd = (e) => {
     e.preventDefault();
     setAddModalShow(true);
   };
 
-  const handleInactiveClick = (e, employee) => {
-    e.preventDefault();
+  const handleInactiveClick = (employee) => {
     setEmployeeToInactivate(employee);
     setConfirmModalShow(true);
   };
 
   const handleConfirmInactive = async () => {
     if (!employeeToInactivate) return;
-    
+
     try {
       await inactiveEmployeeApi(employeeToInactivate.emp_id);
       toast.success("Employee marked as inactive");
@@ -108,459 +114,332 @@ const EmployeeManage = () => {
     setEmployeeToInactivate(null);
   };
 
-  const styles = {
-    container: {
-      backgroundColor: "#f2f5e6",
-      minHeight: "100vh",
-      padding: "1rem",
-    },
-    wrapper: {
-      maxWidth: "1400px",
-      margin: "0 auto",
-    },
-    header: {
-      backgroundColor: "white",
-      padding: "1rem",
-      borderRadius: "0.5rem",
-      boxShadow: "0 0.5rem 1rem rgba(0, 0, 0, 0.15)",
-      marginBottom: "1rem",
-      border: "1px solid #dee2e6",
-    },
-    headerContent: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      flexWrap: "wrap",
-      gap: "1rem",
-    },
-    headerTitle: {
-      display: "flex",
-      flexDirection: "column",
-    },
-    title: {
-      color: "#495057",
-      fontSize: "1.6rem",
-      fontWeight: "600",
-      marginBottom: "0.5rem",
-      display: "flex",
-      alignItems: "center",
-      gap: "0.75rem",
-      margin: "0 0 0.5rem 0",
-    },
-    subtitle: {
-      color: "#6c757d",
-      margin: "0",
-      fontSize: "0.95rem",
-    },
-    statsContainer: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-      gap: "1rem",
-      marginBottom: "1rem",
-    },
-    statCard: {
-      backgroundColor: "white",
-      border: "1px solid #dee2e6",
-      borderRadius: "0.375rem",
-      padding: "1rem",
-      textAlign: "center",
-      justifyContent: "space-evenly",
-      display: "flex",
-      boxShadow: "0 0.125rem 0.25rem rgba(0, 0, 0, 0.075)",
-      transition: "transform 0.2s, box-shadow 0.2s",
-    },
-    statIcon: {
-      fontSize: "1.3rem",
-    },
-    statValue: {
-      fontSize: "1.3rem",
-      fontWeight: "700",
-      color: "#495057",
-      marginBottom: "0.25rem",
-    },
-    statLabel: {
-      color: "#6c757d",
-      fontSize: "0.875rem",
-      margin: "auto 0",
-    },
-    contentCard: {
-      backgroundColor: "white",
-      border: "1px solid #dee2e6",
-      borderRadius: "0.5rem",
-      boxShadow: "0 0.5rem 1rem rgba(0, 0, 0, 0.15)",
-    },
-    contentHeader: {
-      padding: "1.25rem 1.5rem",
-      backgroundColor: "#f8f9fa",
-      borderBottom: "1px solid #dee2e6",
-      borderTopLeftRadius: "0.5rem",
-      borderTopRightRadius: "0.5rem",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      flexWrap: "wrap",
-      gap: "1rem",
-    },
-    contentTitle: {
-      margin: "0",
-      color: "#495057",
-      fontWeight: "600",
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem",
-      fontSize: "1.1rem",
-    },
-    addButton: {
-      padding: "0.5rem 1rem",
-      fontSize: "0.875rem",
-      fontWeight: "600",
-      color: "#fff",
-      backgroundColor: "#007bff",
-      border: "1px solid #007bff",
-      borderRadius: "0.25rem",
-      cursor: "pointer",
-      transition: "all 0.15s ease-in-out",
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem",
-    },
-    contentBody: {
-      padding: "1.5rem",
-    },
-    tableWrapper: {
-      overflowX: "auto",
-      border: "1px solid #dee2e6",
-      borderRadius: "0.375rem",
-    },
-    table: {
-      width: "100%",
-      marginBottom: "0",
-      borderCollapse: "collapse",
-      backgroundColor: "#fff",
-      fontSize: "0.875rem",
-    },
-    tableHead: {
-      backgroundColor: "#6c757d",
-    },
-    th: {
-      padding: "0.75rem 0.5rem",
-      borderBottom: "2px solid #5a6268",
-      fontWeight: "600",
-      color: "#fff",
-      fontSize: "0.875rem",
-      textAlign: "center",
-      verticalAlign: "middle",
-      border: "1px solid #5a6268",
-    },
-    td: {
-      padding: "0.75rem 0.5rem",
-      borderBottom: "1px solid #dee2e6",
-      color: "#495057",
-      fontSize: "0.875rem",
-      verticalAlign: "middle",
-      textAlign: "center",
-      border: "1px solid #dee2e6",
-    },
-    badge: {
-      display: "inline-block",
-      padding: "0.25rem 0.75rem",
-      fontSize: "0.75rem",
-      fontWeight: "600",
-      lineHeight: "1",
-      textAlign: "center",
-      whiteSpace: "nowrap",
-      verticalAlign: "baseline",
-      borderRadius: "0.25rem",
-    },
-    badgeSuccess: {
-      color: "#fff",
-      backgroundColor: "#28a745",
-    },
-    badgeSecondary: {
-      color: "#fff",
-      backgroundColor: "#6c757d",
-    },
-    actionButton: {
-      padding: "0.375rem 0.75rem",
-      fontSize: "0.75rem",
-      fontWeight: "400",
-      borderRadius: "0.25rem",
-      cursor: "pointer",
-      transition: "all 0.15s ease-in-out",
-      border: "1px solid transparent",
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "0.25rem",
-      color: "#fff",
-    },
-    buttonDanger: {
-      backgroundColor: "#dc3545",
-      borderColor: "#dc3545",
-    },
-    buttonSecondary: {
-      backgroundColor: "#6c757d",
-      borderColor: "#6c757d",
-      opacity: "0.65",
-      cursor: "not-allowed",
-    },
-  };
+  const filteredEmployees = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return employees;
+    }
 
-  const activeCount = employees.filter(emp => !inactiveEmployees.has(emp.emp_id)).length;
-  const inactiveCount = employees.filter(emp => inactiveEmployees.has(emp.emp_id)).length;
+    const query = searchTerm.trim().toLowerCase();
 
-  // Pagination calculations
-  const totalItems = employees.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+    return employees.filter((emp) => {
+      const searchable = [
+        emp.emp_id,
+        emp.emp_name,
+        formatListField(emp.project_code),
+        formatListField(emp.project_name),
+        emp.lab,
+        emp.designation,
+      ];
+
+      return searchable.some(
+        (field) => field && String(field).toLowerCase().includes(query)
+      );
+    });
+  }, [employees, searchTerm]);
+
+  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentEmployees = employees.slice(startIndex, endIndex);
+  const paginatedEmployees = filteredEmployees.slice(startIndex, endIndex);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
+
+  const renderProjectValues = (value) => {
+    const items = Array.isArray(value)
+      ? value.filter(Boolean)
+      : value
+        ? [value]
+        : [];
+
+    if (items.length === 0) {
+      return <span className="employee-cell-muted">—</span>;
+    }
+
+    if (items.length === 1) {
+      return <span>{items[0]}</span>;
+    }
+
+    return (
+      <div className="employee-tags">
+        {items.map((item) => (
+          <span
+            key={item}
+            className="project-badge project-badge--secondary"
+          >
+            {item}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <PageLayout>
       <PageHeader
         title="Employee management"
         actions={
-          <button
-            style={styles.addButton}
-            onClick={handleAdd}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#0056b3";
-              e.currentTarget.style.borderColor = "#004085";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#007bff";
-              e.currentTarget.style.borderColor = "#007bff";
-            }}
-          >
-            <FaUserPlus />
-            Assign Employee
+          <button type="button" className="lims-header-btn" onClick={handleAdd}>
+            <FaUserPlus aria-hidden />
+            Assign employee
           </button>
         }
       />
 
-      <div style={styles.wrapper}>
-        <div style={styles.statsContainer}>
-          <div style={styles.statCard}>
-            <div style={{...styles.statIcon, color: "#007bff"}}>
-              <FaUsers />
+      <div className="employee-manage">
+        <section className="project-panel" aria-label="Employee list">
+          <div className="project-toolbar">
+            <div className="project-toolbar-filter">
+              <label htmlFor="employee-search" className="project-search-label">
+                Search
+              </label>
+              <div className="project-search">
+                <FaSearch className="project-search-icon" aria-hidden />
+                <input
+                  id="employee-search"
+                  type="search"
+                  placeholder="Filter by ID, name, project, lab, or designation…"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setSearchTerm("");
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  className="project-search-input"
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+                {searchTerm ? (
+                  <button
+                    type="button"
+                    className="project-search-clear"
+                    onClick={() => setSearchTerm("")}
+                    aria-label="Clear search"
+                  >
+                    <FaTimes aria-hidden />
+                  </button>
+                ) : null}
+              </div>
+              <span className="project-toolbar-count" aria-live="polite">
+                <strong>{filteredEmployees.length}</strong> employee
+                {filteredEmployees.length !== 1 ? "s" : ""}
+                {searchTerm ? " matching search" : ""}
+              </span>
             </div>
-            <div style={styles.statValue}>{employees.length}</div>
-            <p style={styles.statLabel}>Total Employees</p>
           </div>
-          
-          <div style={styles.statCard}>
-            <div style={{...styles.statIcon, color: "#28a745"}}>
-              <FaCheckCircle />
-            </div>
-            <div style={styles.statValue}>{activeCount}</div>
-            <p style={styles.statLabel}>Active Employees</p>
-          </div>
-          
-          <div style={styles.statCard}>
-            <div style={{...styles.statIcon, color: "#ffc107"}}>
-              <FaTimesCircle />
-            </div>
-            <div style={styles.statValue}>{inactiveCount}</div>
-            <p style={styles.statLabel}>Inactive Employees</p>
-          </div>
-        </div>
 
-        <div style={styles.contentCard}>
-          <div style={styles.contentHeader}>
-            <h4 style={styles.contentTitle}>
-              <FaEye />
-              Employee List
-            </h4>
-          </div>
-
-          <div style={styles.contentBody}>
-            {/* --- Pagination Controls (Top) --- */}
-            <div style={{ marginBottom: "1rem" }}>
-              <Pagination
-                position="top"
-                showPageNumbers={false}
-                showItemsPerPage
-                showSummary
-                totalItems={totalItems}
-                startIndex={startIndex}
-                endIndex={endIndex}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={(n) => {
-                  setItemsPerPage(n);
-                  setCurrentPage(1);
-                }}
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            </div>
-
-            <div style={styles.tableWrapper}>
-              <table style={styles.table}>
-                <thead style={styles.tableHead}>
+          <div className="project-table-section">
+            <div className="project-table-shell">
+              <table className="project-table">
+                <thead>
                   <tr>
-                    <th style={styles.th}>Employee ID</th>
-                    <th style={styles.th}>Employee Name</th>
-                    <th style={styles.th}>Project Code</th>
-                    <th style={styles.th}>Project Name</th>
-                    <th style={styles.th}>Lab</th>
-                    <th style={styles.th}>Designation</th>
-                    <th style={styles.th}>Status</th>
-                    <th style={styles.th}>Action</th>
+                    <th scope="col">Employee ID</th>
+                    <th scope="col">Employee name</th>
+                    <th scope="col">Project code</th>
+                    <th scope="col">Project name</th>
+                    <th scope="col">Lab</th>
+                    <th scope="col">Designation</th>
+                    <th scope="col">Status</th>
+                    <th scope="col" className="project-th-actions">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {currentEmployees.length > 0 ? (
-                    currentEmployees.map((emp) => {
-                    const isInactive = inactiveEmployees.has(emp.emp_id);
-                    return (
-                      <tr
-                        key={emp.emp_id}
-                        style={{
-                          backgroundColor: isInactive ? "#f8f9fa" : "white",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isInactive) {
-                            e.currentTarget.style.backgroundColor = "#f8f9fa";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = isInactive ? "#f8f9fa" : "white";
-                        }}
-                      >
-                        <td style={styles.td}>{emp.emp_id}</td>
-                        <td style={{...styles.td, fontWeight: "500"}}>{emp.emp_name || ""}</td>
-                        <td style={styles.td}>
-                          {Array.isArray(emp.project_code)
-                            ? emp.project_code.join(", ")
-                            : emp.project_code || ""}
-                        </td>
-                        <td style={styles.td}>
-                          {Array.isArray(emp.project_name)
-                            ? emp.project_name.join(", ")
-                            : emp.project_name || ""}
-                        </td>
-                        <td style={styles.td}>{emp.lab || ""}</td>
-                        <td style={styles.td}>{emp.designation || ""}</td>
-                        <td style={styles.td}>
-                          <span
-                            style={isInactive ? {...styles.badge, ...styles.badgeSecondary} : {...styles.badge, ...styles.badgeSuccess}}
-                          >
-                            {isInactive ? "Inactive" : "Active"}
-                          </span>
-                        </td>
-                        <td style={styles.td}>
-                          <button
-                            style={isInactive ? {...styles.actionButton, ...styles.buttonSecondary} : {...styles.actionButton, ...styles.buttonDanger}}
-                            disabled={isInactive}
-                            onClick={(e) => handleInactiveClick(e, emp)}
-                            onMouseEnter={(e) => {
-                              if (!isInactive) {
-                                e.currentTarget.style.backgroundColor = "#c82333";
-                                e.currentTarget.style.borderColor = "#bd2130";
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isInactive) {
-                                e.currentTarget.style.backgroundColor = "#dc3545";
-                                e.currentTarget.style.borderColor = "#dc3545";
-                              }
-                            }}
-                          >
-                            {isInactive ? "Inactive" : "Mark Inactive"}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan="8" style={{ padding: "2rem", textAlign: "center", color: "#6c757d" }}>
-                        No employees found.
+                  {paginatedEmployees.length === 0 ? (
+                    <tr className="project-table-row project-table-row--empty">
+                      <td colSpan="8">
+                        <div className="project-empty">
+                          <div className="project-empty-icon-wrap">
+                            {searchTerm ? (
+                              <FaSearch aria-hidden />
+                            ) : (
+                              <FaUsers aria-hidden />
+                            )}
+                          </div>
+                          <h3>
+                            {searchTerm
+                              ? "No employees found"
+                              : "No employees available"}
+                          </h3>
+                          <p>
+                            {searchTerm
+                              ? "Try adjusting your search."
+                              : 'Click "Assign employee" to add your first employee.'}
+                          </p>
+                        </div>
                       </td>
                     </tr>
+                  ) : (
+                    paginatedEmployees.map((emp) => {
+                      const isInactive = inactiveEmployees.has(emp.emp_id);
+
+                      return (
+                        <tr
+                          key={emp.emp_id}
+                          className={`project-table-row${
+                            isInactive ? " project-table-row--inactive" : ""
+                          }`}
+                        >
+                          <td data-label="Employee ID">
+                            <span className="employee-id">{emp.emp_id}</span>
+                          </td>
+                          <td data-label="Name">
+                            <span className="project-name">
+                              {emp.emp_name || "—"}
+                            </span>
+                          </td>
+                          <td data-label="Project code">
+                            {renderProjectValues(emp.project_code)}
+                          </td>
+                          <td data-label="Project name">
+                            {renderProjectValues(emp.project_name)}
+                          </td>
+                          <td data-label="Lab">
+                            {emp.lab ? (
+                              <span>{emp.lab}</span>
+                            ) : (
+                              <span className="employee-cell-muted">—</span>
+                            )}
+                          </td>
+                          <td data-label="Designation">
+                            {emp.designation ? (
+                              <span>{emp.designation}</span>
+                            ) : (
+                              <span className="employee-cell-muted">—</span>
+                            )}
+                          </td>
+                          <td data-label="Status">
+                            <span
+                              className={`project-badge ${
+                                isInactive
+                                  ? "project-badge--secondary"
+                                  : "project-badge--success"
+                              }`}
+                            >
+                              {isInactive ? "Inactive" : "Active"}
+                            </span>
+                          </td>
+                          <td
+                            data-label="Actions"
+                            className="project-td-actions"
+                          >
+                            <div className="project-row-actions">
+                              {!isInactive ? (
+                                <button
+                                  type="button"
+                                  className="project-icon-btn project-icon-btn--danger"
+                                  onClick={() => handleInactiveClick(emp)}
+                                  title="Mark inactive"
+                                  aria-label={`Mark ${emp.emp_name || emp.emp_id} inactive`}
+                                >
+                                  <FaUserSlash aria-hidden />
+                                </button>
+                              ) : null}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
             </div>
 
-            {/* --- Pagination Controls (Bottom) --- */}
-            <div style={{ marginTop: "1rem" }}>
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-                position="bottom"
-              />
-            </div>
+            <Pagination
+              showItemsPerPage
+              showSummary
+              totalItems={filteredEmployees.length}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={(n) => {
+                setItemsPerPage(n);
+                setCurrentPage(1);
+              }}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              position="bottom"
+            />
           </div>
-        </div>
+        </section>
       </div>
-                  
+
       <AddEmployeeModal
         show={addModalShow}
-        setUpdated={() => setIsUpdated(prev => !prev)}
+        setUpdated={() => setIsUpdated((prev) => !prev)}
         onHide={() => setAddModalShow(false)}
-      />              
+      />
 
       <UpdateEmployeeModal
         show={editModalShow}
-        setUpdated={() => setIsUpdated(prev => !prev)}
+        setUpdated={() => setIsUpdated((prev) => !prev)}
         onHide={() => setEditModalShow(false)}
         employee={editEmployees}
       />
 
-      {/* Confirmation Modal */}
       <Modal
         show={confirmModalShow}
         onHide={handleCloseConfirmModal}
+        size="sm"
         centered
         backdrop="static"
+        dialogClassName="project-modal project-modal--confirm"
+        contentClassName="project-modal-content"
       >
-        <Modal.Header closeButton style={{ borderBottom: '1px solid #dee2e6' }}>
-          <Modal.Title style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <FaExclamationTriangle style={{ color: '#dc3545' }} />
-            Confirm Inactivation
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body style={{ padding: '1.5rem' }}>
-          <p style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>
-            Are you sure you want to mark this employee as inactive?
+        <div className="project-modal-header">
+          <button
+            type="button"
+            className="project-modal-close"
+            onClick={handleCloseConfirmModal}
+            aria-label="Close"
+          >
+            <FaTimes aria-hidden />
+          </button>
+          <h2 className="project-modal-title">Inactivate employee?</h2>
+          <p className="project-modal-description">
+            This will mark the employee as inactive. You can reactivate them later.
           </p>
+        </div>
+        <Modal.Body className="project-modal-body">
           {employeeToInactivate && (
-            <div style={{ 
-              backgroundColor: '#f8f9fa', 
-              padding: '0.75rem', 
-              borderRadius: '0.25rem',
-              marginTop: '1rem'
-            }}>
-              <p style={{ margin: 0, fontWeight: '600', color: '#495057' }}>
-                Employee ID: <span style={{ color: '#007bff' }}>{employeeToInactivate.emp_id}</span>
-              </p>
-              <p style={{ margin: '0.25rem 0 0 0', color: '#6c757d' }}>
-                Employee Name: {employeeToInactivate.emp_name || 'N/A'}
-              </p>
-              {employeeToInactivate.designation && (
-                <p style={{ margin: '0.25rem 0 0 0', color: '#6c757d' }}>
-                  Designation: {employeeToInactivate.designation}
-                </p>
-              )}
+            <div className="project-modal-highlight">
+              <div className="project-modal-highlight-row">
+                <span className="project-modal-highlight-label">ID</span>
+                <span>{employeeToInactivate.emp_id}</span>
+              </div>
+              <div className="project-modal-highlight-row">
+                <span className="project-modal-highlight-label">Name</span>
+                <span>{employeeToInactivate.emp_name || "N/A"}</span>
+              </div>
+              {employeeToInactivate.designation ? (
+                <div className="project-modal-highlight-row">
+                  <span className="project-modal-highlight-label">Role</span>
+                  <span>{employeeToInactivate.designation}</span>
+                </div>
+              ) : null}
             </div>
           )}
-          <p style={{ marginTop: '1rem', marginBottom: 0, fontSize: '0.875rem', color: '#6c757d' }}>
-            This action will mark the employee as inactive. You can reactivate them later if needed.
-          </p>
         </Modal.Body>
-        <Modal.Footer style={{ borderTop: '1px solid #dee2e6' }}>
-          <Button variant="secondary" onClick={handleCloseConfirmModal}>
+        <Modal.Footer className="project-modal-footer">
+          <button
+            type="button"
+            className="project-btn project-btn-outline"
+            onClick={handleCloseConfirmModal}
+          >
             Cancel
-          </Button>
-          <Button variant="danger" onClick={handleConfirmInactive}>
-            Mark Inactive
-          </Button>
+          </button>
+          <button
+            type="button"
+            className="project-btn project-btn-danger-solid"
+            onClick={handleConfirmInactive}
+          >
+            Inactivate
+          </button>
         </Modal.Footer>
       </Modal>
     </PageLayout>

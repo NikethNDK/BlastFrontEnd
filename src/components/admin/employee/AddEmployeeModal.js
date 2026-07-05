@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Col, Row, Form, Button } from "react-bootstrap";
+import { Modal, Form } from "react-bootstrap";
+import { FaTimes } from "react-icons/fa";
 import {
   addEmployeeApi,
   getDistinctRoleApi,
   getProjectApi,
   getLabsApi,
-  getAllUsersApi,
-  getEmployeeApi,
   getUsersForAssignProjectApi,
 } from "../../../services/AppinfoService";
 import toast from "react-hot-toast";
+
+const resetFormState = (setters) => {
+  setters.setEmpId("");
+  setters.setSelectedLab("");
+  setters.setSelectedLabId(null);
+  setters.setSelectedRole("");
+  setters.setSelectedProjects([]);
+  setters.setSelectedUsername("");
+};
 
 const AssignProjectModal = (props) => {
   const [selectedProjects, setSelectedProjects] = useState([]);
@@ -24,7 +32,6 @@ const AssignProjectModal = (props) => {
   const [empId, setEmpId] = useState("");
 
   useEffect(() => {
-    // Fetch roles (designations)
     getDistinctRoleApi()
       .then((data) => {
         setDesignations(
@@ -33,15 +40,9 @@ const AssignProjectModal = (props) => {
       })
       .catch((error) => console.error("Error fetching roles:", error));
 
-    // Fetch projects and filter only active ones (based on deleted field from ProjectManage)
     getProjectApi()
       .then((data) => {
-        console.log("All Projects:", data); // Log full response to check structure
-
-        const activeProjects = data.filter((item) => item.deleted === 0); // Filter only active projects
-
-        console.log("Active Projects:", activeProjects); // Log filtered response to verify
-
+        const activeProjects = data.filter((item) => item.deleted === 0);
         setProjects(
           activeProjects.map((item) => ({
             value: item.project_code,
@@ -51,7 +52,6 @@ const AssignProjectModal = (props) => {
       })
       .catch((error) => console.error("Error fetching projects:", error));
 
-    // Fetch labs
     getLabsApi()
       .then((response) => {
         setLabs(response.data);
@@ -59,16 +59,12 @@ const AssignProjectModal = (props) => {
       .catch((error) => {
         console.error("Error fetching labs data", error);
       });
-
   }, []);
 
-  // Fetch usernames when both lab and role are selected
   useEffect(() => {
     if (selectedLab && selectedRole) {
-      // Fetch users from LoginCre filtered by lab and role using new dedicated endpoint
       getUsersForAssignProjectApi(selectedLab, selectedRole)
         .then((users) => {
-          // Handle both array and single object responses
           const userList = Array.isArray(users) ? users : [users];
           setUsernames(
             userList.map((user) => user.emp_name).filter(Boolean)
@@ -80,9 +76,21 @@ const AssignProjectModal = (props) => {
         });
     } else {
       setUsernames([]);
-      setSelectedUsername(""); // Clear selected username when lab or role changes
+      setSelectedUsername("");
     }
   }, [selectedLab, selectedRole]);
+
+  const handleClose = () => {
+    resetFormState({
+      setEmpId,
+      setSelectedLab,
+      setSelectedLabId,
+      setSelectedRole,
+      setSelectedProjects,
+      setSelectedUsername,
+    });
+    props.onHide();
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -92,7 +100,6 @@ const AssignProjectModal = (props) => {
       emp_name: formData.get("username"),
       designation: selectedRole,
       project_code: selectedProjects,
-      // Use auto-populated lab_id from employee record
       lab_id: selectedLabId || labs.find((l) => l.name === selectedLab)?.id,
       role: selectedRole,
     };
@@ -101,13 +108,7 @@ const AssignProjectModal = (props) => {
       .then(() => {
         toast.success("Employee added successfully");
         props.setUpdated(true);
-        props.onHide();
-        setEmpId("");
-        setSelectedLab("");
-        setSelectedLabId(null);
-        setSelectedRole("");
-        setSelectedProjects([]);
-        setSelectedUsername("");
+        handleClose();
       })
       .catch((error) => {
         console.error("Employee ID already exist", error);
@@ -123,166 +124,161 @@ const AssignProjectModal = (props) => {
     setSelectedProjects(selectedValues);
   };
 
-  return (
-    <div className="container">
-      <Modal {...props} size="md" centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Assign Project</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Row>
-            <Col sm={12}>
-              <Form onSubmit={handleSubmit}>
-                <Row>
-                  <Col>
-                    <Form.Group controlId="empId">
-                      <Form.Label>Employee ID</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="empId"
-                        value={empId}
-                        onChange={(e) => setEmpId(e.target.value)}
-                        required
-                        placeholder="Enter Employee ID"
-                        style={{ border: "1px solid black" }}
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <Form.Group controlId="lab">
-                      <Form.Label>Lab</Form.Label>
-                      <Form.Control
-                        as="select"
-                        name="lab"
-                        required
-                        value={selectedLab}
-                        onChange={(e) => {
-                          setSelectedLab(e.target.value);
-                          const selectedLabObj = labs.find((l) => l.name === e.target.value);
-                          setSelectedLabId(selectedLabObj ? selectedLabObj.id : null);
-                        }}
-                        style={{ border: "1px solid black" }}
-                      >
-                        <option value="">Select Lab</option>
-                        {labs.map((lab) => (
-                          <option key={lab.id} value={lab.name}>
-                            {lab.name}
-                          </option>
-                        ))}
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <Form.Group controlId="designation">
-                      <Form.Label>Role</Form.Label>
-                      <Form.Control
-                        as="select"
-                        name="designation"
-                        required
-                        value={selectedRole}
-                        onChange={(e) => setSelectedRole(e.target.value)}
-                        style={{ border: "1px solid black" }}
-                      >
-                        <option value="">Select Role</option>
-                        {designations.map((designation) => (
-                          <option
-                            key={designation.value}
-                            value={designation.value}
-                          >
-                            {designation.label}
-                          </option>
-                        ))}
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <Form.Group controlId="username">
-                      <Form.Label>Username</Form.Label>
-                      <Form.Control
-                        as="select"
-                        name="username"
-                        required
-                        value={selectedUsername}
-                        onChange={(e) => setSelectedUsername(e.target.value)}
-                        disabled={!selectedLab || !selectedRole}
-                        style={{ 
-                          border: "1px solid black",
-                          backgroundColor: (!selectedLab || !selectedRole) ? "#e9ecef" : "white",
-                          cursor: (!selectedLab || !selectedRole) ? "not-allowed" : "pointer"
-                        }}
-                      >
-                        <option value="">
-                          {!selectedLab || !selectedRole 
-                            ? "Select Lab and Role first" 
-                            : usernames.length === 0 
-                            ? "No Users Available" 
-                            : "Select Username"}
-                        </option>
-                        {usernames && usernames.length > 0 && (selectedLab && selectedRole) ? (
-                          usernames.map((username, index) => (
-                            <option key={index} value={username}>
-                              {username}
-                            </option>
-                          ))
-                        ) : null}
-                      </Form.Control>
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col>
-                    <Form.Group controlId="project">
-                      <Form.Label>Select Project</Form.Label>
-                      <Form.Control
-                        as="select"
-                        name="project"
-                        multiple
-                        onChange={handleProjectChange}
-                        value={selectedProjects}
-                        required
-                        style={{ border: "1px solid black" }}
-                      >
-                        {projects.map((proj) => (
-                          <option key={proj.value} value={proj.value}>
-                            {proj.label}
-                          </option>
-                        ))}
-                      </Form.Control>
+  const usernamePlaceholder =
+    !selectedLab || !selectedRole
+      ? "Select lab and role first"
+      : usernames.length === 0
+        ? "No users available"
+        : "Select username";
 
-                      {/* <Form.Control
-                        as="select"
-                        name="project"
-                        multiple
-                        onChange={handleProjectChange}
-                        required
-                        style={{ border: "1px solid black" }}
-                      >
-                        <option value="">Select Project</option>
-                        {projects.map((proj) => (
-                          <option key={proj.value} value={proj.value}>
-                            {proj.label}
-                          </option>
-                        ))}
-                      </Form.Control> */}
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <p></p>
-                <Button variant="primary" type="submit">
-                  Assign Project
-                </Button>
-              </Form>
-            </Col>
-          </Row>
-        </Modal.Body>
-      </Modal>
-    </div>
+  return (
+    <Modal
+      {...props}
+      onHide={handleClose}
+      size="sm"
+      scrollable
+      centered
+      backdrop="static"
+      dialogClassName="project-modal project-modal--form"
+      contentClassName="project-modal-content"
+      aria-labelledby="assign-employee-modal-title"
+    >
+      <div className="project-modal-header">
+        <button
+          type="button"
+          className="project-modal-close"
+          onClick={handleClose}
+          aria-label="Close"
+        >
+          <FaTimes aria-hidden />
+        </button>
+        <h2 id="assign-employee-modal-title" className="project-modal-title">
+          Assign employee
+        </h2>
+        <p className="project-modal-description">
+          Link a user to a lab, role, and one or more projects.
+        </p>
+      </div>
+      <Modal.Body className="project-modal-body">
+        <Form onSubmit={handleSubmit} className="project-modal-form">
+          <Form.Group controlId="empId" className="project-field">
+            <Form.Label>Employee ID</Form.Label>
+            <Form.Control
+              type="text"
+              name="empId"
+              value={empId}
+              onChange={(e) => setEmpId(e.target.value)}
+              required
+              placeholder="Enter employee ID"
+              autoComplete="off"
+              className="project-field-input"
+            />
+          </Form.Group>
+
+          <Form.Group controlId="lab" className="project-field">
+            <Form.Label>Lab</Form.Label>
+            <Form.Select
+              name="lab"
+              required
+              value={selectedLab}
+              onChange={(e) => {
+                setSelectedLab(e.target.value);
+                const selectedLabObj = labs.find(
+                  (l) => l.name === e.target.value
+                );
+                setSelectedLabId(selectedLabObj ? selectedLabObj.id : null);
+              }}
+              className="project-field-input"
+            >
+              <option value="">Select lab</option>
+              {labs.map((lab) => (
+                <option key={lab.id} value={lab.name}>
+                  {lab.name}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+
+          <Form.Group controlId="designation" className="project-field">
+            <Form.Label>Role</Form.Label>
+            <Form.Select
+              name="designation"
+              required
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="project-field-input"
+            >
+              <option value="">Select role</option>
+              {designations.map((designation) => (
+                <option key={designation.value} value={designation.value}>
+                  {designation.label}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+
+          <Form.Group controlId="username" className="project-field">
+            <Form.Label>Username</Form.Label>
+            <Form.Select
+              name="username"
+              required
+              value={selectedUsername}
+              onChange={(e) => setSelectedUsername(e.target.value)}
+              disabled={!selectedLab || !selectedRole}
+              className={`project-field-input${
+                !selectedLab || !selectedRole
+                  ? " project-field-input--disabled"
+                  : ""
+              }`}
+            >
+              <option value="">{usernamePlaceholder}</option>
+              {usernames.length > 0 && selectedLab && selectedRole
+                ? usernames.map((username, index) => (
+                    <option key={index} value={username}>
+                      {username}
+                    </option>
+                  ))
+                : null}
+            </Form.Select>
+          </Form.Group>
+
+          <Form.Group controlId="project" className="project-field">
+            <Form.Label>Projects</Form.Label>
+            <Form.Select
+              name="project"
+              multiple
+              onChange={handleProjectChange}
+              value={selectedProjects}
+              required
+              className="project-field-input project-field-input--multiselect"
+              aria-describedby="assign-project-hint"
+            >
+              {projects.map((proj) => (
+                <option key={proj.value} value={proj.value}>
+                  {proj.label}
+                </option>
+              ))}
+            </Form.Select>
+            <Form.Text id="assign-project-hint" className="project-field-hint">
+              Hold Ctrl (Windows) or Cmd (Mac) to select multiple projects.
+            </Form.Text>
+          </Form.Group>
+
+          <div className="project-modal-form-actions">
+            <button
+              type="button"
+              className="project-btn project-btn-outline"
+              onClick={handleClose}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="project-btn project-btn-primary">
+              Assign
+            </button>
+          </div>
+        </Form>
+      </Modal.Body>
+    </Modal>
   );
 };
 

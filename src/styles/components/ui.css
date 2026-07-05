@@ -23,6 +23,7 @@
 }
 
 /* ── Remove legacy page constraints ──────────────────────── */
+.lims-content .project-manage,
 .lims-content .project-manage-wrapper,
 .lims-content .project-manage-container,
 .lims-content .employee-manage-container {
@@ -31,33 +32,6 @@
   margin: 0;
   background: transparent;
   min-height: 0;
-}
-
-.lims-content .project-content-card,
-.lims-content .project-manage-header {
-  border-radius: var(--lims-radius-md, 10px);
-  border-color: var(--lims-border, #e2e8f0);
-  box-shadow: var(--lims-shadow-subtle);
-}
-
-.lims-content .project-content-header {
-  background: var(--lims-accent, #c5ea31) !important;
-  border-bottom: 1px solid var(--lims-border, #e2e8f0);
-}
-
-.lims-content .project-content-header h4 {
-  color: var(--lims-text, #1a3d2a) !important;
-}
-
-.lims-content .project-stat-card {
-  border-radius: var(--lims-radius-md, 10px);
-  border-color: var(--lims-border, #e2e8f0);
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.lims-content .project-stat-card:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--lims-shadow-md, 0 6px 16px rgba(0, 0, 0, 0.08));
 }
 
 /* ── Forms ───────────────────────────────────────────────── */
@@ -412,7 +386,6 @@
 }
 
 /* ── Search / filter bars ────────────────────────────────── */
-.lims-content .project-search-bar,
 .lims-content .search-filter-container {
   display: flex;
   flex-wrap: wrap;
@@ -421,7 +394,6 @@
   padding: 0.75rem 0;
 }
 
-.lims-content .project-search-bar input,
 .lims-content .search-filter-container input {
   flex: 1;
   min-width: 160px;
