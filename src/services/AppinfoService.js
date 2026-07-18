@@ -1023,14 +1023,19 @@ export const deleteDesignationApi = async (designationId) => {
   }
 };
 
-export const updateLabApi = async (labId, labName) => {
+export const updateLabApi = async (labId, data) => {
   try {
-    const response = await axios.put(`${BASE_URL}labs/${labId}/`, {
-      name: labName,
+    const response = await axios.put(`${BASE_URL}/labs/${labId}/`, data, {
+      withCredentials: true,
     });
     return response.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || "Failed to update lab");
+    throw new Error(
+      error.response?.data?.name?.[0] ||
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        "Failed to update lab"
+    );
   }
 };
 
@@ -1601,26 +1606,32 @@ export const getEquipmentDetailsByEntryNo = async (entryNo) => {
 // BASE_URL is now imported from config/api.js
 
 export function getDnaApi() {
-  return axios.get(`${BASE_URL}/dna`).then((response) => response.data);
+  return axios
+    .get(`${BASE_URL}/dna`, { withCredentials: true })
+    .then((response) => response.data);
 }
 
 export function addDnaApi(dna) {
   const currentDate = new Date().toISOString().split("T")[0];
 
   return axios
-    .post(`${BASE_URL}/add_dna`, {
-      s_no: null,
-      ncbi_id: dna.ncbi_id,
-      class_name: dna.class_name,
-      common_name: dna.common_name,
-      scientific_name: dna.scientific_name,
-      reference_id: dna.reference_id,
-      partial_name: dna.partial_name,
-      partial_data: dna.partial_data,
-      submittedBy_name: dna.submittedBy_name,
-      submission_date: currentDate,
-      subBy_designation: dna.subBy_designation,
-    })
+    .post(
+      `${BASE_URL}/add_dna`,
+      {
+        s_no: null,
+        ncbi_id: dna.ncbi_id,
+        class_name: dna.class_name,
+        common_name: dna.common_name,
+        scientific_name: dna.scientific_name,
+        reference_id: dna.reference_id,
+        partial_name: dna.partial_name,
+        partial_data: dna.partial_data,
+        submittedBy_name: dna.submittedBy_name,
+        submission_date: currentDate,
+        subBy_designation: dna.subBy_designation,
+      },
+      { withCredentials: true }
+    )
     .then((response) => response.data);
 }
 
@@ -1628,7 +1639,9 @@ export function addDnaApi(dna) {
 
 export const getPartialApi = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/partials/`);
+    const response = await axios.get(`${BASE_URL}/partials/`, {
+      withCredentials: true,
+    });
     return response.data; // This should return the array of partial names
   } catch (error) {
     console.error("Error fetching partial names:", error);
@@ -1638,10 +1651,14 @@ export const getPartialApi = async () => {
 
 export function addPartialApi(partial) {
   return axios
-    .post(`${BASE_URL}/partial/`, {
-      code: null,
-      partial_name: partial.partial_name,
-    })
+    .post(
+      `${BASE_URL}/partial/`,
+      {
+        code: null,
+        partial_name: partial.partial_name,
+      },
+      { withCredentials: true }
+    )
     .then((response) => response.data);
 }
 
@@ -1687,6 +1704,7 @@ export const uploadAndCompareFile = async (file) => {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        withCredentials: true,
       }
     );
 
@@ -1711,7 +1729,9 @@ export const uploadAndCompareFile = async (file) => {
 
 export const fetchDnaData = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/dna`);
+    const response = await axios.get(`${BASE_URL}/dna`, {
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     console.error("Error fetching DNA data:", error);
@@ -1722,7 +1742,8 @@ export const fetchDnaData = async () => {
 export const deleteDnaRecord = async (reference_id) => {
   try {
     const response = await axios.delete(
-      `${BASE_URL}/delete-dna/${reference_id}/`
+      `${BASE_URL}/delete-dna/${reference_id}/`,
+      { withCredentials: true }
     );
     return response.data;
   } catch (error) {
@@ -1739,6 +1760,7 @@ export const runBlast = async (file) => {
       // Update to correct backend URL
       method: "POST",
       body: formData,
+      credentials: "include",
     });
 
     const data = await response.json();
@@ -1761,6 +1783,7 @@ export const downloadSequences = async () => {
       url: `${BASE_URL}/download-sequences/`,
       method: "GET",
       responseType: "blob",
+      withCredentials: true,
     });
 
     // Create a downloadable link
@@ -1780,7 +1803,8 @@ export const downloadSequences = async () => {
 export const copySequence = async (reference_id) => {
   try {
     const response = await axios.get(
-      `${BASE_URL}/copy-sequence/${reference_id}/`
+      `${BASE_URL}/copy-sequence/${reference_id}/`,
+      { withCredentials: true }
     );
     return response.data;
   } catch (error) {
@@ -1798,6 +1822,7 @@ export const downloadSequenceByReference = async (reference_id) => {
       `${BASE_URL}/download-sequence/ref/${reference_id}/`,
       {
         responseType: "blob", // Important for handling file downloads
+        withCredentials: true,
       }
     );
 

@@ -16,10 +16,6 @@ import AppShell from "../layout/AppShell";
 import toast, { Toaster } from "react-hot-toast";
 import "./Login.css";
 
-// Temporary flag to enable all features (BLAST, Repository, Inventory) for all users regardless of labs
-// Set to false to restore lab-based routing
-const ENABLE_ALL_FEATURES = false;
-
 function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
   const dispatch = useDispatch();
   const reduxUser = useSelector((state) => state.user.user);
@@ -34,6 +30,9 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
   const [isLoggedIn, setLoggedIn] = useState(initialAuthState.isAuthenticated);
   const [userRole, setUserRole] = useState(initialAuthState.user?.role || "");
   const [userLabs, setUserLabs] = useState(initialAuthState.user?.lab || []);
+  const [userFullAccess, setUserFullAccess] = useState(
+    !!initialAuthState.user?.full_access
+  );
   const [userId, setUserId] = useState(initialAuthState.user?.id || "");
   const [userDetails, setUserDetails] = useState({
     name: initialAuthState.user?.user_name || "",
@@ -49,6 +48,7 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
     if (isReduxAuthenticated && reduxUser) {
       setUserRole(reduxUser.role || "");
       setUserLabs(reduxUser.lab || []);
+      setUserFullAccess(!!reduxUser.full_access);
       setUserId(reduxUser.id || "");
       setUserDetails({
         name: reduxUser.user_name || "",
@@ -101,6 +101,7 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
           setLoggedIn(true);
           setUserRole(foundUser.role);
           setUserLabs(foundUser.lab || []);
+          setUserFullAccess(!!foundUser.full_access);
           setUserId(foundUser.id);
 
           setUserDetails({
@@ -135,32 +136,20 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
             case "Admin":
               return <AdminApp userDetails={userDetails} />;
             case "Manager":
-              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => 
-                ["DNA", "Animal Care"].some(allowedLab => 
-                  lab?.toLowerCase() === allowedLab.toLowerCase()
-                )
-              ))) {
+              if (userFullAccess) {
                 return <ManagerApp userId={userId} userDetails={userDetails} />;
               }
               else {
                 return <ManagerAccessApp userId={userId} userDetails={userDetails} />;
               }
             case "Lab Assistant":
-              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => 
-                ["DNA", "Animal Care"].some(allowedLab => 
-                  lab?.toLowerCase() === allowedLab.toLowerCase()
-                )
-              ))) {
+              if (userFullAccess) {
                 return <LabApp userId={userId} userDetails={userDetails} />;
               } else {
                 return <CareApp userId={userId} userDetails={userDetails} />;
               }
             case "Researcher":
-              if (ENABLE_ALL_FEATURES || (Array.isArray(userLabs) && userLabs.some((lab) => 
-                ["DNA", "Animal Care"].some(allowedLab => 
-                  lab?.toLowerCase() === allowedLab.toLowerCase()
-                )
-              ))) {
+              if (userFullAccess) {
                 return <ResearcherApp userDetails={userDetails} />;
               } else {
                 return <ResearcherAccessApp userDetails={userDetails} />;
