@@ -963,6 +963,25 @@
   box-shadow: 0 0 0 3px rgba(197, 234, 49, 0.2) !important;
 }
 
+.project-field-input.project-field-input--error,
+.project-modal .form-control.project-field-input.project-field-input--error {
+  border-color: #dc2626 !important;
+}
+
+.project-field-input.project-field-input--error:focus,
+.project-modal .form-control.project-field-input.project-field-input--error:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+}
+
+.project-field-error {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  color: #dc2626;
+  line-height: 1.4;
+}
+
 .project-field-password-toggle {
   position: absolute;
   right: 0.375rem;
@@ -1020,13 +1039,18 @@
   outline-offset: 2px;
 }
 
+.project-modal .project-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .project-modal .project-btn-primary {
   color: var(--pm-fg);
   background: var(--pm-brand);
   border-color: var(--pm-brand-dark);
 }
 
-.project-modal .project-btn-primary:hover {
+.project-modal .project-btn-primary:hover:not(:disabled) {
   background: var(--pm-brand-dark);
   border-color: #a8cc1e;
 }

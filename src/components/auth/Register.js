@@ -31,6 +31,20 @@ const getRoleBadgeClass = (role) => {
   return "project-badge--secondary";
 };
 
+const USERNAME_EXISTS_MESSAGE = "Username already exists";
+
+const isUsernameTaken = (username, users = [], excludeUsername = "") => {
+  const normalized = (username || "").trim().toLowerCase();
+  if (!normalized) return false;
+  const exclude = (excludeUsername || "").trim().toLowerCase();
+  return users.some((user) => {
+    const existing = (user.username || "").trim().toLowerCase();
+    if (existing !== normalized) return false;
+    if (exclude && existing === exclude) return false;
+    return true;
+  });
+};
+
 const REGISTER_SELECT_STYLES = {
   control: (base, state) => ({
     ...base,
@@ -100,6 +114,8 @@ const UserFormFields = ({
   isLoading,
   includePassword = false,
   idPrefix = "user",
+  usernameError = "",
+  onUsernameBlur,
 }) => {
   const handleLabsChange = (selectedOptions) => {
     if (role === "Lab Assistant") {
@@ -109,6 +125,8 @@ const UserFormFields = ({
     }
   };
 
+  const usernameErrorId = `${idPrefix}-username-error`;
+
   return (
     <>
       <Form.Group controlId={`${idPrefix}-username`} className="project-field">
@@ -117,11 +135,21 @@ const UserFormFields = ({
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          onBlur={onUsernameBlur}
           placeholder="Enter username"
           required
           autoComplete="off"
-          className="project-field-input"
+          aria-invalid={Boolean(usernameError)}
+          aria-describedby={usernameError ? usernameErrorId : undefined}
+          className={`project-field-input${
+            usernameError ? " project-field-input--error" : ""
+          }`}
         />
+        {usernameError ? (
+          <span id={usernameErrorId} className="project-field-error" role="alert">
+            {usernameError}
+          </span>
+        ) : null}
       </Form.Group>
 
       <Form.Group controlId={`${idPrefix}-name`} className="project-field">
@@ -224,7 +252,8 @@ const RegisterModal = ({
   onSuccess,
   labs,
   designations,
-  isLoading 
+  isLoading,
+  existingUsers = [],
 }) => {
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
@@ -233,9 +262,29 @@ const RegisterModal = ({
   const [designation, setDesignation] = useState("");
   const [selectedLabs, setSelectedLabs] = useState([]);
   const [showPassword, setShowPassword] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
+
+  const handleUsernameChange = (value) => {
+    setUsername(value);
+    if (usernameError) {
+      setUsernameError("");
+    }
+  };
+
+  const handleUsernameBlur = () => {
+    if (isUsernameTaken(username, existingUsers)) {
+      setUsernameError(USERNAME_EXISTS_MESSAGE);
+    } else {
+      setUsernameError("");
+    }
+  };
 
   const handleRegister = async (e) => {
     if (e) e.preventDefault();
+    if (isUsernameTaken(username, existingUsers)) {
+      setUsernameError(USERNAME_EXISTS_MESSAGE);
+      return;
+    }
     if (
       !username ||
       !password ||
@@ -280,6 +329,7 @@ const RegisterModal = ({
       setRole("");
       setDesignation("");
       setSelectedLabs([]);
+      setUsernameError("");
       
       // Close modal and refresh
       onHide();
@@ -288,7 +338,20 @@ const RegisterModal = ({
       }
     } catch (error) {
       console.error("Failed to register", error);
-      toast.error("Failed to Register");
+      const responseData = error.response?.data;
+      const serverMessage =
+        responseData?.error ||
+        responseData?.user_name?.[0] ||
+        (typeof responseData === "string" ? responseData : null);
+      if (
+        serverMessage &&
+        String(serverMessage).toLowerCase().includes("already")
+      ) {
+        setUsernameError(USERNAME_EXISTS_MESSAGE);
+        toast.error(USERNAME_EXISTS_MESSAGE);
+      } else {
+        toast.error("Failed to Register");
+      }
     }
   };
 
@@ -300,6 +363,7 @@ const RegisterModal = ({
     setRole("");
     setDesignation("");
     setSelectedLabs([]);
+    setUsernameError("");
     onHide();
   };
 
@@ -336,7 +400,7 @@ const RegisterModal = ({
           <UserFormFields
             idPrefix="register"
             username={username}
-            setUsername={setUsername}
+            setUsername={handleUsernameChange}
             name={name}
             setName={setName}
             password={password}
@@ -353,6 +417,8 @@ const RegisterModal = ({
             designations={designations}
             isLoading={isLoading}
             includePassword
+            usernameError={usernameError}
+            onUsernameBlur={handleUsernameBlur}
           />
           <div className="project-modal-form-actions">
             <button
@@ -362,7 +428,11 @@ const RegisterModal = ({
             >
               Cancel
             </button>
-            <button type="submit" className="project-btn project-btn-primary">
+            <button
+              type="submit"
+              className="project-btn project-btn-primary"
+              disabled={Boolean(usernameError)}
+            >
               Create user
             </button>
           </div>
@@ -380,7 +450,8 @@ const EditUserModal = ({
   user,
   labs,
   designations,
-  isLoading 
+  isLoading,
+  existingUsers = [],
 }) => {
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
@@ -388,6 +459,7 @@ const EditUserModal = ({
   const [designation, setDesignation] = useState("");
   const [selectedLabs, setSelectedLabs] = useState([]);
   const [originalUsername, setOriginalUsername] = useState("");
+  const [usernameError, setUsernameError] = useState("");
 
   // Populate form when user prop changes
   useEffect(() => {
@@ -396,6 +468,7 @@ const EditUserModal = ({
       setUsername(user.username || "");
       setName(user.name || "");
       setRole(user.role || "");
+      setUsernameError("");
       
       // Find designation ID by title
       const designationObj = designations.find(des => des.title === user.designation);
@@ -414,8 +487,27 @@ const EditUserModal = ({
     }
   }, [user, show, labs, designations]);
 
+  const handleUsernameChange = (value) => {
+    setUsername(value);
+    if (usernameError) {
+      setUsernameError("");
+    }
+  };
+
+  const handleUsernameBlur = () => {
+    if (isUsernameTaken(username, existingUsers, originalUsername)) {
+      setUsernameError(USERNAME_EXISTS_MESSAGE);
+    } else {
+      setUsernameError("");
+    }
+  };
+
   const handleUpdate = async (e) => {
     if (e) e.preventDefault();
+    if (isUsernameTaken(username, existingUsers, originalUsername)) {
+      setUsernameError(USERNAME_EXISTS_MESSAGE);
+      return;
+    }
     if (
       !username ||
       !role ||
@@ -459,6 +551,9 @@ const EditUserModal = ({
     } catch (error) {
       console.error("Failed to update user", error);
       const errorMessage = error.message || "Failed to update user";
+      if (String(errorMessage).toLowerCase().includes("already")) {
+        setUsernameError(USERNAME_EXISTS_MESSAGE);
+      }
       toast.error(errorMessage);
     }
   };
@@ -471,6 +566,7 @@ const EditUserModal = ({
     setDesignation("");
     setSelectedLabs([]);
     setOriginalUsername("");
+    setUsernameError("");
     onHide();
   };
 
@@ -507,7 +603,7 @@ const EditUserModal = ({
           <UserFormFields
             idPrefix="edit"
             username={username}
-            setUsername={setUsername}
+            setUsername={handleUsernameChange}
             name={name}
             setName={setName}
             role={role}
@@ -519,6 +615,8 @@ const EditUserModal = ({
             labs={labs}
             designations={designations}
             isLoading={isLoading}
+            usernameError={usernameError}
+            onUsernameBlur={handleUsernameBlur}
           />
           <div className="project-modal-form-actions">
             <button
@@ -528,7 +626,11 @@ const EditUserModal = ({
             >
               Cancel
             </button>
-            <button type="submit" className="project-btn project-btn-primary">
+            <button
+              type="submit"
+              className="project-btn project-btn-primary"
+              disabled={Boolean(usernameError)}
+            >
               Save changes
             </button>
           </div>
@@ -948,6 +1050,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
           labs={labs}
           designations={designations}
           isLoading={isLoading}
+          existingUsers={users}
         />
 
         {/* Edit User Modal */}
@@ -962,6 +1065,7 @@ function Register({ userDetails = { name: "", lab: "", designation: "" } }) {
           labs={labs}
           designations={designations}
           isLoading={isLoading}
+          existingUsers={users}
         />
     </PageLayout>
   );
