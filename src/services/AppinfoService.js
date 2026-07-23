@@ -1424,37 +1424,32 @@ export function addIssueResearcherApi(receive) {
     .then((response) => response.data);
 }
 
-export function getmanagerEmployeeApi(labNameOrArray) {
-  // Build URL with optional lab parameter(s)
-  // Accepts both single lab (string) for backward compatibility and multiple labs (array)
-  // If labNameOrArray is provided, add it/them as query param(s); otherwise omit it
-  let url = `${BASE_URL}/managerEmpName/`;
-  
+export function getmanagerEmployeeApi(labNameOrArray, projectCodes = null) {
+  // Optional lab(s) and optional project_code(s) — same pattern as lab-assistants
+  const params = new URLSearchParams();
+
   if (labNameOrArray) {
-    const params = new URLSearchParams();
-    
-    // Handle both array and single value
     if (Array.isArray(labNameOrArray) && labNameOrArray.length > 0) {
-      // Multiple labs: add each as separate 'lab' parameter
-      labNameOrArray.forEach(lab => {
-        if (lab && lab !== 'N/A') {
-          params.append('lab', lab);
+      labNameOrArray.forEach((lab) => {
+        if (lab && lab !== "N/A") {
+          params.append("lab", lab);
         }
       });
-    } else if (typeof labNameOrArray === 'string' && labNameOrArray !== 'N/A') {
-      // Single lab: backward compatibility
-      params.append('lab', labNameOrArray);
-    }
-    
-    // Only add params if we have valid labs
-    if (params.toString()) {
-      url = `${BASE_URL}/managerEmpName/?${params.toString()}`;
+    } else if (typeof labNameOrArray === "string" && labNameOrArray !== "N/A") {
+      params.append("lab", labNameOrArray);
     }
   }
-  
-  return axios
-    .get(url)
-    .then((response) => response.data);
+
+  if (projectCodes && projectCodes.length > 0) {
+    const codes = Array.isArray(projectCodes) ? projectCodes : [projectCodes];
+    params.append("project_code", codes.filter(Boolean).join(","));
+  }
+
+  const url = params.toString()
+    ? `${BASE_URL}/managerEmpName/?${params.toString()}`
+    : `${BASE_URL}/managerEmpName/`;
+
+  return axios.get(url).then((response) => response.data);
 }
 
 export function getLabassistantEmployeeApi(labName, projectCodes) {

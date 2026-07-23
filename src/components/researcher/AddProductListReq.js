@@ -8,7 +8,7 @@ import {
   getSuppliersApi,
   getManufacturersApi,
   getLabassistantEmployeeApi,
-  getMasterApi,
+  getTemptReceiveApi,
   getmanagerEmployeeApi,
   getUnitsApi,
   getProjectApi,
@@ -21,6 +21,73 @@ import {
 import Select from "react-select";
 import { PageLayout, PageHeader, PageBody } from "../layout/content";
 import "./AddProductListReq.css";
+
+/** Project codes are CharField labels (e.g. PROJECT_01) — always compare as strings. */
+const normalizeProjectCode = (code) => String(code ?? "").trim();
+const projectCodesEqual = (a, b) =>
+  normalizeProjectCode(a).toLowerCase() === normalizeProjectCode(b).toLowerCase();
+const projectCodeInList = (code, list = []) =>
+  (list || []).some((c) => projectCodesEqual(c, code));
+const itemMatchesAnyProject = (itemProjectCode, assignedList) => {
+  if (itemProjectCode == null || itemProjectCode === "") return false;
+  const codes = Array.isArray(itemProjectCode) ? itemProjectCode : [itemProjectCode];
+  return codes.some((c) => projectCodeInList(c, assignedList));
+};
+
+/**
+ * Build unique requestable items from received inventory (project-scoped stock).
+ * Same catalog item may appear under multiple projects — collect all project codes.
+ */
+const buildItemsFromInventory = (inventoryRows, masterTypeFilter) => {
+  let rows = Array.isArray(inventoryRows) ? inventoryRows : [];
+  if (masterTypeFilter) {
+    rows = rows.filter(
+      (item) =>
+        item.master_type &&
+        String(item.master_type).toLowerCase() === String(masterTypeFilter).toLowerCase()
+    );
+  }
+  // Offer items that still have usable quantity (match Lab Issue: stock || quantity_received)
+  rows = rows.filter((item) => {
+    const available = Number(item.stock) || Number(item.quantity_received) || 0;
+    return available > 0;
+  });
+
+  const byCid = new Map();
+  for (const item of rows) {
+    if (item.c_id == null || !item.item_code) continue;
+    const cid = item.c_id;
+    const proj = item.project_code;
+    const existing = byCid.get(cid);
+    if (!existing) {
+      byCid.set(cid, {
+        value: cid,
+        label: item.item_code,
+        itemName: item.item_name,
+        projectCode: proj != null && String(proj).trim() !== "" ? [proj] : [],
+        details: { units: item.unit_measure || item.units },
+      });
+    } else if (
+      proj != null &&
+      String(proj).trim() !== "" &&
+      !projectCodeInList(proj, existing.projectCode)
+    ) {
+      existing.projectCode.push(proj);
+    }
+  }
+
+  const itemsWithProjects = Array.from(byCid.values());
+  const itemsNamesWithProjects = itemsWithProjects.map((item) => ({
+    value: item.value,
+    label: item.itemName,
+    itemCode: item.label,
+    projectCode: item.projectCode,
+    details: item.details,
+  }));
+
+  return { itemsWithProjects, itemsNamesWithProjects };
+};
+
 const AddProductListReq = ({
   userDetails = { name: "", lab: "", designation: "" },
 }) => {
@@ -47,7 +114,6 @@ const AddProductListReq = ({
   const [resNames, setResNames] = useState([]);
   const [selectedNames, setSelectedNames] = useState(null);
   const [managerNames, setManagerNames] = useState([]);
-  const [allManagerNames, setAllManagerNames] = useState([]); // Store all managers for filtering
   const [selectedmanNames, setSelectedmanNames] = useState(null);
   const [managerProjects, setManagerProjects] = useState([]);
   const [filteredProjectsMap, setFilteredProjectsMap] = useState([]);
@@ -135,76 +201,58 @@ const AddProductListReq = ({
   }, [selectedCodes, reduxUser?.lab, userDetails.lab]);
 
   useEffect(() => {
-    // Get username for filtering (used in both API calls)
     const username = reduxUser?.user_name || userDetails.name;
-    
-    // Fetch project codes
-    // Pass username to filter items by researcher's lab and projects
-    getMasterApi(null, username)
+    const researcherLabs = reduxUser?.lab || userDetails.lab || [];
+    let labName = null;
+    if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
+      labName = researcherLabs[0];
+    } else if (typeof researcherLabs === "string" && researcherLabs !== "N/A") {
+      labName = researcherLabs;
+    }
+
+    // Item Code / Item Name from project-scoped received inventory (not Master.project_code)
+    getTemptReceiveApi(labName, username)
       .then((data) => {
-        // Filter data based on masterType
-        console.log("Before selection master type",data)
-        const uniqueMasterType=[...new Set(data.map((item)=>item.master_type))]
-        setMasterTypeList(uniqueMasterType)
-        
-        if (masterType) {
-          data = data.filter((item) => item.master_type === masterType);
-        }
-        console.log("After selecting master type",data)
-        
-        // Store all items with their project_code
-        // We'll filter by assigned projects in a separate useEffect after projects are loaded
-        const itemsWithProjects = data.map((item) => ({
-          value: item.c_id,
-          label: item.item_code,
-          itemName: item.item_name,
-          projectCode: item.project_code, // Store project_code with each item
-          details: { units: item.units },
-        }));
-        
-        const itemsNamesWithProjects = data.map((item) => ({
-          value: item.c_id,
-          label: item.item_name,
-          itemCode: item.item_code,
-          projectCode: item.project_code, // Store project_code with each item
-          details: { units: item.units },
-        }));
-        
-        // Store all items for filtering (will be filtered by assigned projects later)
+        const inventory = Array.isArray(data) ? data : [];
+        console.log("Received inventory for request form:", inventory.length);
+        const uniqueMasterType = [
+          ...new Set(inventory.map((item) => item.master_type).filter(Boolean)),
+        ];
+        setMasterTypeList(uniqueMasterType);
+
+        const { itemsWithProjects, itemsNamesWithProjects } = buildItemsFromInventory(
+          inventory,
+          masterType
+        );
         setAllItemsCodes(itemsWithProjects);
         setAllItemsNames(itemsNamesWithProjects);
-        
-        console.log("item codes in the addProduct",itemsWithProjects)
+        console.log("Requestable items from inventory:", itemsWithProjects);
       })
-      .catch((error) => console.error("Error fetching project codes:", error));
-    //Fetch Projects codes
-    
-    // Fetch all projects and employee data in parallel
+      .catch((error) => {
+        console.error("Error fetching received inventory for request:", error);
+        setAllItemsCodes([]);
+        setAllItemsNames([]);
+      });
+
     Promise.all([getProjectApi(), getEmployeeApi()])
       .then(([projectsData, employeesData]) => {
         console.log("All Projects:", projectsData);
         console.log("All Employees:", employeesData);
 
-        // Filter only active projects
         const activeProjects = projectsData.filter((item) => item.deleted === 0);
-
-        // Get researcher's assigned project codes
         let assignedProjectCodes = [];
-        
+
         if (username) {
-          // Try to find employee record (EmpDet) - preferred source
           const employee = employeesData.find(
             (emp) => emp.emp_name === username && emp.is_active !== false
           );
-          
+
           if (employee && employee.project_code && employee.project_code.length > 0) {
-            // Use EmpDet.project_code (authoritative source)
             assignedProjectCodes = Array.isArray(employee.project_code)
               ? employee.project_code
               : [employee.project_code];
             console.log("Using EmpDet project codes:", assignedProjectCodes);
           } else if (reduxUser && reduxUser.project_code) {
-            // Fallback to LoginCre.project_code if EmpDet not found
             assignedProjectCodes = Array.isArray(reduxUser.project_code)
               ? reduxUser.project_code
               : [reduxUser.project_code];
@@ -212,77 +260,87 @@ const AddProductListReq = ({
           }
         }
 
-        // Filter projects to only show assigned ones
-        let filteredProjects = [];
         if (assignedProjectCodes.length > 0) {
-          filteredProjects = activeProjects.filter((project) =>
-            assignedProjectCodes.includes(project.project_code)
+          const filteredProjects = activeProjects.filter((project) =>
+            projectCodeInList(project.project_code, assignedProjectCodes)
           );
           console.log("Filtered Projects (assigned only):", filteredProjects);
           setHasProjects(true);
+
+          const projectsMapData = filteredProjects.map((item) => ({
+            value: item.project_code,
+            label: item.project_name,
+            code: item.project_code,
+          }));
+          setProjectsMap(projectsMapData);
+          setFilteredProjectsMap(projectsMapData);
         } else {
           console.log("No assigned projects found - showing empty dropdown");
-          // Set empty arrays when researcher has no projects
           setProjectsMap([]);
           setFilteredProjectsMap([]);
           setHasProjects(false);
-          return; // Exit early - no need to process further
         }
-
-        const projectsMapData = filteredProjects.map((item) => ({
-          value: item.project_code,
-          label: item.project_name,
-          code: item.project_code,
-        }));
-        
-        setProjectsMap(projectsMapData);
-        // Initialize filteredProjectsMap with all researcher's projects (no manager selected yet)
-        setFilteredProjectsMap(projectsMapData);
       })
       .catch((error) => {
         console.error("Error fetching projects or employees:", error);
-        // On error, set empty projects and mark as no projects
         setProjectsMap([]);
         setFilteredProjectsMap([]);
         setHasProjects(false);
       });
-    //Fetch Projects codes
+
     getResEmployeeApi()
       .then((data) => {
-        console.log("Received data:", data); // Log received data
+        console.log("Received data:", data);
         setResNames(data.map((item) => ({ value: item, label: item })));
       })
       .catch((error) =>
         console.error("Error fetching Researcher Names:", error)
       );
-    // Get researcher's lab(s) for filtering managers
-    // Redux user.lab is an array of lab names (from LoginSerializer)
-    // userDetails.lab might be string or array
+  }, [masterType, reduxUser?.user_name, userDetails.name, reduxUser?.lab, userDetails.lab]);
+
+  // Managers depend only on lab + selected project — never on Master Type / inventory reload
+  const getResearcherLabs = () => {
     const researcherLabs = reduxUser?.lab || userDetails.lab || [];
-    let labsToSend = null;
-    
     if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
-      // Send all labs - backend will return managers with ANY matching lab
-      labsToSend = researcherLabs.filter(lab => lab && lab !== 'N/A');
-    } else if (typeof researcherLabs === 'string' && researcherLabs !== 'N/A') {
-      // Single lab as string - convert to array for consistency
-      labsToSend = [researcherLabs];
+      return researcherLabs.filter((lab) => lab && lab !== "N/A");
     }
-    
-    // Pass all labs to filter managers - returns managers who have ANY of the researcher's labs
-    // Backend returns all managers if lab param is missing (optional filtering)
-    getmanagerEmployeeApi(labsToSend && labsToSend.length > 0 ? labsToSend : null)
+    if (typeof researcherLabs === "string" && researcherLabs !== "N/A") {
+      return [researcherLabs];
+    }
+    return [];
+  };
+
+  const fetchManagers = (projectCode = null) => {
+    const labsToSend = getResearcherLabs();
+    const projectCodes = projectCode ? [projectCode] : null;
+
+    getmanagerEmployeeApi(
+      labsToSend.length > 0 ? labsToSend : null,
+      projectCodes
+    )
       .then((data) => {
-        console.log("Received manager data:", data); // Log received data
-        const managerList = data.map((item) => ({ value: item, label: item }));
-        setAllManagerNames(managerList); // Store all managers
-        setManagerNames(managerList); // Initially show all managers
-        setFilteredManagerNames(managerList); // For filtering
+        const list = Array.isArray(data) ? data : [];
+        const managerList = list.map((item) => ({ value: item, label: item }));
+        setManagerNames(managerList);
+        setFilteredManagerNames(managerList);
+        if (
+          selectedmanNames &&
+          !managerList.find((m) => m.value === selectedmanNames.value)
+        ) {
+          setSelectedmanNames(null);
+        }
       })
-      .catch((error) =>
-        console.error("Error fetching Manager Names:", error)
-      );
-  }, [masterType, reduxUser?.user_name, userDetails.name]);
+      .catch((error) => {
+        console.error("Error fetching Manager Names:", error);
+        setManagerNames([]);
+        setFilteredManagerNames([]);
+      });
+  };
+
+  useEffect(() => {
+    fetchManagers(selectedCodes?.value || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCodes?.value, reduxUser?.lab, userDetails.lab]);
 
   // Get researcher's assigned project codes (helper function)
   const getAssignedProjectCodes = () => {
@@ -307,35 +365,14 @@ const AddProductListReq = ({
       return;
     }
 
-    // Filter items: only show items that have a project_code AND it matches researcher's assigned projects
-    // Also filter out items with null/empty project_code
-    const validItemsCodes = itemsCodesList.filter((item) => {
-      // Item must have a project_code
-      if (!item.projectCode) {
-        return false;
-      }
-      
-      const itemProjectCodes = Array.isArray(item.projectCode) 
-        ? item.projectCode 
-        : [item.projectCode];
-      
-      // Check if any of the item's project codes match researcher's assigned projects
-      return itemProjectCodes.some(code => assignedProjectCodes.includes(code));
-    });
+    // Filter by inventory project_code(s) using string-safe comparison
+    const validItemsCodes = itemsCodesList.filter((item) =>
+      itemMatchesAnyProject(item.projectCode, assignedProjectCodes)
+    );
 
-    const validItemsNames = itemsNamesList.filter((item) => {
-      // Item must have a project_code
-      if (!item.projectCode) {
-        return false;
-      }
-      
-      const itemProjectCodes = Array.isArray(item.projectCode) 
-        ? item.projectCode 
-        : [item.projectCode];
-      
-      // Check if any of the item's project codes match researcher's assigned projects
-      return itemProjectCodes.some(code => assignedProjectCodes.includes(code));
-    });
+    const validItemsNames = itemsNamesList.filter((item) =>
+      itemMatchesAnyProject(item.projectCode, assignedProjectCodes)
+    );
 
     console.log("Filtered items by assigned projects:", validItemsCodes.length, "out of", itemsCodesList.length);
 
@@ -413,7 +450,7 @@ const AddProductListReq = ({
       // No item selected - show all projects (filtered by manager if selected)
       if (selectedmanNames && managerProjects.length > 0) {
         const filteredProjects = projectsMap.filter(project =>
-          managerProjects.includes(project.code)
+          projectCodeInList(project.code, managerProjects)
         );
         setFilteredProjectsMap(filteredProjects);
       } else {
@@ -426,13 +463,7 @@ const AddProductListReq = ({
       if (assignedProjectCodes.length > 0) {
         filterItemsByAssignedProjects(allItemsCodes, allItemsNames, assignedProjectCodes, true);
       }
-      
-      // Filter managers by selected project if project is selected
-      if (selectedCodes) {
-        filterManagersByProjects([selectedCodes.value]);
-      } else {
-        filterManagersByProjects([]);
-      }
+      // Managers are loaded separately from lab + selected project (not item cascade)
       return;
     }
 
@@ -470,40 +501,33 @@ const AddProductListReq = ({
     
     // Filter: show only project codes that are both assigned to researcher AND belong to the item
     const validProjectCodes = itemProjectCodes.filter(code => 
-      assignedProjectCodes.includes(code)
+      projectCodeInList(code, assignedProjectCodes)
     );
 
     // Filter projects
     let filteredProjects = projectsMap.filter(project => 
-      validProjectCodes.includes(project.code)
+      projectCodeInList(project.code, validProjectCodes)
     );
 
     // If manager is selected, further filter by manager's projects
     if (selectedmanNames && managerProjects.length > 0) {
       filteredProjects = filteredProjects.filter(project =>
-        managerProjects.includes(project.code)
+        projectCodeInList(project.code, managerProjects)
       );
     }
 
     setFilteredProjectsMap(filteredProjects);
 
     // If selected project is not in filtered list, clear it
-    if (selectedCodes && !filteredProjects.find(p => p.code === selectedCodes.value)) {
+    if (selectedCodes && !filteredProjects.find(p => projectCodesEqual(p.code, selectedCodes.value))) {
       setSelectedCodes(null);
       setSelectedProject("");
       setSelectedLabAssistant(null);
       setLabassistantNames([]);
     }
 
-    // Filter managers by valid project codes
-    if (validProjectCodes.length > 0) {
-      filterManagersByProjects(validProjectCodes);
-    } else {
-      filterManagersByProjects([]);
-    }
-
     // Filter lab assistants by valid project codes (if project is selected)
-    if (selectedCodes && validProjectCodes.includes(selectedCodes.value)) {
+    if (selectedCodes && projectCodeInList(selectedCodes.value, validProjectCodes)) {
       const researcherLabs = reduxUser?.lab || userDetails.lab || [];
       let labName = null;
       if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
@@ -535,46 +559,35 @@ const AddProductListReq = ({
             : [selectedItem.projectCode];
           const assignedProjectCodes = getAssignedProjectCodes();
           const validProjectCodes = itemProjectCodes.filter(code => 
-            assignedProjectCodes.includes(code)
+            projectCodeInList(code, assignedProjectCodes)
           );
-          const filteredItems = allItemsCodes.filter(item => {
-            if (!item.projectCode) return false;
-            const itemProjCodes = Array.isArray(item.projectCode) 
-              ? item.projectCode 
-              : [item.projectCode];
-            return itemProjCodes.some(code => validProjectCodes.includes(code));
-          });
+          const filteredItems = allItemsCodes.filter(item =>
+            itemMatchesAnyProject(item.projectCode, validProjectCodes)
+          );
+          const filteredNames = allItemsNames.filter(item =>
+            itemMatchesAnyProject(item.projectCode, validProjectCodes)
+          );
           setFilteredItemsCodes(filteredItems);
-          setFilteredItemsNames(allItemsNames.filter(item => {
-            if (!item.projectCode) return false;
-            const itemProjCodes = Array.isArray(item.projectCode) 
-              ? item.projectCode 
-              : [item.projectCode];
-            return itemProjCodes.some(code => validProjectCodes.includes(code));
-          }));
+          setFilteredItemsNames(filteredNames);
           setItemsCodes(filteredItems);
-          setItemsNames(allItemsNames.filter(item => {
-            if (!item.projectCode) return false;
-            const itemProjCodes = Array.isArray(item.projectCode) 
-              ? item.projectCode 
-              : [item.projectCode];
-            return itemProjCodes.some(code => validProjectCodes.includes(code));
-          }));
+          setItemsNames(filteredNames);
         }
       } else {
-        // No item selected - show all items
-        setFilteredItemsCodes(allItemsCodes);
-        setFilteredItemsNames(allItemsNames);
-        setItemsCodes(allItemsCodes);
-        setItemsNames(allItemsNames);
+        // No item selected - show all items already scoped to assigned projects
+        const assignedProjectCodes = getAssignedProjectCodes();
+        if (assignedProjectCodes.length > 0) {
+          filterItemsByAssignedProjects(allItemsCodes, allItemsNames, assignedProjectCodes, true);
+        } else {
+          setFilteredItemsCodes(allItemsCodes);
+          setFilteredItemsNames(allItemsNames);
+          setItemsCodes(allItemsCodes);
+          setItemsNames(allItemsNames);
+        }
       }
       
-      // Clear lab assistants
+      // Clear lab assistants (managers reload via selectedCodes effect only)
       setLabassistantNames([]);
       setSelectedLabAssistant(null);
-      
-      // Reset manager filter
-      filterManagersByProjects([]);
       return;
     }
 
@@ -582,7 +595,7 @@ const AddProductListReq = ({
 
     // Filter items: show only items that belong to selected project AND are assigned to researcher
     const assignedProjectCodes = getAssignedProjectCodes();
-    if (!assignedProjectCodes.includes(selectedProjectCode)) {
+    if (!projectCodeInList(selectedProjectCode, assignedProjectCodes)) {
       // Project not assigned - shouldn't happen, but handle it
       setFilteredItemsCodes([]);
       setFilteredItemsNames([]);
@@ -591,21 +604,13 @@ const AddProductListReq = ({
       return;
     }
 
-    const filteredItems = allItemsCodes.filter(item => {
-      if (!item.projectCode) return false;
-      const itemProjectCodes = Array.isArray(item.projectCode) 
-        ? item.projectCode 
-        : [item.projectCode];
-      return itemProjectCodes.includes(selectedProjectCode);
-    });
+    const filteredItems = allItemsCodes.filter(item =>
+      itemMatchesAnyProject(item.projectCode, [selectedProjectCode])
+    );
 
-    const filteredNames = allItemsNames.filter(item => {
-      if (!item.projectCode) return false;
-      const itemProjectCodes = Array.isArray(item.projectCode) 
-        ? item.projectCode 
-        : [item.projectCode];
-      return itemProjectCodes.includes(selectedProjectCode);
-    });
+    const filteredNames = allItemsNames.filter(item =>
+      itemMatchesAnyProject(item.projectCode, [selectedProjectCode])
+    );
 
     setFilteredItemsCodes(filteredItems);
     setFilteredItemsNames(filteredNames);
@@ -618,10 +623,7 @@ const AddProductListReq = ({
       setSelectedItemName(null);
     }
 
-    // Filter managers by selected project
-    filterManagersByProjects([selectedProjectCode]);
-
-    // Fetch lab assistants for selected project
+    // Fetch lab assistants for selected project (managers handled by dedicated effect)
     const researcherLabs = reduxUser?.lab || userDetails.lab || [];
     let labName = null;
     if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
@@ -633,75 +635,14 @@ const AddProductListReq = ({
 
   }, [selectedCodes, allItemsCodes, allItemsNames, projectsMap, selectedItemCode]);
 
-  // Helper function to filter managers by project codes
-  const filterManagersByProjects = async (projectCodes) => {
-    if (!projectCodes || projectCodes.length === 0) {
-      // No project codes - show all managers from researcher's labs
-      const researcherLabs = reduxUser?.lab || userDetails.lab || [];
-      let labsToSend = null;
-      if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
-        labsToSend = researcherLabs.filter(lab => lab && lab !== 'N/A');
-      } else if (typeof researcherLabs === 'string' && researcherLabs !== 'N/A') {
-        labsToSend = [researcherLabs];
-      }
-      
-      getmanagerEmployeeApi(labsToSend && labsToSend.length > 0 ? labsToSend : null)
-        .then((data) => {
-          const managerList = data.map((item) => ({ value: item, label: item }));
-          setManagerNames(managerList);
-          setFilteredManagerNames(managerList);
-        })
-        .catch((error) => console.error("Error fetching Manager Names:", error));
-      return;
-    }
-
-    // Fetch all employees to get managers with matching projects
-    getEmployeeApi()
-      .then((employeesData) => {
-        // Filter managers who have ANY of the specified project codes
-        const managersWithProjects = employeesData.filter(emp => {
-          if (emp.role !== 'Manager' && emp.role !== 'manager') return false;
-          if (!emp.project_code) return false;
-          
-          const empProjectCodes = Array.isArray(emp.project_code) 
-            ? emp.project_code 
-            : [emp.project_code];
-          
-          // Check if manager has any of the specified project codes
-          return projectCodes.some(code => empProjectCodes.includes(code));
-        });
-
-        // Get manager names
-        const managerNamesList = managersWithProjects.map(emp => emp.emp_name);
-        
-        // Filter from allManagerNames to maintain consistency
-        const filteredManagers = allManagerNames.filter(manager => 
-          managerNamesList.includes(manager.value)
-        );
-
-        setManagerNames(filteredManagers);
-        setFilteredManagerNames(filteredManagers);
-
-        // If selected manager is not in filtered list, clear it
-        if (selectedmanNames && !filteredManagers.find(m => m.value === selectedmanNames.value)) {
-          setSelectedmanNames(null);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching employees for manager filtering:", error);
-      });
-  };
-
-  // Cascading filter: When Manager is selected (existing logic + item filtering)
+  // Cascading filter: When Manager is selected (filter projects by manager — do not reload managers)
   useEffect(() => {
     if (!selectedmanNames || !selectedmanNames.value) {
       // No manager selected - reset to show all researcher's projects
       setFilteredProjectsMap(projectsMap);
       setManagerProjects([]);
       
-      // Re-apply other filters
       if (selectedItemCode) {
-        // Re-trigger item code filter
         const selectedItem = allItemsCodes.find(item => item.value === selectedItemCode.value);
         if (selectedItem && selectedItem.projectCode) {
           const itemProjectCodes = Array.isArray(selectedItem.projectCode) 
@@ -709,24 +650,14 @@ const AddProductListReq = ({
             : [selectedItem.projectCode];
           const assignedProjectCodes = getAssignedProjectCodes();
           const validProjectCodes = itemProjectCodes.filter(code => 
-            assignedProjectCodes.includes(code)
+            projectCodeInList(code, assignedProjectCodes)
           );
           const filteredProjects = projectsMap.filter(project => 
-            validProjectCodes.includes(project.code)
+            projectCodeInList(project.code, validProjectCodes)
           );
           setFilteredProjectsMap(filteredProjects);
         }
       }
-      
-      // Reset manager filter to show all managers from labs
-      const researcherLabs = reduxUser?.lab || userDetails.lab || [];
-      let labsToSend = null;
-      if (Array.isArray(researcherLabs) && researcherLabs.length > 0) {
-        labsToSend = researcherLabs.filter(lab => lab && lab !== 'N/A');
-      } else if (typeof researcherLabs === 'string' && researcherLabs !== 'N/A') {
-        labsToSend = [researcherLabs];
-      }
-      filterManagersByProjects(selectedCodes ? [selectedCodes.value] : []);
       return;
     }
 
@@ -747,10 +678,8 @@ const AddProductListReq = ({
         
         setManagerProjects(managerProjectCodes);
 
-        // Start with researcher's projects
         let projectsToFilter = projectsMap;
 
-        // If item code is selected, filter by item's projects first
         if (selectedItemCode) {
           const selectedItem = allItemsCodes.find(item => item.value === selectedItemCode.value);
           if (selectedItem && selectedItem.projectCode) {
@@ -759,24 +688,22 @@ const AddProductListReq = ({
               : [selectedItem.projectCode];
             const assignedProjectCodes = getAssignedProjectCodes();
             const validProjectCodes = itemProjectCodes.filter(code => 
-              assignedProjectCodes.includes(code)
+              projectCodeInList(code, assignedProjectCodes)
             );
             projectsToFilter = projectsMap.filter(project => 
-              validProjectCodes.includes(project.code)
+              projectCodeInList(project.code, validProjectCodes)
             );
           }
         }
 
-        // Filter projects to show only common projects between researcher and manager
         if (managerProjectCodes.length > 0) {
           const commonProjects = projectsToFilter.filter((project) =>
-            managerProjectCodes.includes(project.code)
+            projectCodeInList(project.code, managerProjectCodes)
           );
           console.log("Common projects (researcher & manager):", commonProjects);
           setFilteredProjectsMap(commonProjects);
           
-          // Clear selected project if it's not in the filtered list
-          if (selectedCodes && !commonProjects.find(p => p.code === selectedCodes.value)) {
+          if (selectedCodes && !commonProjects.find(p => projectCodesEqual(p.code, selectedCodes.value))) {
             setSelectedCodes(null);
             setSelectedProject("");
             setSelectedLabAssistant(null);
