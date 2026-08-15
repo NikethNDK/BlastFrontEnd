@@ -244,7 +244,11 @@ const AddProductListReq = ({
 
         if (username) {
           const employee = employeesData.find(
-            (emp) => emp.emp_name === username && emp.is_active !== false
+            (emp) =>
+              emp.emp_name &&
+              username &&
+              emp.emp_name.toLowerCase() === String(username).toLowerCase() &&
+              emp.is_active !== false
           );
 
           if (employee && employee.project_code && employee.project_code.length > 0) {
@@ -661,21 +665,32 @@ const AddProductListReq = ({
       return;
     }
 
-    // Fetch manager's employee data to get their projects
+    // Fetch manager's employee data to get their projects (person lookup, not lab roster)
     getEmployeeByUsernameApi(selectedmanNames.value)
       .then((employeeData) => {
         console.log("Manager employee data:", employeeData);
-        
+
+        const rows = Array.isArray(employeeData)
+          ? employeeData
+          : employeeData && typeof employeeData === "object"
+            ? [employeeData]
+            : [];
+
+        const managerName = String(selectedmanNames.value || "").toLowerCase();
+        const manager =
+          rows.find(
+            (emp) =>
+              emp.emp_name &&
+              String(emp.emp_name).toLowerCase() === managerName
+          ) || null;
+
         let managerProjectCodes = [];
-        if (employeeData && employeeData.length > 0) {
-          const manager = employeeData[0];
-          if (manager.project_code) {
-            managerProjectCodes = Array.isArray(manager.project_code)
-              ? manager.project_code
-              : [manager.project_code];
-          }
+        if (manager && manager.project_code) {
+          managerProjectCodes = Array.isArray(manager.project_code)
+            ? manager.project_code
+            : [manager.project_code];
         }
-        
+
         setManagerProjects(managerProjectCodes);
 
         let projectsToFilter = projectsMap;

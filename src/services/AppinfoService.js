@@ -486,8 +486,22 @@ export function getUsersForAssignProjectApi(lab, role) {
 
 export function getEmployeeByUsernameApi(username) {
   return axios
-    .get(`${BASE_URL}/emp/?username=${encodeURIComponent(username)}`)
-    .then((response) => response.data);
+    .get(`${BASE_URL}/emp/`, {
+      params: {
+        username,
+        lookup: "self",
+      },
+    })
+    .then((response) => {
+      const data = response.data;
+      if (Array.isArray(data)) {
+        return data;
+      }
+      if (data && typeof data === "object") {
+        return [data];
+      }
+      return [];
+    });
 }
 
 export function deleteEmployeeApi(emp_id) {
