@@ -1,14 +1,17 @@
 // API Configuration
-// Get server IP from environment or use default
+// Use the same hostname as the page so the JWT cookie stays same-site
+// (e.g. aiwc-server:3000 → aiwc-server:8000, localhost:3000 → localhost:8000)
 const getServerIP = () => {
-  // Try to get IP from environment variable
+  if (process.env.REACT_APP_API_BASE_URL) {
+    return process.env.REACT_APP_API_BASE_URL;
+  }
   if (process.env.REACT_APP_SERVER_IP) {
     return `http://${process.env.REACT_APP_SERVER_IP}:8000`;
   }
-  
-  // For production, use the server's actual IP
-  // Replace 192.168.1.100 with your actual server IP
-  return 'http://localhost:8000';
+  const host = typeof window !== 'undefined' && window.location.hostname
+    ? window.location.hostname
+    : 'localhost';
+  return `http://${host}:8000`;
 };
 
 const API_BASE_URL = getServerIP();
