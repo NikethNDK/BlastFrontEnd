@@ -277,7 +277,8 @@ const AddProductListReq = ({
             code: item.project_code,
           }));
           setProjectsMap(projectsMapData);
-          setFilteredProjectsMap(projectsMapData);
+          // Project dropdown stays empty until a manager is selected
+          setFilteredProjectsMap([]);
         } else {
           console.log("No assigned projects found - showing empty dropdown");
           setProjectsMap([]);
@@ -450,17 +451,29 @@ const AddProductListReq = ({
 
   // Cascading filter: When Item Code is selected
   useEffect(() => {
+    if (!selectedmanNames || !selectedmanNames.value) {
+      // Projects require a manager first
+      setFilteredProjectsMap([]);
+      if (!selectedItemCode || !selectedItemCode.value) {
+        const assignedProjectCodes = getAssignedProjectCodes();
+        if (assignedProjectCodes.length > 0) {
+          filterItemsByAssignedProjects(allItemsCodes, allItemsNames, assignedProjectCodes, true);
+        }
+      }
+      return;
+    }
+
     if (!selectedItemCode || !selectedItemCode.value) {
-      // No item selected - show all projects (filtered by manager if selected)
-      if (selectedmanNames && managerProjects.length > 0) {
-        const filteredProjects = projectsMap.filter(project =>
+      // No item selected — common projects only (researcher ∩ manager)
+      if (managerProjects.length > 0) {
+        const filteredProjects = projectsMap.filter((project) =>
           projectCodeInList(project.code, managerProjects)
         );
         setFilteredProjectsMap(filteredProjects);
       } else {
-        setFilteredProjectsMap(projectsMap);
+        setFilteredProjectsMap([]);
       }
-      
+
       // Reset item filters to show all (but keep the filtered items based on assigned projects)
       // Don't reset to allItemsCodes, keep the filtered ones
       const assignedProjectCodes = getAssignedProjectCodes();
@@ -513,11 +526,13 @@ const AddProductListReq = ({
       projectCodeInList(project.code, validProjectCodes)
     );
 
-    // If manager is selected, further filter by manager's projects
-    if (selectedmanNames && managerProjects.length > 0) {
-      filteredProjects = filteredProjects.filter(project =>
+    // Manager is required — further filter by manager's projects (empty if none loaded yet)
+    if (managerProjects.length > 0) {
+      filteredProjects = filteredProjects.filter((project) =>
         projectCodeInList(project.code, managerProjects)
       );
+    } else {
+      filteredProjects = [];
     }
 
     setFilteredProjectsMap(filteredProjects);
@@ -642,26 +657,13 @@ const AddProductListReq = ({
   // Cascading filter: When Manager is selected (filter projects by manager — do not reload managers)
   useEffect(() => {
     if (!selectedmanNames || !selectedmanNames.value) {
-      // No manager selected - reset to show all researcher's projects
-      setFilteredProjectsMap(projectsMap);
+      // No manager — project dropdown stays empty/disabled until a manager is chosen
+      setFilteredProjectsMap([]);
       setManagerProjects([]);
-      
-      if (selectedItemCode) {
-        const selectedItem = allItemsCodes.find(item => item.value === selectedItemCode.value);
-        if (selectedItem && selectedItem.projectCode) {
-          const itemProjectCodes = Array.isArray(selectedItem.projectCode) 
-            ? selectedItem.projectCode 
-            : [selectedItem.projectCode];
-          const assignedProjectCodes = getAssignedProjectCodes();
-          const validProjectCodes = itemProjectCodes.filter(code => 
-            projectCodeInList(code, assignedProjectCodes)
-          );
-          const filteredProjects = projectsMap.filter(project => 
-            projectCodeInList(project.code, validProjectCodes)
-          );
-          setFilteredProjectsMap(filteredProjects);
-        }
-      }
+      setSelectedCodes(null);
+      setSelectedProject("");
+      setSelectedLabAssistant(null);
+      setLabassistantNames([]);
       return;
     }
 
@@ -734,8 +736,12 @@ const AddProductListReq = ({
       })
       .catch((error) => {
         console.error("Error fetching manager's projects:", error);
-        setFilteredProjectsMap(projectsMap);
+        setFilteredProjectsMap([]);
         setManagerProjects([]);
+        setSelectedCodes(null);
+        setSelectedProject("");
+        setSelectedLabAssistant(null);
+        setLabassistantNames([]);
       });
   }, [selectedmanNames, projectsMap, selectedItemCode, allItemsCodes]);
 
@@ -1045,8 +1051,14 @@ const AddProductListReq = ({
                           value: item.code,
                           label: item.code,
                         }))}
-                        placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Code"}
-                        isDisabled={filteredProjectsMap.length === 0}
+                        placeholder={
+                          !selectedmanNames
+                            ? "Select a manager first"
+                            : filteredProjectsMap.length === 0
+                              ? "No projects available"
+                              : "Select Project Code"
+                        }
+                        isDisabled={!selectedmanNames || filteredProjectsMap.length === 0}
                         styles={selectControlStyles(!!errorMessages.project)}
                       />
                       {errorMessages.project && (
@@ -1087,8 +1099,14 @@ const AddProductListReq = ({
                           value: item.value,
                           label: item.label,
                         }))}
-                        placeholder={filteredProjectsMap.length === 0 ? "No projects available" : "Select Project Name"}
-                        isDisabled={filteredProjectsMap.length === 0}
+                        placeholder={
+                          !selectedmanNames
+                            ? "Select a manager first"
+                            : filteredProjectsMap.length === 0
+                              ? "No projects available"
+                              : "Select Project Name"
+                        }
+                        isDisabled={!selectedmanNames || filteredProjectsMap.length === 0}
                         styles={selectControlStyles(!!errorMessages.project)}
                       />
                       {!hasProjects && (
