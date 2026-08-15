@@ -125,6 +125,7 @@ const EmployeeManage = () => {
       const searchable = [
         emp.emp_id,
         emp.emp_name,
+        emp.name,
         formatListField(emp.project_code),
         formatListField(emp.project_name),
         emp.lab,
@@ -199,7 +200,7 @@ const EmployeeManage = () => {
                 <input
                   id="employee-search"
                   type="search"
-                  placeholder="Filter by ID, name, project, lab, or designation…"
+                  placeholder="Filter by ID, username, name, project, lab, or designation…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   onKeyDown={(e) => {
@@ -237,7 +238,8 @@ const EmployeeManage = () => {
                 <thead>
                   <tr>
                     <th scope="col" className="pt-col pt-col--emp-id">Employee ID</th>
-                    <th scope="col" className="pt-col pt-col--emp-name">Employee name</th>
+                    <th scope="col" className="pt-col pt-col--emp-display-name">Name</th>
+                    <th scope="col" className="pt-col pt-col--emp-name">Username</th>
                     <th scope="col" className="pt-col pt-col--project-code">Project code</th>
                     <th scope="col" className="pt-col pt-col--project">Project name</th>
                     <th scope="col" className="pt-col pt-col--lab">Lab</th>
@@ -251,7 +253,7 @@ const EmployeeManage = () => {
                 <tbody>
                   {paginatedEmployees.length === 0 ? (
                     <tr className="project-table-row project-table-row--empty">
-                      <td colSpan="8">
+                      <td colSpan="9">
                         <div className="project-empty">
                           <div className="project-empty-icon-wrap">
                             {searchTerm ? (
@@ -287,7 +289,12 @@ const EmployeeManage = () => {
                           <td className="pt-col pt-col--emp-id" data-label="Employee ID">
                             <span className="employee-id">{emp.emp_id}</span>
                           </td>
-                          <td className="pt-col pt-col--emp-name" data-label="Name">
+                          <td className="pt-col pt-col--emp-display-name" data-label="Name">
+                            <span className="project-name">
+                              {emp.name || "—"}
+                            </span>
+                          </td>
+                          <td className="pt-col pt-col--emp-name" data-label="Username">
                             <span className="project-name">
                               {emp.emp_name || "—"}
                             </span>
@@ -414,7 +421,7 @@ const EmployeeManage = () => {
               </div>
               <div className="project-modal-highlight-row">
                 <span className="project-modal-highlight-label">Name</span>
-                <span>{employeeToInactivate.emp_name || "N/A"}</span>
+                <span>{employeeToInactivate.name || employeeToInactivate.emp_name || "N/A"}</span>
               </div>
               {employeeToInactivate.designation ? (
                 <div className="project-modal-highlight-row">
