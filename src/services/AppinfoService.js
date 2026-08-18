@@ -440,14 +440,18 @@ export function addLoginApi(log) {
 }
 
 export async function updateLoginApi(user_name, log) {
+  const payload = {
+    user_name: log.user_name,
+    name: log.name || null,
+    role: log.role,
+    designation: log.designation,
+    lab: log.lab,
+  };
+  if (log.password) {
+    payload.password = log.password;
+  }
   return axios
-    .put(`${BASE_URL}/update_login/${user_name}`, {
-      user_name: log.user_name,
-      name: log.name || null,
-      role: log.role,
-      designation: log.designation,
-      lab: log.lab,
-    })
+    .put(`${BASE_URL}/update_login/${user_name}`, payload)
     .then((response) => response.data)
     .catch((error) => {
       // Handle error responses

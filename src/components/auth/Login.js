@@ -69,53 +69,40 @@ function Login({ initialAuthState = { isAuthenticated: false, user: null } }) {
       return;
     }
 
+    const trimmedUser = username.trim();
+    const trimmedPass = password.trim();
+
     try {
-      // First, try server-side login to set JWT cookie
-      try {
-        await loginUserApi({ user_name: username, password: password });
-      } catch (loginErr) {
-        // If server login fails, still try the old flow for backward compatibility
-        console.log("Server login returned error, trying fallback:", loginErr);
-      }
+      await loginUserApi({ user_name: trimmedUser, password: trimmedPass });
 
-      // Get user details (keeping existing flow for backward compatibility)
       const response = await getLoginApi();
-      // console.log("API Response:", response);
+      const foundUser = response.find(
+        (user) => user.user_name.toLowerCase() === trimmedUser.toLowerCase()
+      );
 
-      if (response.length > 0) {
-        let foundUser = response.find(
-          (user) => user.user_name === username && user.password === password
-        );
-        if (!foundUser) {
-          toast.error("The username or password you entered is incorrect. Please try again.");
-        } else if (!foundUser.is_active) {
-          toast.error("You are blocked");
-        } else {
-          console.log("Logged in User:", foundUser);
-
-          // Dispatch to Redux store
-          dispatch(setUser(foundUser));
-
-          // Keep existing local state for backward compatibility with props
-          sessionStorage.setItem('lims-header-intro', '1');
-          setLoggedIn(true);
-          setUserRole(foundUser.role);
-          setUserLabs(foundUser.lab || []);
-          setUserFullAccess(!!foundUser.full_access);
-          setUserId(foundUser.id);
-
-          setUserDetails({
-            name: foundUser.user_name,
-            lab: foundUser.lab || "N/A",
-            designation: foundUser.designation || "Not Assigned"
-          });
-        }
+      if (!foundUser) {
+        toast.error("The username or password you entered is incorrect. Please try again.");
+      } else if (!foundUser.is_active) {
+        toast.error("You are blocked");
       } else {
-        toast.error("No user found in system");
+        dispatch(setUser(foundUser));
+
+        sessionStorage.setItem('lims-header-intro', '1');
+        setLoggedIn(true);
+        setUserRole(foundUser.role);
+        setUserLabs(foundUser.lab || []);
+        setUserFullAccess(!!foundUser.full_access);
+        setUserId(foundUser.id);
+
+        setUserDetails({
+          name: foundUser.user_name,
+          lab: foundUser.lab || "N/A",
+          designation: foundUser.designation || "Not Assigned"
+        });
       }
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Login failed. Please try again.");
+      toast.error("The username or password you entered is incorrect. Please try again.");
     }
   };
 

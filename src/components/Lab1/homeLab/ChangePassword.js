@@ -1,36 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { BASE_URL } from "../../../services/AppinfoService";
 import "./ChangePassword.css";
 import { PageLayout, PageHeader, PageBody, ContentCard } from "../../layout/content";
 
 const ChangePassword = ({ userDetails = { name: '', lab: '', designation: '' } }) => {
-  const [userName, setUserName] = useState("");
+  const [userName, setUserName] = useState(userDetails?.name || "");
   const [newPassword, setNewPassword] = useState("");
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (userDetails?.name) {
+      setUserName(userDetails.name);
+    }
+  }, [userDetails?.name]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(null);
-    setError(null);
+
+    const trimmedUser = userName.trim();
+    const trimmedPassword = newPassword.trim();
+
+    if (!trimmedPassword) {
+      toast.error("Please enter a new password.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        `${BASE_URL}/change-password/`,
-        {
-          user_name: userName,
-          new_password: newPassword,
-        }
-      );
+      await axios.post(`${BASE_URL}/change-password/`, {
+        user_name: trimmedUser,
+        new_password: trimmedPassword,
+      });
 
-      setMessage(response.data.message);
-      setUserName("");
+      toast.success("Password changed successfully!");
       setNewPassword("");
     } catch (error) {
-      setError(error.response?.data?.error || "Something went wrong");
+      toast.error(error.response?.data?.error || "Something went wrong");
     }
 
     setLoading(false);
@@ -55,8 +63,7 @@ const ChangePassword = ({ userDetails = { name: '', lab: '', designation: '' } }
                     type="text"
                     id="username"
                     value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    placeholder="Enter username"
+                    readOnly
                     required
                   />
                 </div>
@@ -81,18 +88,6 @@ const ChangePassword = ({ userDetails = { name: '', lab: '', designation: '' } }
                   {loading ? "Updating..." : "Change Password"}
                 </button>
               </form>
-
-              {message && (
-                <div className="password-alert password-alert-success">
-                  {message}
-                </div>
-              )}
-              
-              {error && (
-                <div className="password-alert password-alert-error">
-                  {error}
-                </div>
-              )}
           </div>
         </div>
       </ContentCard>

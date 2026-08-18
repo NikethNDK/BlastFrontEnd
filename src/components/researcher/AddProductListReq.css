@@ -189,6 +189,20 @@
   outline-offset: 2px;
 }
 
+/* react-select dropdown — render in portal so search/menu is not clipped */
+.product-req-select__menu-portal {
+  z-index: 10000 !important;
+}
+
+.product-req-select__option {
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.product-req-select__input-container {
+  font-size: 0.875rem;
+}
+
 @media (max-width: 767px) {
   .product-req-form-body {
     padding: 1rem;

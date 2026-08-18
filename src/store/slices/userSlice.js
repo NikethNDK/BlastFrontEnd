@@ -35,7 +35,9 @@ export const loginUser = createAsyncThunk(
 
             // Find the logged-in user
             const foundUser = usersResponse.data.find(
-                (user) => user.user_name === credentials.user_name || user.user_name === credentials.username
+                (user) =>
+                    user.user_name.toLowerCase() ===
+                    (credentials.user_name || credentials.username || "").trim().toLowerCase()
             );
 
             if (foundUser && foundUser.is_active) {

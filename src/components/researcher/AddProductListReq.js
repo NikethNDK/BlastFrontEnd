@@ -18,9 +18,34 @@ import {
   getEmployeeApi,
   getEmployeeByUsernameApi,
 } from "../../services/AppinfoService";
-import Select from "react-select";
+import Select, { createFilter } from "react-select";
 import { PageLayout, PageHeader, PageBody } from "../layout/content";
 import "./AddProductListReq.css";
+
+/** Search item code or name from either dropdown (substring match, any position). */
+const itemSelectFilter = createFilter({
+  matchFrom: "any",
+  stringify: (option) => {
+    const d = option.data ?? option;
+    return [d.label, d.itemName, d.itemCode, d.value].filter(Boolean).join(" ");
+  },
+});
+
+const formatItemCodeOption = (option, { context }) => {
+  const code = option.label;
+  const name = option.itemName;
+  if (context === "value") return code;
+  return name ? `${code} — ${name}` : code;
+};
+
+const formatItemNameOption = (option, { context }) => {
+  const name = option.label;
+  const code = option.itemCode;
+  if (context === "value") return name;
+  return code ? `${name} — ${code}` : name;
+};
+
+const selectMenuPortalTarget = typeof document !== "undefined" ? document.body : null;
 
 /** Project codes are CharField labels (e.g. PROJECT_01) — always compare as strings. */
 const normalizeProjectCode = (code) => String(code ?? "").trim();
@@ -908,6 +933,10 @@ const AddProductListReq = ({
       fontSize: "0.875rem",
       color: "#09090b",
     }),
+    menuPortal: (provided) => ({
+      ...provided,
+      zIndex: 10000,
+    }),
   });
 
   return (
@@ -968,15 +997,28 @@ const AddProductListReq = ({
                     <Form.Group controlId="itemCode" className="product-req-select-field">
                       <Form.Label>Item Code</Form.Label>
                       <Select
-                        options={filteredItemsCodes.map((item) => ({
-                          value: item.value,
-                          label: item.label,
-                        }))}
+                        classNamePrefix="product-req-select"
+                        options={filteredItemsCodes}
                         required
                         value={selectedItemCode}
                         onChange={handleItemCodeChange}
-                        placeholder={filteredItemsCodes.length === 0 ? "No items available" : "Select Item Code"}
+                        placeholder={
+                          filteredItemsCodes.length === 0
+                            ? "No items available"
+                            : "Search or select item code"
+                        }
                         isDisabled={filteredItemsCodes.length === 0}
+                        isClearable
+                        isSearchable
+                        filterOption={itemSelectFilter}
+                        formatOptionLabel={formatItemCodeOption}
+                        noOptionsMessage={({ inputValue }) =>
+                          inputValue
+                            ? `No items matching "${inputValue}"`
+                            : "No items available"
+                        }
+                        menuPortalTarget={selectMenuPortalTarget}
+                        menuPosition="fixed"
                         styles={selectControlStyles(!!errorMessages.itemCode)}
                       />
                       {errorMessages.itemCode && (
@@ -990,15 +1032,28 @@ const AddProductListReq = ({
                     <Form.Group controlId="itemName" className="product-req-select-field">
                       <Form.Label>Item Name</Form.Label>
                       <Select
-                        options={filteredItemsNames.map((item) => ({
-                          value: item.value,
-                          label: item.label,
-                        }))}
+                        classNamePrefix="product-req-select"
+                        options={filteredItemsNames}
                         required
                         value={selectedItemName}
                         onChange={handleItemNameChange}
-                        placeholder={filteredItemsNames.length === 0 ? "No items available" : "Select Item Name"}
+                        placeholder={
+                          filteredItemsNames.length === 0
+                            ? "No items available"
+                            : "Search or select item name"
+                        }
                         isDisabled={filteredItemsNames.length === 0}
+                        isClearable
+                        isSearchable
+                        filterOption={itemSelectFilter}
+                        formatOptionLabel={formatItemNameOption}
+                        noOptionsMessage={({ inputValue }) =>
+                          inputValue
+                            ? `No items matching "${inputValue}"`
+                            : "No items available"
+                        }
+                        menuPortalTarget={selectMenuPortalTarget}
+                        menuPosition="fixed"
                         styles={selectControlStyles(!!errorMessages.itemName)}
                       />
                       {errorMessages.itemName && (
