@@ -591,11 +591,19 @@ const IssuedProduct = ({
   const handleItemCodeChange = async (selectedOption) => {
     console.log("🔍 [ITEM SELECTION] Item code changed to:", selectedOption);
     setSelectedItemCode(selectedOption);
+    // Reset stale per-item details (e.g. available quantityIssued from a
+    // previously selected item) whenever the item selection changes. Without
+    // this, selectedItemDetails.quantityIssued from a prior expiry-tracking
+    // item would linger and be used as the max-quantity cap / "Available: N"
+    // hint for a newly selected item within the same modal session, since
+    // the quantity-fetch effect below only refreshes it once selectedExpiryDate
+    // is set - which never happens for a non-tracking item.
+    setSelectedItemDetails(null);
     const item = itemsCodes.find((item) => item.value === selectedOption.value);
     if (item) {
       console.log("🔍 [ITEM SELECTION] Found matching item:", item);
       setSelectedItemName({ value: item.value, label: item.itemName });
-      
+
       // Fetch expiry dates for the selected item
       try {
         console.log("🔍 [EXPIRY] Fetching expiry dates for item:", item.label);
@@ -660,18 +668,16 @@ const IssuedProduct = ({
   };
 
   // Whether the currently selected item's master record tracks expiry.
-  // Looked up directly from itemsCodes rather than relying solely on
-  // selectedItemDetails: selectedItemDetails is overwritten with just
-  // {quantityIssued} by the quantity-fetch effect above (and
-  // handleItemCodeChange, the handler actually wired to the Item Code
-  // select, never sets it from item.details in the first place), so it
-  // cannot be trusted to carry tracksExpiry by the time it's needed here.
-  // Shared by the expiry-date validation in handleAdd and the Quantity
-  // Issued field's gating below, so both agree on whether this item needs
-  // an expiry date before it can be issued.
+  // Looked up directly from itemsCodes rather than selectedItemDetails:
+  // selectedItemDetails is only ever populated with {quantityIssued} by the
+  // quantity-fetch effect above (and handleItemCodeChange, the handler
+  // actually wired to the Item Code select, never sets it from item.details
+  // in the first place), so it never actually carries tracksExpiry on any
+  // live code path. Shared by the expiry-date validation in handleAdd and
+  // the Quantity Issued field's gating below, so both agree on whether this
+  // item needs an expiry date before it can be issued.
   const selectedCodeItem = itemsCodes.find((i) => i.value === selectedItemCode?.value);
-  const itemTracksExpiry =
-    (selectedItemDetails?.tracksExpiry ?? selectedCodeItem?.details?.tracksExpiry) !== false;
+  const itemTracksExpiry = selectedCodeItem?.details?.tracksExpiry !== false;
   // Quantity Issued only needs an expiry date selected first when the item
   // actually tracks expiry; location is always required.
   const quantityPrereqsMissing = (itemTracksExpiry && !selectedExpiryDate) || !selectedLocation;
