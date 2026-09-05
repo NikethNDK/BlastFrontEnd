@@ -716,7 +716,14 @@ export function addLabMasterApi(lab, userDetails) {
       min_req_stock: lab.min_req_stock,
       // remarks: lab.remarks,
       lab: lab.lab, // Include lab ID
+      tracks_expiry: lab.tracks_expiry,
     })
+    .then((response) => response.data);
+}
+
+export function updateMasterTracksExpiryApi(c_id, tracksExpiry) {
+  return axios
+    .put(`${BASE_URL}/update_master/${c_id}`, { tracks_expiry: tracksExpiry })
     .then((response) => response.data);
 }
 
