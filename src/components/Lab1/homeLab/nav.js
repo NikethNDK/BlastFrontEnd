@@ -180,7 +180,7 @@ const LabNavigatio = ({
             className="d-inline-block align-center"
             alt="React Bootstrap logo"
           />{" "}
-          INVENTORY MANAGEMENT SYSTEM
+          AIWC LIMS
         </Navbar.Brand>
         <Button href="./Logout">Logout</Button>
       </Navbar> */}
