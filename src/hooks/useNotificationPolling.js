@@ -7,6 +7,7 @@ import {
   setManagerPendingIssues,
   setManagerNotifications,
   setLabAssistantNotifications,
+  setLabAssistantPendingIssues,
   setResearcherPendingConfirmations,
   setResearcherNotifications,
 } from '../store/slices/notificationSlice';
@@ -115,6 +116,12 @@ const useNotificationPolling = ({ role, userId, intervalMs = 3000 }) => {
           dispatch(setManagerPendingIssues(issueNotifications || []));
         } else if (role === 'lab_assistant') {
           dispatch(setLabAssistantNotifications(notifications || []));
+
+          console.log('🔄 [POLLING] Calling getIssueItemsByStatus for LAB-OPEN...');
+          const labAssistantUsername = reduxUser?.user_name || null;
+          const pendingIssueItems = await getIssueItemsByStatus('LAB-OPEN', labAssistantUsername);
+          console.log(`🔄 [POLLING] Lab assistant pending issues: ${pendingIssueItems?.length || 0}`);
+          dispatch(setLabAssistantPendingIssues(pendingIssueItems || []));
         } else if (role === 'researcher') {
           dispatch(setResearcherNotifications(notifications || []));
           
