@@ -919,7 +919,7 @@ const ReceivedProduct = ({
                 <Form.Control
                   type="date"
                   name="expiryDate"
-                  required
+                  required={selectedItemDetails?.tracksExpiry !== false}
                   placeholder=""
                   className={`project-field-input${
                     errorMessages.expiryDate ? " project-field-input--error" : ""
