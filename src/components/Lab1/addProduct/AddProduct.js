@@ -13,6 +13,7 @@ import {
   getManufacturersApi,
   getSuppliersApi,
   getUnitsApi,
+  updateMasterTracksExpiryApi,
 } from "../../../services/AppinfoService";
 import toast from "react-hot-toast";
 import { Modal, Nav, Tab, Row, Col, Form } from "react-bootstrap";
@@ -38,6 +39,7 @@ const AddProduct = ({
   const [itemName, setItemName] = useState("");
   const [units, setUnits] = useState("");
   const [reqStock, setReqStock] = useState("");
+  const [tracksExpiry, setTracksExpiry] = useState(true);
 
   const [masterTypes, setMasterTypes] = useState([]);
   const [locations, setLocations] = useState([]);
@@ -133,6 +135,7 @@ const AddProduct = ({
     setItemName("");
     setUnits("");
     setReqStock("");
+    setTracksExpiry(true);
     setErrorMessages({});
   };
 
@@ -143,6 +146,7 @@ const AddProduct = ({
     setItemName("");
     setUnits("");
     setReqStock("");
+    setTracksExpiry(true);
     setErrorMessages({});
   };
 
@@ -201,6 +205,7 @@ const AddProduct = ({
       min_req_stock: reqStock,
       units: units,
       lab: labId,
+      tracks_expiry: tracksExpiry,
     };
 
     try {
@@ -345,6 +350,7 @@ const AddProduct = ({
                     <th scope="col" className="pt-col pt-col--master-type">Master Type</th>
                     <th scope="col" className="pt-col pt-col--units">Units</th>
                     <th scope="col" className="pt-col pt-col--stock">Minimum Required Stock</th>
+                    <th scope="col" className="pt-col pt-col--expiry">Tracks Expiry</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -358,11 +364,31 @@ const AddProduct = ({
                         <td className="pt-col pt-col--stock" data-label="Minimum Required Stock">
                           {product.min_req_stock || "—"}
                         </td>
+                        <td className="pt-col pt-col--expiry" data-label="Tracks Expiry">
+                          <Form.Check
+                            type="checkbox"
+                            checked={product.tracks_expiry !== false}
+                            onChange={async (e) => {
+                              const newValue = e.target.checked;
+                              try {
+                                await updateMasterTracksExpiryApi(product.c_id, newValue);
+                                setProducts((prev) =>
+                                  prev.map((p) =>
+                                    p.c_id === product.c_id ? { ...p, tracks_expiry: newValue } : p
+                                  )
+                                );
+                                toast.success("Updated");
+                              } catch (error) {
+                                toast.error("Failed to update tracks-expiry setting.");
+                              }
+                            }}
+                          />
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr className="project-table-row project-table-row--empty">
-                      <td colSpan="5">
+                      <td colSpan="6">
                         <div className="project-empty">
                           <div className="project-empty-icon-wrap">
                             <FaBox aria-hidden />
@@ -721,6 +747,20 @@ const AddProduct = ({
                     }}
                   />
                   {renderFieldError(errorMessages.itemCode)}
+                </Form.Group>
+              </Col>
+            </Row>
+
+            <Row>
+              <Col md={6}>
+                <Form.Group className="project-field">
+                  <Form.Check
+                    type="checkbox"
+                    id="tracksExpiryCheckbox"
+                    label="This item has an expiry date"
+                    checked={tracksExpiry}
+                    onChange={(e) => setTracksExpiry(e.target.checked)}
+                  />
                 </Form.Group>
               </Col>
             </Row>

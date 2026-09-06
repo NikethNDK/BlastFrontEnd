@@ -25,7 +25,13 @@ export const labMenuConfig = {
       items: [
         { path: '/master', icon: FaHome, label: 'Inventory View', iconColorClass: 'color-primary' },
         { path: '/received_product', icon: FaUpload, label: 'Add Received Item', iconColorClass: 'color-success' },
-        { path: '/issued_product', icon: FaDownload, label: 'Add Issued Item', iconColorClass: 'color-danger' },
+        {
+          path: '/issued_product',
+          icon: FaDownload,
+          label: 'Add Issued Item',
+          iconColorClass: 'color-danger',
+          badgeFromState: (state) => state.notifications?.labAssistant?.pendingIssues?.length || 0,
+        },
         { path: '/transferred', icon: FaUndo, label: 'Add Returned Item', iconColorClass: 'color-warning' },
       ],
     },

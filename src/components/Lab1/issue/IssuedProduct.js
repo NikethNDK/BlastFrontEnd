@@ -517,7 +517,7 @@ const IssuedProduct = ({
             value: item.c_id,
             label: item.item_code,
             itemName: item.item_name,
-            details: { units: item.units },
+            details: { units: item.units, tracksExpiry: item.tracks_expiry },
           }));
 
         console.log("📋 [ITEM LIST FETCH] Unique item codes:", uniqueItems);
@@ -537,7 +537,7 @@ const IssuedProduct = ({
             value: item.c_id,
             label: item.item_name,
             itemCode: item.item_code,
-            details: { units: item.units },
+            details: { units: item.units, tracksExpiry: item.tracks_expiry },
           }));
 
         console.log("📋 [ITEM LIST FETCH] Unique item names:", uniqueNames);
@@ -591,11 +591,19 @@ const IssuedProduct = ({
   const handleItemCodeChange = async (selectedOption) => {
     console.log("🔍 [ITEM SELECTION] Item code changed to:", selectedOption);
     setSelectedItemCode(selectedOption);
+    // Reset stale per-item details (e.g. available quantityIssued from a
+    // previously selected item) whenever the item selection changes. Without
+    // this, selectedItemDetails.quantityIssued from a prior expiry-tracking
+    // item would linger and be used as the max-quantity cap / "Available: N"
+    // hint for a newly selected item within the same modal session, since
+    // the quantity-fetch effect below only refreshes it once selectedExpiryDate
+    // is set - which never happens for a non-tracking item.
+    setSelectedItemDetails(null);
     const item = itemsCodes.find((item) => item.value === selectedOption.value);
     if (item) {
       console.log("🔍 [ITEM SELECTION] Found matching item:", item);
       setSelectedItemName({ value: item.value, label: item.itemName });
-      
+
       // Fetch expiry dates for the selected item
       try {
         console.log("🔍 [EXPIRY] Fetching expiry dates for item:", item.label);
@@ -658,6 +666,21 @@ const IssuedProduct = ({
     });
     setSelectedItemDetails(selectedItem.details);
   };
+
+  // Whether the currently selected item's master record tracks expiry.
+  // Looked up directly from itemsCodes rather than selectedItemDetails:
+  // selectedItemDetails is only ever populated with {quantityIssued} by the
+  // quantity-fetch effect above (and handleItemCodeChange, the handler
+  // actually wired to the Item Code select, never sets it from item.details
+  // in the first place), so it never actually carries tracksExpiry on any
+  // live code path. Shared by the expiry-date validation in handleAdd and
+  // the Quantity Issued field's gating below, so both agree on whether this
+  // item needs an expiry date before it can be issued.
+  const selectedCodeItem = itemsCodes.find((i) => i.value === selectedItemCode?.value);
+  const itemTracksExpiry = selectedCodeItem?.details?.tracksExpiry !== false;
+  // Quantity Issued only needs an expiry date selected first when the item
+  // actually tracks expiry; location is always required.
+  const quantityPrereqsMissing = (itemTracksExpiry && !selectedExpiryDate) || !selectedLocation;
 
   const handleAdd = (e) => {
     e.preventDefault();
@@ -723,7 +746,7 @@ const IssuedProduct = ({
       hasError = true;
     }
 
-    if (!selectedExpiryDate) {
+    if (itemTracksExpiry && !selectedExpiryDate) {
       newErrors.expiryDate = "Please select an expiry date";
       hasError = true;
     }
@@ -793,28 +816,6 @@ const IssuedProduct = ({
     }
   };
 
-  // Helper function to validate expiry date for items
-  const validateItemsForSubmission = (items, itemType) => {
-    const invalidItems = items.filter(item => {
-      const missingExpiryDate = !item.expiry_date || 
-                                item.expiry_date === null || 
-                                item.expiry_date === undefined ||
-                                (typeof item.expiry_date === 'string' && item.expiry_date.trim() === "");
-      return missingExpiryDate;
-    });
-
-    if (invalidItems.length > 0) {
-      const itemCodes = invalidItems.map(item => item.item_code || `Entry #${item.entry_no}`).join(", ");
-      toast.error(
-        `Cannot submit: ${invalidItems.length} item(s) are missing expiry date. ` +
-        `Please edit all items to add expiry date before submitting. ` +
-        `Items: ${itemCodes}`
-      );
-      return false;
-    }
-    return true;
-  };
-
   const handleTransferData = async () => {
     try {
       console.log("🔄 [SUBMIT] Starting submit process...");
@@ -826,36 +827,52 @@ const IssuedProduct = ({
       // Step 1: Validate and Accept all LAB-OPEN items (prepare for researcher confirmation)
       try {
         const itemsToAccept = allTempItems.filter(item => item.status === "LAB-OPEN");
-        
+
         if (itemsToAccept.length > 0) {
           console.log(`📝 [ACCEPT] Found ${itemsToAccept.length} LAB-OPEN items to accept`);
-          
-          // Validate all LAB-OPEN items have expiry date
-          if (!validateItemsForSubmission(itemsToAccept, "LAB-OPEN")) {
-            console.log("❌ [ACCEPT] Validation failed - missing expiry date");
-            return; // Stop here - atomic operation (all or none)
+
+          const missingExpiry = (item) => {
+            const needsExpiry = item.tracks_expiry !== false;
+            const hasExpiry = item.expiry_date && String(item.expiry_date).trim() !== "";
+            return needsExpiry && !hasExpiry;
+          };
+
+          const blockedItems = itemsToAccept.filter(missingExpiry);
+          const readyItems = itemsToAccept.filter((item) => !missingExpiry(item));
+
+          if (blockedItems.length > 0) {
+            const itemCodes = blockedItems.map(item => item.item_code || `Entry #${item.entry_no}`).join(", ");
+            console.log("⚠️ [ACCEPT] Skipping items missing expiry date:", itemCodes);
+            toast.error(
+              `Skipped ${blockedItems.length} item(s) missing expiry date: ${itemCodes}. ` +
+              `Edit them to add an expiry date, then try again.`
+            );
           }
-          
-          // Accept all LAB-OPEN items
-          const acceptPromises = itemsToAccept.map(item => 
-            acceptTempIssueApi(item.entry_no).catch(err => {
-              console.error(`💥 [ACCEPT] Failed to accept item ${item.entry_no}:`, err);
-              return { error: true, entry_no: item.entry_no };
-            })
-          );
-          
-          const acceptResults = await Promise.all(acceptPromises);
-          const failed = acceptResults.filter(r => r && r.error);
-          const succeeded = acceptResults.filter(r => !r || !r.error);
-          
-          if (succeeded.length > 0) {
-            console.log(`✅ [ACCEPT] Successfully accepted ${succeeded.length} items`);
-            toast.success(`${succeeded.length} item(s) prepared and sent to researcher for confirmation`);
-          }
-          
-          if (failed.length > 0) {
-            console.warn(`⚠️ [ACCEPT] Failed to accept ${failed.length} items`);
-            toast.warning(`Some items could not be accepted. Please try again.`);
+
+          if (readyItems.length > 0) {
+            // Accept the ready LAB-OPEN items
+            const acceptPromises = readyItems.map(item =>
+              acceptTempIssueApi(item.entry_no).catch(err => {
+                console.error(`💥 [ACCEPT] Failed to accept item ${item.entry_no}:`, err);
+                return { error: true, entry_no: item.entry_no };
+              })
+            );
+
+            const acceptResults = await Promise.all(acceptPromises);
+            const failed = acceptResults.filter(r => r && r.error);
+            const succeeded = acceptResults.filter(r => !r || !r.error);
+
+            if (succeeded.length > 0) {
+              console.log(`✅ [ACCEPT] Successfully accepted ${succeeded.length} items`);
+              toast.success(`${succeeded.length} item(s) prepared and sent to researcher for confirmation`);
+            }
+
+            if (failed.length > 0) {
+              console.warn(`⚠️ [ACCEPT] Failed to accept ${failed.length} items`);
+              toast.warning(`Some items could not be accepted. Please try again.`);
+            }
+          } else {
+            console.log("📝 [ACCEPT] No LAB-OPEN items ready to accept");
           }
         } else {
           console.log("📝 [ACCEPT] No LAB-OPEN items to accept");
@@ -875,9 +892,27 @@ const IssuedProduct = ({
       
       if (itemsToTransfer.length > 0) {
         console.log(`📝 [TRANSFER] Found ${itemsToTransfer.length} LAB-ACT items to transfer`);
-        
-        // Validate all LAB-ACT items have expiry date
-        if (!validateItemsForSubmission(itemsToTransfer, "LAB-ACT")) {
+
+        // Validate LAB-ACT items that track expiry have an expiry date. The
+        // /transfer/issue/ endpoint transfers all LAB-ACT items in one call
+        // (no per-item selection), so this stays an atomic pre-flight check
+        // rather than the per-item skip used for LAB-OPEN acceptance above.
+        const invalidTransferItems = itemsToTransfer.filter(item => {
+          const needsExpiry = item.tracks_expiry !== false;
+          const missingExpiryDate = !item.expiry_date ||
+                                    item.expiry_date === null ||
+                                    item.expiry_date === undefined ||
+                                    (typeof item.expiry_date === 'string' && item.expiry_date.trim() === "");
+          return needsExpiry && missingExpiryDate;
+        });
+
+        if (invalidTransferItems.length > 0) {
+          const itemCodes = invalidTransferItems.map(item => item.item_code || `Entry #${item.entry_no}`).join(", ");
+          toast.error(
+            `Cannot submit: ${invalidTransferItems.length} item(s) are missing expiry date. ` +
+            `Please edit all items to add expiry date before submitting. ` +
+            `Items: ${itemCodes}`
+          );
           console.log("❌ [TRANSFER] Validation failed - missing expiry date");
           return; // Stop here - atomic operation (all or none)
         }
@@ -1260,10 +1295,12 @@ const IssuedProduct = ({
                         return;
                       }
 
-                      if (!selectedExpiryDate || !selectedLocation) {
+                      if (quantityPrereqsMissing) {
                         setQuantityIssued("");
                         toast.error(
-                          "Please select expiry date and location first to see available quantity"
+                          itemTracksExpiry
+                            ? "Please select expiry date and location first to see available quantity"
+                            : "Please select a location first to see available quantity"
                         );
                         return;
                       }
@@ -1295,19 +1332,21 @@ const IssuedProduct = ({
                     }}
                     min="1"
                     max={selectedItemDetails?.quantityIssued || 0}
-                    disabled={!selectedExpiryDate || !selectedLocation}
+                    disabled={quantityPrereqsMissing}
                     className={`project-field-input${
                       errorMessages.quantityIssued
                         ? " project-field-input--error"
                         : ""
                     }${
-                      !selectedExpiryDate || !selectedLocation
+                      quantityPrereqsMissing
                         ? " project-field-input--disabled"
                         : ""
                     }`}
                     placeholder={
-                      !selectedExpiryDate || !selectedLocation
-                        ? "Select expiry date and location first"
+                      quantityPrereqsMissing
+                        ? (itemTracksExpiry
+                            ? "Select expiry date and location first"
+                            : "Select location first")
                         : "Enter quantity"
                     }
                   />

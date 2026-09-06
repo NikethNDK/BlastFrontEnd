@@ -274,7 +274,7 @@ const ReceivedProduct = ({
           value: item.c_id || item.code, // Use a consistent ID/Code field
           label: item.item_code || item.code, // Use the item code as the label
           itemName: item.item_name || item.name,
-          details: { units: item.units, requiredStock: item.min_req_stock },
+          details: { units: item.units, requiredStock: item.min_req_stock, tracksExpiry: item.tracks_expiry },
         }))
       );
 
@@ -284,7 +284,7 @@ const ReceivedProduct = ({
           value: item.c_id || item.code, // Use a consistent ID/Code field
           label: item.item_name || item.name, // Use the item name as the label
           itemCode: item.item_code || item.code,
-          details: { units: item.units, requiredStock: item.min_req_stock },
+          details: { units: item.units, requiredStock: item.min_req_stock, tracksExpiry: item.tracks_expiry },
         }))
       );
 
@@ -441,6 +441,7 @@ const ReceivedProduct = ({
     const newErrorMessages = {};
 
     // Define required fields with user-friendly labels
+    const itemTracksExpiry = selectedItemDetails?.tracksExpiry !== false;
     const requiredFields = {
       bill: "Catalogue No",
       quantityReceived: "Quantity Received",
@@ -448,7 +449,7 @@ const ReceivedProduct = ({
       batchNumber: "Batch Number",
       remarks: "Remarks",
       unitprice: "Price",
-      expiryDate: "Expiry Date",
+      ...(itemTracksExpiry ? { expiryDate: "Expiry Date" } : {}),
       instructionSpecification: "Instruction and Specification",
       invoiceNumber: "Invoice No/Date",
     };
@@ -918,7 +919,7 @@ const ReceivedProduct = ({
                 <Form.Control
                   type="date"
                   name="expiryDate"
-                  required
+                  required={selectedItemDetails?.tracksExpiry !== false}
                   placeholder=""
                   className={`project-field-input${
                     errorMessages.expiryDate ? " project-field-input--error" : ""

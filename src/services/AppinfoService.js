@@ -622,24 +622,6 @@ export function getStatusApi() {
     .then((response) => response.data);
 }
 
-//-------------------------------Item Return---------------------------------//
-
-export function addItemReturnApi(i_return) {
-  const currentDate = new Date();
-
-  // Format date to ISO string
-  const isoDate = currentDate.toISOString();
-
-  return axios
-    .post(`${BASE_URL}/add_itemreturn`, {
-      entry_no: null,
-      c_id: i_return.c_id,
-      receipt_date: isoDate,
-      quantity_return: i_return.quantity_return,
-    })
-    .then((response) => response.data);
-}
-
 //-----------------------------Add Product Request----------------------------//
 
 export function addProductReqApi(product) {
@@ -716,7 +698,14 @@ export function addLabMasterApi(lab, userDetails) {
       min_req_stock: lab.min_req_stock,
       // remarks: lab.remarks,
       lab: lab.lab, // Include lab ID
+      tracks_expiry: lab.tracks_expiry,
     })
+    .then((response) => response.data);
+}
+
+export function updateMasterTracksExpiryApi(c_id, tracksExpiry) {
+  return axios
+    .put(`${BASE_URL}/update_master/${c_id}`, { tracks_expiry: tracksExpiry })
     .then((response) => response.data);
 }
 

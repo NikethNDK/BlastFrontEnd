@@ -10,6 +10,7 @@ const initialState = {
     lastUpdated: null,  // Timestamp of last successful poll
   },
   labAssistant: {
+    pendingIssues: [], // Issue requests (LAB-OPEN) pending lab assistant action
     notifications: [],  // All notifications from /app-notifications/ API
     unreadCount: 0,     // Count of unread notifications (is_read === false)
     lastUpdated: null,  // Timestamp of last successful poll
@@ -84,8 +85,14 @@ const notificationSlice = createSlice({
       // Recompute unreadCount
       state.labAssistant.unreadCount = state.labAssistant.notifications.filter(n => !n.is_read).length;
     },
+    // Set pending LAB-OPEN issue requests for lab assistant
+    setLabAssistantPendingIssues: (state, action) => {
+      state.labAssistant.pendingIssues = Array.isArray(action.payload) ? action.payload : [];
+      state.labAssistant.lastUpdated = new Date().toISOString();
+    },
     // Clear all lab assistant notifications (e.g., on logout)
     clearLabAssistantNotifications: (state) => {
+      state.labAssistant.pendingIssues = [];
       state.labAssistant.notifications = [];
       state.labAssistant.unreadCount = 0;
       state.labAssistant.lastUpdated = null;
@@ -132,6 +139,7 @@ const notificationSlice = createSlice({
         state.manager.notifications = [];
         state.manager.unreadCount = 0;
         state.manager.lastUpdated = null;
+        state.labAssistant.pendingIssues = [];
         state.labAssistant.notifications = [];
         state.labAssistant.unreadCount = 0;
         state.labAssistant.lastUpdated = null;
@@ -150,6 +158,7 @@ export const {
   markNotificationsRead,
   clearManagerNotifications,
   setLabAssistantNotifications,
+  setLabAssistantPendingIssues,
   markLabAssistantNotificationsRead,
   clearLabAssistantNotifications,
   setResearcherPendingConfirmations,
