@@ -34,7 +34,8 @@ const ReturnDataTableNotification = ({
 
   const handleStatusUpdate = async (entryNo, status) => {
     try {
-      if (!reduxUser || !reduxUser.user_name) {
+      const username = reduxUser?.user_name || userDetails?.name;
+      if (!username) {
         toast.error("User information not available. Please refresh the page.");
         return;
       }
@@ -43,7 +44,7 @@ const ReturnDataTableNotification = ({
         `${BASE_URL}/item_return/approve/${entryNo}/`,
         {
           status,
-          username: reduxUser.user_name,
+          username,
         }
       );
 
@@ -54,7 +55,11 @@ const ReturnDataTableNotification = ({
       dispatch(setManagerPendingReturns(updatedData));
     } catch (error) {
       console.error("Error updating status:", error);
-      toast.error("Failed to update item return status.");
+      const apiError =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message;
+      toast.error(apiError || "Failed to update item return status.");
     }
   };
 

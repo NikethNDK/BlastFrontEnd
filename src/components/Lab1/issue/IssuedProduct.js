@@ -338,12 +338,19 @@ const IssuedProduct = ({
   };
 
   useEffect(() => {
-    if (selectedItemCode && selectedProject && selectedExpiryDate && selectedLocation) {
+    const selectedCodeItem = itemsCodes.find((i) => i.value === selectedItemCode?.value);
+    const tracksExpiry = selectedCodeItem?.details?.tracksExpiry !== false;
+    // Expiry is only required for quantity match when the master tracks expiry
+    // (or when the user has explicitly picked a date / "No expiry" option).
+    const expiryReady = !tracksExpiry || !!selectedExpiryDate;
+    if (selectedItemCode && selectedProject && selectedLocation && expiryReady) {
+      const selectedExpiryValue = selectedExpiryDate?.value ?? "";
       console.log("🔍 [QUANTITY FETCH] Starting quantity fetch with:", {
         selectedItemCode: selectedItemCode.label,
         selectedProject: selectedProject.value,
-        selectedExpiryDate: selectedExpiryDate.value,
+        selectedExpiryDate: selectedExpiryValue,
         selectedLocation: selectedLocation.value,
+        itemTracksExpiry: tracksExpiry,
         userLab: effectiveUserDetails.lab,
         isEditMode: isEditMode
       });
@@ -360,15 +367,31 @@ const IssuedProduct = ({
           console.log("🔍 [QUANTITY FETCH] Looking for exact match with:", {
             targetItemCode: selectedItemCode.label,
             targetProjectCode: selectedProject.value,
-            targetExpiryDate: selectedExpiryDate.value,
+            targetExpiryDate: selectedExpiryValue,
             targetLocation: selectedLocation.value
           });
+
+          const matchesExpiry = (item) => {
+            // Non-tracking items with no expiry chosen: match any batch at location
+            if (!tracksExpiry && !selectedExpiryDate) {
+              return true;
+            }
+            // "No expiry" sentinel (empty value) matches null/blank stock expiry
+            if (selectedExpiryValue === "" || selectedExpiryValue == null) {
+              return item.expiry_date == null || String(item.expiry_date).trim() === "";
+            }
+            const itemExpiry = item.expiry_date == null ? "" : String(item.expiry_date);
+            return (
+              itemExpiry === String(selectedExpiryValue) ||
+              itemExpiry.startsWith(String(selectedExpiryValue))
+            );
+          };
 
           const matchedItem = data.find(
             (item) => {
               const itemCodeMatch = String(item.item_code).toLowerCase() === String(selectedItemCode.label).toLowerCase();
               const projectMatch = String(item.project_code).toLowerCase() === String(selectedProject.value).toLowerCase();
-              const expiryMatch = String(item.expiry_date) === String(selectedExpiryDate.value);
+              const expiryMatch = matchesExpiry(item);
               const locationMatch = String(item.location).toLowerCase() === String(selectedLocation.value).toLowerCase();
               
               console.log("🔍 [QUANTITY FETCH] Checking item:", {
@@ -383,13 +406,6 @@ const IssuedProduct = ({
                 expiryMatch,
                 locationMatch,
                 isMatch: itemCodeMatch && projectMatch && expiryMatch && locationMatch,
-                // Show the actual comparison values
-                comparison: {
-                  itemCode: `${String(item.item_code).toLowerCase()} === ${String(selectedItemCode.label).toLowerCase()}`,
-                  project: `${String(item.project_code).toLowerCase()} === ${String(selectedProject.value).toLowerCase()}`,
-                  expiry: `${String(item.expiry_date)} === ${String(selectedExpiryDate.value)}`,
-                  location: `${String(item.location).toLowerCase()} === ${String(selectedLocation.value).toLowerCase()}`
-                }
               });
               
               return itemCodeMatch && projectMatch && expiryMatch && locationMatch;
@@ -463,10 +479,11 @@ const IssuedProduct = ({
         selectedItemCode: !!selectedItemCode,
         selectedProject: !!selectedProject,
         selectedExpiryDate: !!selectedExpiryDate,
-        selectedLocation: !!selectedLocation
+        selectedLocation: !!selectedLocation,
+        expiryReady,
       });
     }
-  }, [selectedItemCode, selectedProject, selectedExpiryDate, selectedLocation, effectiveUserDetails.lab, isEditMode]);
+  }, [selectedItemCode, selectedProject, selectedExpiryDate, selectedLocation, itemsCodes, effectiveUserDetails.lab, isEditMode]);
 
   useEffect(() => {
     if (!masterType) {
@@ -656,15 +673,28 @@ const IssuedProduct = ({
   };
 
   const handleItemNameChange = (selectedOption) => {
-    setSelectedItemName(selectedOption);
+    if (!selectedOption) {
+      setSelectedItemName(null);
+      setSelectedItemCode(null);
+      setSelectedItemDetails(null);
+      setExpiryDates([]);
+      setSelectedExpiryDate(null);
+      setLocations([]);
+      setSelectedLocation(null);
+      return;
+    }
     const selectedItem = itemsNames.find(
       (item) => item.value === selectedOption.value
     );
-    setSelectedItemCode({
+    if (!selectedItem) {
+      setSelectedItemName(selectedOption);
+      return;
+    }
+    // Reuse item-code handler so name→code sync also loads expiry dates and locations
+    handleItemCodeChange({
       value: selectedItem.value,
       label: selectedItem.itemCode,
     });
-    setSelectedItemDetails(selectedItem.details);
   };
 
   // Whether the currently selected item's master record tracks expiry.
@@ -831,23 +861,8 @@ const IssuedProduct = ({
         if (itemsToAccept.length > 0) {
           console.log(`📝 [ACCEPT] Found ${itemsToAccept.length} LAB-OPEN items to accept`);
 
-          const missingExpiry = (item) => {
-            const needsExpiry = item.tracks_expiry !== false;
-            const hasExpiry = item.expiry_date && String(item.expiry_date).trim() !== "";
-            return needsExpiry && !hasExpiry;
-          };
-
-          const blockedItems = itemsToAccept.filter(missingExpiry);
-          const readyItems = itemsToAccept.filter((item) => !missingExpiry(item));
-
-          if (blockedItems.length > 0) {
-            const itemCodes = blockedItems.map(item => item.item_code || `Entry #${item.entry_no}`).join(", ");
-            console.log("⚠️ [ACCEPT] Skipping items missing expiry date:", itemCodes);
-            toast.error(
-              `Skipped ${blockedItems.length} item(s) missing expiry date: ${itemCodes}. ` +
-              `Edit them to add an expiry date, then try again.`
-            );
-          }
+          // Blank/null expiry is allowed ("No expiry" stock or non-tracking masters).
+          const readyItems = itemsToAccept;
 
           if (readyItems.length > 0) {
             // Accept the ready LAB-OPEN items
@@ -892,30 +907,6 @@ const IssuedProduct = ({
       
       if (itemsToTransfer.length > 0) {
         console.log(`📝 [TRANSFER] Found ${itemsToTransfer.length} LAB-ACT items to transfer`);
-
-        // Validate LAB-ACT items that track expiry have an expiry date. The
-        // /transfer/issue/ endpoint transfers all LAB-ACT items in one call
-        // (no per-item selection), so this stays an atomic pre-flight check
-        // rather than the per-item skip used for LAB-OPEN acceptance above.
-        const invalidTransferItems = itemsToTransfer.filter(item => {
-          const needsExpiry = item.tracks_expiry !== false;
-          const missingExpiryDate = !item.expiry_date ||
-                                    item.expiry_date === null ||
-                                    item.expiry_date === undefined ||
-                                    (typeof item.expiry_date === 'string' && item.expiry_date.trim() === "");
-          return needsExpiry && missingExpiryDate;
-        });
-
-        if (invalidTransferItems.length > 0) {
-          const itemCodes = invalidTransferItems.map(item => item.item_code || `Entry #${item.entry_no}`).join(", ");
-          toast.error(
-            `Cannot submit: ${invalidTransferItems.length} item(s) are missing expiry date. ` +
-            `Please edit all items to add expiry date before submitting. ` +
-            `Items: ${itemCodes}`
-          );
-          console.log("❌ [TRANSFER] Validation failed - missing expiry date");
-          return; // Stop here - atomic operation (all or none)
-        }
       }
       
       const response = await fetch(`${BASE_URL}/transfer/issue/`, {
@@ -1098,7 +1089,7 @@ const IssuedProduct = ({
                     }))}
                     value={selectedItemName}
                     onChange={(selected) => {
-                      setSelectedItemName(selected);
+                      handleItemNameChange(selected);
                       if (errorMessages.itemName && selected) {
                         setErrorMessages((prev) => ({
                           ...prev,
@@ -1219,7 +1210,9 @@ const IssuedProduct = ({
                     placeholder={
                       expiryDates.length > 0
                         ? "Select Expiry Date"
-                        : "No expiry dates available"
+                        : itemTracksExpiry
+                          ? "No expiry dates available"
+                          : "Expiry not required"
                     }
                     isDisabled={expiryDates.length === 0}
                     styles={selectControlStyles(!!errorMessages.expiryDate)}
@@ -1231,7 +1224,9 @@ const IssuedProduct = ({
                   )}
                   {expiryDates.length === 0 && selectedItemCode && (
                     <span className="project-field-hint">
-                      No expiry dates found for this item
+                      {itemTracksExpiry
+                        ? "No expiry dates found for this item"
+                        : "This item does not require an expiry date"}
                     </span>
                   )}
                 </Form.Group>
